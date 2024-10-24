@@ -1,4 +1,4 @@
-import { users } from "../../../../server/src/api/services/prisma";
+import { users } from "../../../../lcms-app-topcit-server/src/api/services/prisma";
 import { LoginSchema, RegisterSchema } from "../schema/UserSchema";
 
 export type UserProfile = Pick<users, "email" | "userID" | "username">;

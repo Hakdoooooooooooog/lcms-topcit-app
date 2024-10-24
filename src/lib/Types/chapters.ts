@@ -1,4 +1,4 @@
-import { chapters } from "../../../../server/src/api/services/prisma";
+import { chapters } from "../../../../lcms-app-topcit-server/src/api/services/prisma";
 import { EditPDFSchema } from "../schema/DataSchema";
 import { z } from "zod";
 
