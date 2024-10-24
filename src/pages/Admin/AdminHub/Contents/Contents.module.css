@@ -1,0 +1,50 @@
+.cardContent {
+  padding: 10px;
+
+  &:last-child {
+    padding-bottom: 10px;
+  }
+}
+
+/* .list__item--bullet {
+  position: absolute;
+  display: inline-block;
+  background-color: green;
+  width: 8px;
+
+  & .list__item--bullet-inner {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: inherit;
+    height: 25%;
+    background-color: black;
+  }
+} */
+
+.accordion {
+  &__list {
+    &__item {
+      &--bullet {
+        position: absolute;
+        display: inline-block;
+        background-color: green;
+        width: 8px;
+        height: 100%;
+
+        &__inner {
+          position: absolute;
+          left: 0;
+          top: 0;
+          width: inherit;
+          height: 25%;
+          background-color: black;
+        }
+      }
+    }
+  }
+}
+
+.accordionDetails {
+  @apply flex flex-col gap-3;
+}

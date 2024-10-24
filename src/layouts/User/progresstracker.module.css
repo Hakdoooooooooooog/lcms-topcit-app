@@ -1,0 +1,18 @@
+.btn {
+  @apply w-full text-center rounded-sm px-3 py-2;
+
+  &:hover {
+    @apply bg-gray-200;
+  }
+
+  &:global.active {
+    @apply bg-green-700 text-gray-100;
+
+    & svg {
+      @apply text-gray-100;
+    }
+  }
+}
+.cardActions {
+  @apply flex-wrap gap-4;
+}

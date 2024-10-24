@@ -1,0 +1,17 @@
+.list__item--bullet {
+  flex: 0 0 auto;
+  position: relative;
+
+  display: inline-block;
+  background-color: green;
+  width: 8px;
+
+  & .list__item--bullet-inner {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: inherit;
+    height: 25%;
+    background-color: black;
+  }
+}

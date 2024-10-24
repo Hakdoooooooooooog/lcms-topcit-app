@@ -1,0 +1,27 @@
+.breadcrumbs {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+.breadcrumbs > * {
+  display: inline-block;
+  margin-right: 0.5rem;
+}
+
+.breadcrumbs > .crumb::after {
+  content: ">";
+  margin-left: 0.5rem;
+}
+
+.breadcrumbs > .crumb:last-child::after {
+  content: "";
+  display: none;
+}
+
+.breadcrumbs > .crumb > a {
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}

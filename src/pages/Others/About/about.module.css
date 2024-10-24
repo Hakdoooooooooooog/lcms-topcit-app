@@ -1,0 +1,56 @@
+.about_wrapper {
+  min-height: inherit;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  & .topcit {
+    & .title {
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+      & span {
+        color: green;
+        font-weight: 800;
+      }
+    }
+
+    & .card {
+      padding: 30px;
+      max-width: 1200px;
+      & .card__title {
+        font-size: 2rem;
+        & span {
+          color: green;
+          font-weight: 800;
+        }
+      }
+
+      & .card__content {
+        & .card__lists {
+          display: flex;
+          flex-wrap: wrap;
+          & .card__lists--item {
+            margin-bottom: 10px;
+            position: relative;
+
+            & .list__item--bullet {
+              position: absolute;
+              left: -15px;
+              top: 0;
+              background-color: green;
+              width: 8px;
+
+              & .list__item--bullet-inner {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: inherit;
+                height: 25%;
+                background-color: black;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
