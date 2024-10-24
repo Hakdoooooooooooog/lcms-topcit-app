@@ -1,3 +1,7 @@
-import { topics } from "../../../../lcms-app-topcit-server/src/api/services/prisma";
+type topics = {
+  id: bigint;
+  topicTitle: string | null;
+  description: string | null;
+};
 
 export type Topic = topics;

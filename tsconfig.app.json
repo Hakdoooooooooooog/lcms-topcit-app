@@ -23,5 +23,5 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src", "../lcms-app-topcit-server/src/api/services/prisma.ts"]
+  "include": ["src"]
 }
