@@ -1,6 +1,3 @@
-import { EditPDFSchema } from "../schema/DataSchema";
-import { z } from "zod";
-
 export type Chapter = {
   id: bigint;
   topic_id: bigint;
@@ -31,5 +28,3 @@ export type ChaptersWithSubChaptersWithinTopic = {
   description: string | null;
   chapters: ChapterWithSubChapter[];
 };
-
-export type EditPDF = z.infer<typeof EditPDFSchema>;
