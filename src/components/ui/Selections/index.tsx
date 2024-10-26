@@ -20,31 +20,32 @@ const Selections = ({ props }: { props: SelectionProps }) => {
 
   const MemoizedCardActions = useMemo(
     () => (
-      <Box component={"div"} sx={{ flexGrow: 1 }} className="flex gap-x-6">
-        {props.CardActionItems.map((item) => (
-          <Tooltip key={item.label} title={item.label} placement="top">
-            <NavLink
-              to={item.to}
-              className={styles.btn}
-              onClick={(e) => {
-                e.preventDefault();
-                props.startTransition(() => {
-                  props.setTab(item.label.toLowerCase());
-                  setSearch("");
-                  window.history.pushState({}, "", item.to);
-                  window.dispatchEvent(new PopStateEvent("popstate", { state: {} }));
-                });
-              }}
-            >
-              <Box className={styles.icon}>{item.icon}</Box>
-            </NavLink>
-          </Tooltip>
-        ))}
-
+      <>
+        <Box component={"div"} sx={{ flexGrow: 1 }} className="flex gap-x-6">
+          {props.CardActionItems.map((item) => (
+            <Tooltip key={item.label} title={item.label} placement="top">
+              <NavLink
+                to={item.to}
+                className={styles.btn}
+                onClick={(e) => {
+                  e.preventDefault();
+                  props.startTransition(() => {
+                    props.setTab(item.label.toLowerCase());
+                    setSearch("");
+                    window.history.pushState({}, "", item.to);
+                    window.dispatchEvent(new PopStateEvent("popstate", { state: {} }));
+                  });
+                }}
+              >
+                <Box className={styles.icon}>{item.icon}</Box>
+              </NavLink>
+            </Tooltip>
+          ))}
+        </Box>
         {!(excludedSearchPaths.has(props.path) || excludedSearchPaths.has("/" + props.tab)) && (
           <SearchInput />
         )}
-      </Box>
+      </>
     ),
     [props.tab, props.path]
   );

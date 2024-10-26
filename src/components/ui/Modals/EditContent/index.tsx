@@ -1,3 +1,4 @@
+import { pdfjs } from "react-pdf";
 import {
   Modal,
   Box,
@@ -9,14 +10,19 @@ import {
   InputLabel,
 } from "@mui/material";
 import PDFViewer from "../../PDFViewer";
-import { styledModal } from "../../../../lib/constants";
+import { editChapterFormInputs, editTopicFormInputs, styledModal } from "../../../../lib/constants";
 import { useForm } from "react-hook-form";
-import { EditPDFSchema } from "../../../../lib/schema/DataSchema";
+import { EditChapterSchema, editTopicSchema } from "../../../../lib/schema/DataSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useMemo, useState } from "react";
 import { showToast } from "../../Toasts";
 import { updateChapter } from "../../../../api/Admin/chapter";
-import { EditPDF } from "../../../../lib/Types/chapters";
+import { useQuery } from "@tanstack/react-query";
+import { getChapterPDFFiles } from "../../../../api/User/chaptersApi";
+import { editTopic } from "../../../../api/Admin/topics";
+import { z } from "zod";
+import useEditContentMutation from "../../../../lib/hooks/useEditContentMutation";
+import axios, { CancelTokenSource } from "axios";
 
 const EditContentModal = ({
   open,
@@ -35,35 +41,86 @@ const EditContentModal = ({
   };
   buttonType: string;
 }) => {
+  const handleType = (buttonType: string) => {
+    switch (buttonType) {
+      case "edit-chapter":
+        return EditChapterSchema;
+      case "edit-topic":
+        return editTopicSchema;
+      default:
+        return z.object({});
+    }
+  };
+
+  const schema = handleType(buttonType);
+
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<EditPDF>({
-    resolver: zodResolver(EditPDFSchema),
-    values: { title, subtitle, chapterFile: "" },
+  } = useForm<z.infer<typeof schema>>({
+    resolver: zodResolver(schema),
+    values: {
+      topicTitle: title,
+      description: subtitle,
+      chapterTitle: title,
+      chapterDescription: subtitle,
+    },
   });
-  const [fileData, setfileData] = useState<File | null>(null);
+  const [fileData, setfileData] = useState<File | string | null>(null);
+  const [cancelToken, setCancelToken] = useState<CancelTokenSource | undefined>(undefined);
+
+  const { data, isLoading } = useQuery<{ url: string }>({
+    queryKey: ["ChapterContentFile"],
+    queryFn: () => {
+      if (cancelToken) {
+        return getChapterPDFFiles(chapterId, topicId, { cancelToken: cancelToken.token }); // Pass the cancel token to the request config
+      }
+
+      return getChapterPDFFiles(chapterId, topicId);
+    },
+    enabled: chapterId !== undefined && topicId !== undefined,
+    refetchOnWindowFocus: false,
+  });
+
+  const editMutation = useEditContentMutation<z.infer<typeof schema>>({
+    fn: (data: z.infer<typeof schema>) => {
+      const formData = new FormData();
+      if (buttonType === "edit-chapter" && chapterId !== undefined) {
+        for (const key in data as z.infer<typeof EditChapterSchema>) {
+          if (key === "chapterFile") {
+            formData.append("chapterFile", (data as any)[key][0]);
+          } else {
+            formData.append(key, (data as any)[key]);
+          }
+        }
+
+        if (formData.get("chapterFile") === null) {
+          showToast("Invalid file", "error");
+        }
+
+        return updateChapter(formData, chapterId, topicId);
+      } else if (buttonType === "edit-topic" && topicId !== undefined) {
+        return editTopic(data, topicId);
+      }
+      return Promise.reject(new Error("Invalid button type"));
+    },
+    QueryKey: ["ChapterContentFile", "AllTopicsWithChapters"],
+    handleClose,
+  });
 
   const onSubmit = (buttonType: string) => async (data: any) => {
     if (buttonType === "edit-chapter") {
-      const formData = new FormData();
-      const editChapter = data as EditPDF;
-
-      formData.append("chapterFile", editChapter.chapterFile[0]);
-      formData.append("title", editChapter.title || "");
-      formData.append("subtitle", editChapter.subtitle || "");
-
       try {
-        if (chapterId !== undefined) {
-          const res = await updateChapter(formData, chapterId, topicId);
-          if (res.message === "Chapter updated") {
-            showToast("Chapter Updated Successfully", "success");
-            handleClose();
-          } else {
-            showToast(res.message, "error");
-          }
-        }
+        await editMutation.mutateAsync({ ...data });
+      } catch (error: any) {
+        showToast(error.message, "error");
+      }
+    }
+
+    if (buttonType === "edit-topic") {
+      try {
+        await editMutation.mutateAsync({ ...data });
       } catch (error: any) {
         showToast(error.message, "error");
       }
@@ -73,7 +130,11 @@ const EditContentModal = ({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files;
     if (file?.length === 1) {
+      const source = axios.CancelToken.source(); // Create a cancel token
+      setCancelToken(source); // Set the cancel token
       setfileData(file[0]);
+    } else {
+      setfileData(data?.url ? data.url : null);
     }
   };
 
@@ -84,7 +145,7 @@ const EditContentModal = ({
   const formInputs = useMemo(() => {
     return (
       <>
-        {buttonType === "edit-chapter" && (
+        {buttonType === "edit-chapter" ? (
           <>
             <Box component={"div"} className="flex-1">
               <Typography id="Edit PDF" sx={{ mb: 2 }}>
@@ -92,29 +153,33 @@ const EditContentModal = ({
               </Typography>
               <form onSubmit={handleSubmit(onSubmit(buttonType))} encType="multipart/form-data">
                 <Box component={"div"} className="flex flex-col gap-y-5">
-                  <FormControl>
-                    <Input
-                      type="file"
-                      {...register("chapterFile")}
-                      id="chapterFile"
-                      onChange={handleFileChange}
-                    />
-                    {errors.chapterFile && (
-                      <p className="text-red-500">{errors.chapterFile?.message?.toString()}</p>
-                    )}
-                  </FormControl>
-
-                  <FormControl>
-                    <InputLabel htmlFor="title">Title:</InputLabel>
-                    <OutlinedInput {...register("title")} id="title" label={"Title:"} />
-                    {errors.title && <p className="text-red-500">{errors.title?.message}</p>}
-                  </FormControl>
-
-                  <FormControl>
-                    <InputLabel htmlFor="subtitle">Sub Title:</InputLabel>
-                    <OutlinedInput {...register("subtitle")} id="subtitle" label={"Sub Title:"} />
-                    {errors.subtitle && <p className="text-red-500">{errors.subtitle?.message}</p>}
-                  </FormControl>
+                  {editChapterFormInputs.map((input) => (
+                    <FormControl key={input.id}>
+                      {input.type === "file" ? (
+                        <Input
+                          {...register(input.name as keyof z.infer<typeof schema>)}
+                          id={input.id}
+                          type={input.type}
+                          onChange={handleFileChange}
+                        />
+                      ) : (
+                        <>
+                          <InputLabel htmlFor={input.name}>{input.label}</InputLabel>
+                          <OutlinedInput
+                            {...register(input.name as keyof z.infer<typeof schema>)}
+                            id={input.id}
+                            label={input.label}
+                            type={input.type}
+                          />
+                        </>
+                      )}
+                      {errors[input.name as keyof z.infer<typeof schema>] && (
+                        <p className="text-red-500">
+                          {(errors[input.name as keyof z.infer<typeof schema>] as any)?.message}
+                        </p>
+                      )}
+                    </FormControl>
+                  ))}
 
                   <Button
                     type="submit"
@@ -137,15 +202,57 @@ const EditContentModal = ({
                   Preview:
                 </Typography>
                 <PDFViewer
-                  topic_id={topicId}
+                  data={data || undefined}
                   chapterId={chapterId || ""}
-                  fileName={fileData ? fileData.name : fileName || ""}
-                  previewFile={fileData || undefined}
+                  isLoading={isLoading}
+                  fileName={fileName || ""}
+                  previewFile={fileData ? fileData : undefined}
+                  PDFversion={pdfjs.version}
                 />
               </Box>
             </Box>
           </>
-        )}
+        ) : buttonType === "edit-topic" ? (
+          <>
+            <Box component={"div"} className="flex-1">
+              <Typography id="Edit PDF" sx={{ mb: 2 }}>
+                Edit Topic:
+              </Typography>
+              <form onSubmit={handleSubmit(onSubmit(buttonType))} encType="multipart/form-data">
+                <Box component={"div"} className="flex flex-col gap-y-5">
+                  {editTopicFormInputs.map((input) => (
+                    <FormControl key={input.id}>
+                      <InputLabel htmlFor={input.name}>{input.label}</InputLabel>
+                      <OutlinedInput
+                        {...register(input.name as keyof z.infer<typeof schema>)}
+                        id={input.id}
+                        label={input.label}
+                        type={input.type}
+                      />
+                      {errors[input.name as keyof z.infer<typeof schema>] && (
+                        <p className="text-red-500">
+                          {(errors[input.name as keyof z.infer<typeof schema>] as any)?.message}
+                        </p>
+                      )}
+                    </FormControl>
+                  ))}
+
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    sx={{
+                      background: "green",
+                    }}
+                    className={isSubmitting ? "cursor-not-allowed" : ""}
+                    disabled={isSubmitting}
+                  >
+                    Save
+                  </Button>
+                </Box>
+              </form>
+            </Box>
+          </>
+        ) : null}
       </>
     );
   }, [buttonType, fileData, errors, isSubmitting, handleSubmit, onSubmit, title, subtitle]);

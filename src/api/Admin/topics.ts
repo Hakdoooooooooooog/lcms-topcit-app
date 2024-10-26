@@ -10,3 +10,13 @@ export const createTopic = async (data: FormData) => {
     .then((res) => res.data)
     .catch((err) => err.response.data);
 };
+
+export const editTopic = async (
+  data: { topicTitle?: string; description?: string },
+  topicId: string
+) => {
+  return await topicInstance
+    .put(`admin/topic/update/${topicId}`, data)
+    .then((res) => res.data)
+    .catch((err) => err.response.data);
+};

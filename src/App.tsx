@@ -1,7 +1,8 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import "./App.css";
 import Routes from "./lib/navigation/Routes";
 import { Toaster } from "sonner";
+import "./App.css";
+
 function App() {
   const queryClient = new QueryClient();
   return (

@@ -14,9 +14,7 @@ const UserSchema = z.object({
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/,
       "Password must contain at least one uppercase letter, one lowercase letter, and one number"
     ),
-  confirmPassword: z
-    .string()
-    .min(8, "Password must be at least 8 characters long"),
+  confirmPassword: z.string().min(8, "Password must be at least 8 characters long"),
 });
 
 export const LoginSchema = UserSchema.pick({
@@ -24,14 +22,13 @@ export const LoginSchema = UserSchema.pick({
   password: true,
 });
 
-export const RegisterSchema = UserSchema.refine(
-  (data) => data.password === data.confirmPassword,
-  {
-    message: "Passwords do not match",
-    path: ["confirmPassword"],
-  }
-);
+export const RegisterSchema = UserSchema.refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"],
+});
 
 export const ProfileSchema = UserSchema.pick({
   username: true,
+  userID: true,
+  email: true,
 });

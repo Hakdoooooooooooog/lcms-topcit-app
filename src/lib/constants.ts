@@ -441,3 +441,39 @@ export const addSubChapterFormInputs = [
     id: "subChapterDescription",
   },
 ];
+
+export const editChapterFormInputs = [
+  {
+    label: "Chapter File",
+    name: "chapterFile",
+    type: "file",
+    id: "chapterFile",
+  },
+  {
+    label: "Chapter Title",
+    name: "chapterTitle",
+    type: "text",
+    id: "chapterTitle",
+  },
+  {
+    label: "Chapter Description",
+    name: "chapterDescription",
+    type: "text",
+    id: "chapterDescription",
+  },
+];
+
+export const editTopicFormInputs = [
+  {
+    label: "Topic Title",
+    name: "topicTitle",
+    type: "text",
+    id: "topicTitle",
+  },
+  {
+    label: "Topic Description",
+    name: "description",
+    type: "text",
+    id: "description",
+  },
+];

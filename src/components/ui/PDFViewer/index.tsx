@@ -1,36 +1,41 @@
 import { useMemo, useEffect, useState, memo } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
-import { useQuery } from "@tanstack/react-query";
 import { Box, Button } from "@mui/material";
-import { LoadingWithProgress } from "../LoadingScreen/LoadingScreen";
-import { getChapterPDFFiles } from "../../../api/User/chaptersApi";
+import { LoadingDataScreen } from "../LoadingScreen/LoadingScreen";
+import { Download } from "@mui/icons-material";
 import PDFControls from "./PDFControls";
 import styles from "./PDFViewer.module.css";
-import { Download } from "@mui/icons-material";
 
 const PDFViewer = memo(
   ({
-    topic_id,
+    data,
     chapterId,
+    isLoading,
     fileName,
     previewFile,
+    PDFversion,
   }: {
-    topic_id: string;
+    data: { url: string } | undefined;
+    chapterId?: string;
+    isLoading: boolean;
     fileName: string;
-    chapterId: string;
     previewFile?: File | string;
+    PDFversion?: string;
   }) => {
     const [pageNumber, setPageNumber] = useState<number>(1);
     const [numPages, setNumPages] = useState<number | undefined>(undefined);
     const [loadProgress, setLoadProgress] = useState<number>(0);
-
     const [file, setFile] = useState<File | string | null>(null);
 
-    const { data, isLoading } = useQuery<{ url: string }>({
-      queryKey: ["ChapterPDFFile", chapterId, topic_id],
-      queryFn: () => getChapterPDFFiles(chapterId, topic_id),
-      refetchOnWindowFocus: false,
-    });
+    pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${PDFversion}/build/pdf.worker.min.mjs`;
+
+    const options = useMemo(
+      () => ({
+        cMapUrl: `https://unpkg.com/pdfjs-dist@${PDFversion}/cmaps/`,
+        standardFontDataUrl: `https://unpkg.com/pdfjs-dist@${PDFversion}/standard_fonts`,
+      }),
+      [PDFversion]
+    );
 
     const onDocumentLoadSuccess = ({ numPages }: { numPages: number }): void => {
       setNumPages(numPages);
@@ -51,18 +56,6 @@ const PDFViewer = memo(
         setPageNumber(1);
       }
     }, [previewFile]);
-
-    useEffect(() => {
-      pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
-    }, [pdfjs.version]);
-
-    const options = useMemo(
-      () => ({
-        cMapUrl: `https://unpkg.com/pdfjs-dist@${pdfjs.version}/cmaps/`,
-        standardFontDataUrl: `https://unpkg.com/pdfjs-dist@${pdfjs.version}/standard_fonts`,
-      }),
-      [pdfjs.version]
-    );
 
     const handleDownload = () => {
       if (file) {
@@ -92,14 +85,14 @@ const PDFViewer = memo(
           }
           loading={
             <Box component={"div"} className={styles.pdfLoading}>
-              <LoadingWithProgress value={loadProgress} />
+              Loading PDF... {loadProgress}%
             </Box>
           }
         >
           <Page
             loading={
               <Box component={"div"} className={styles.pdfLoading}>
-                <LoadingWithProgress value={loadProgress} />
+                <LoadingDataScreen />
               </Box>
             }
             key={fileName}
@@ -131,7 +124,7 @@ const PDFViewer = memo(
                   pageNumber,
                   setPageNumber,
                   numPages: numPages ?? 1,
-                  chapterId,
+                  chapterId: chapterId || "",
                 }}
               />
             </Box>
@@ -141,12 +134,7 @@ const PDFViewer = memo(
     );
   },
   (prevProps, nextProps) => {
-    return (
-      prevProps.topic_id === nextProps.topic_id &&
-      prevProps.chapterId === nextProps.chapterId &&
-      prevProps.fileName === nextProps.fileName &&
-      prevProps.previewFile === nextProps.previewFile
-    );
+    return prevProps === nextProps;
   }
 );
 

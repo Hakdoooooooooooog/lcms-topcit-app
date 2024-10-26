@@ -19,6 +19,7 @@ import { LoadingButton } from "../../LoadingScreen/LoadingScreen";
 import { createTopic } from "../../../../api/Admin/topics";
 import { showToast } from "../../Toasts";
 import { createChapter } from "../../../../api/Admin/chapter";
+import useAddContentMutation from "../../../../lib/hooks/useAddContentMutation";
 
 const AddContentModal = ({
   open,
@@ -56,31 +57,45 @@ const AddContentModal = ({
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitSuccessful, isSubmitting },
+    formState: { errors, isSubmitting },
   } = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
     values: addData,
   });
 
-  const onSubmit = async (data: z.infer<typeof schema>) => {
-    const formData = new FormData();
-    for (const key in data) {
-      if (key === "chapterFile" || key === "subChapterFile") {
-        formData.append(key, data[key as keyof typeof data][0] as any);
+  const addMutation = useAddContentMutation<z.infer<typeof schema>>({
+    fn: (data: z.infer<typeof schema>) => {
+      const formData = new FormData();
+      if (buttonType === "add-topic") {
+        // API Call for Add Topic
+        for (const key in data as z.infer<typeof addTopicSchema>) {
+          formData.append(key, (data as any)[key]);
+        }
+        return createTopic(formData);
+      } else if (buttonType === "add-chapter") {
+        for (const key in data as z.infer<typeof addChapterSchema>) {
+          if (key === "chapterFile") {
+            formData.append("chapterFile", (data as any)[key][0]);
+          } else {
+            formData.append(key, (data as any)[key]);
+          }
+        }
+        return createChapter(formData);
       } else {
-        formData.append(key, data[key as keyof typeof data] as any);
+        // API Call for Add Sub-Chapter
+        // return createSubChapter(formData);
+        return Promise.resolve({});
       }
-    }
+    },
+    QueryKey: "AllTopicsWithChapters",
+    handleClose,
+  });
 
+  const onSubmit = async (data: z.infer<typeof schema>) => {
     if (buttonType === "add-topic") {
       // API Call for Add Topic
       try {
-        const res = await createTopic(formData);
-
-        if (res) {
-          showToast(res.message, "success");
-          handleClose();
-        }
+        await addMutation.mutateAsync({ ...data });
       } catch (error: any) {
         showToast(error.message, "error");
       }
@@ -88,16 +103,8 @@ const AddContentModal = ({
 
     if (buttonType === "add-chapter") {
       // API Call for Add Chapter
-
       try {
-        const res = await createChapter(formData);
-
-        if (res.message === "Chapter created") {
-          showToast(res.message, "success");
-          handleClose();
-        } else {
-          showToast(res.message, "error");
-        }
+        await addMutation.mutateAsync({ ...data });
       } catch (error: any) {
         showToast(error.message, "error");
       }
@@ -242,7 +249,7 @@ const AddContentModal = ({
             }}
             disabled={isSubmitting}
             className={isSubmitting ? "cursor-not-allowed" : ""}
-            endIcon={isSubmitting ? isSubmitSuccessful && <LoadingButton /> : null}
+            endIcon={isSubmitting ? <LoadingButton /> : null}
           >
             {buttonType.split("-").join(" ")}
           </Button>

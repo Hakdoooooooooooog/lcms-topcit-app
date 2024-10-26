@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useState } from "react";
+import { forwardRef } from "react";
 import { UserProfile } from "../../../lib/Types/user";
 import { FormControl, InputLabel, OutlinedInput } from "@mui/material";
 import { FieldErrors, UseFormRegister } from "react-hook-form";
@@ -13,23 +13,7 @@ type ProfileFormProps<T> = {
 };
 
 export const ProfileForm = forwardRef(
-  ({ userData, register, isEditing, errors }: ProfileFormProps<UserProfile>, ref: any) => {
-    const [formData, setFormData] = useState<UserProfile>(userData);
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-      const { name, value } = e.target;
-
-      setFormData((prev) => ({
-        ...prev,
-        [name]: value,
-      }));
-    };
-
-    useEffect(() => {
-      if (!isEditing) {
-        setFormData(userData);
-      }
-    }, [isEditing]);
-
+  ({ register, isEditing, errors }: ProfileFormProps<UserProfile>, ref) => {
     return (
       <>
         <FormControl variant="outlined" error={errors.username ? true : false}>
@@ -40,8 +24,6 @@ export const ProfileForm = forwardRef(
             id="Username"
             type="text"
             inputRef={ref}
-            value={formData?.username}
-            onChange={handleChange}
             disabled={!isEditing}
             label="Username"
           />
@@ -52,8 +34,8 @@ export const ProfileForm = forwardRef(
           <OutlinedInput
             id="userID"
             autoComplete="on"
+            {...register("userID")}
             type="text"
-            value={formData?.userID}
             disabled={true}
             label="User ID"
           />
@@ -63,9 +45,9 @@ export const ProfileForm = forwardRef(
           <InputLabel htmlFor="email">Email</InputLabel>
           <OutlinedInput
             id="email"
+            {...register("email")}
             autoComplete="on"
             type="email"
-            value={formData?.email}
             disabled={true}
             label="Email"
           />

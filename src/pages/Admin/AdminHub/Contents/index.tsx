@@ -173,20 +173,24 @@ const AdminContent = () => {
           ))}
       </Box>
 
-      <AddContentModal
-        open={addContentModalOpen}
-        handleClose={handleAddContentModal}
-        buttonType={buttonType}
-        addData={addData}
-      />
+      {addContentModalOpen && addData && (
+        <AddContentModal
+          open={addContentModalOpen}
+          handleClose={handleAddContentModal}
+          buttonType={buttonType}
+          addData={addData}
+        />
+      )}
 
-      <EditContentModal
-        key={`${editData.chapterId}-modal-edit`}
-        open={editContentModalOpen}
-        handleClose={handleEditContentModal}
-        editData={editData}
-        buttonType={buttonType}
-      />
+      {editContentModalOpen && editData && (
+        <EditContentModal
+          key={`${editData.chapterId}-modal-edit`}
+          open={editContentModalOpen}
+          handleClose={handleEditContentModal}
+          editData={editData}
+          buttonType={buttonType}
+        />
+      )}
     </>
   );
 };

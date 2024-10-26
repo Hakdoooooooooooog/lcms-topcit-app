@@ -7,6 +7,7 @@ import { handleNavMenu } from "../../../lib/helpers/utils";
 import { useAuthUserStore } from "../../../lib/store";
 import { userLogout } from "../../../api/User/userApi";
 import { showToast } from "../Toasts";
+import TOPCIT from "../../TOPCITLogo";
 
 const Header = ({ links }: { links: LinkProps[] }) => {
   const { anchorElNav, handleOpenNavMenu, handleCloseNavMenu } = handleNavMenu();
@@ -59,8 +60,8 @@ const Header = ({ links }: { links: LinkProps[] }) => {
             <Box className={headerStyle.main_link}>
               {links.map((link, index) =>
                 link.name === "Home" ? (
-                  <NavLink key={index} to={link.href}>
-                    <img src="/logo-small.webp" alt="logo" className={headerStyle.logo} />
+                  <NavLink key={index} to={link.href} id="Home">
+                    <TOPCIT />
                   </NavLink>
                 ) : null
               )}
@@ -146,8 +147,8 @@ const Header = ({ links }: { links: LinkProps[] }) => {
             >
               {links.map((link, index) =>
                 link.name === "Home" ? (
-                  <NavLink key={index} to={link.href}>
-                    <img src="/logo-small.webp" alt="logo" className={headerStyle.logo} />
+                  <NavLink key={index} to={link.href} id="Home">
+                    <TOPCIT />
                   </NavLink>
                 ) : null
               )}

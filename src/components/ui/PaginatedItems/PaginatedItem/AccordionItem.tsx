@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useTransition } from "react";
+import { pdfjs } from "react-pdf";
 import {
   Accordion,
   AccordionDetails,
@@ -16,22 +17,30 @@ import { ChapterWithSubChapter } from "../../../../lib/Types/chapters";
 import PDFViewer from "../../PDFViewer";
 import { LoadingContentScreen } from "../../LoadingScreen/LoadingScreen";
 import { useAccordionStore } from "../../../../lib/store";
+import { useQueries } from "@tanstack/react-query";
+import { getChapterPDFFiles } from "../../../../api/User/chaptersApi";
 
 export const AccordionChapter = (props: { filteredItems: ChapterWithSubChapter[] }) => {
   const { expanded, handleChanges } = useAccordionStore((state) => ({
     expanded: state.expanded,
     handleChanges: state.handleChanges,
   }));
-
   const { page, setPage, totalPages, currentItems } = handlePaginatedItems<ChapterWithSubChapter>({
     items: props.filteredItems,
   });
   const [isPending, startTransition] = useTransition();
 
-  // // Dynamically set the height of the bullet to match the height of the content
-  // useEffect(() => {
-  //   getElementHeight(styles, ".MuiAccordionDetails-root");
-  // }, [currentItems]);
+  const queries = useQueries({
+    queries: currentItems.map((chapter) => {
+      return {
+        queryKey: ["PDFChapterFiles"],
+        queryFn: () => getChapterPDFFiles(chapter.id.toString(), chapter.topic_id.toString()),
+        refetchOnWindowFocus: false,
+        staleTime: 60,
+        gcTime: 60,
+      };
+    }),
+  });
 
   useEffect(() => {
     if (page > totalPages) {
@@ -66,15 +75,13 @@ export const AccordionChapter = (props: { filteredItems: ChapterWithSubChapter[]
                 root: styles.accordionDetailStyles,
               }}
             >
-              {/* <Box component="span" className={styles["list__item--bullet"]}>
-                <Box component={"span"} className={styles["list__item--bullet-inner"]} />
-              </Box> */}
-
               <Box component={"div"} sx={{ flexGrow: 1, maxHeight: "600px" }}>
                 <PDFViewer
+                  data={queries[index].data}
+                  isLoading={queries[index].isLoading}
                   chapterId={chapter.id.toString()}
-                  topic_id={chapter.topic_id.toString()}
                   fileName={chapter.FileChapter[0].file_name}
+                  PDFversion={pdfjs.version}
                 />
 
                 {chapter.SubChapters &&
@@ -99,7 +106,8 @@ export const AccordionChapter = (props: { filteredItems: ChapterWithSubChapter[]
         ))}
       </>
     );
-  }, [currentItems, page]);
+    // }, [currentItems, expanded, page]);
+  }, [currentItems, page, expanded, queries]);
 
   return (
     <>
