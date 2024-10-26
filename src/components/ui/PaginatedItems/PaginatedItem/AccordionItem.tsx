@@ -33,11 +33,9 @@ export const AccordionChapter = (props: { filteredItems: ChapterWithSubChapter[]
   const queries = useQueries({
     queries: currentItems.map((chapter) => {
       return {
-        queryKey: ["PDFChapterFiles"],
+        queryKey: ["PDFChapterFiles", chapter.id.toString(), chapter.topic_id.toString()],
         queryFn: () => getChapterPDFFiles(chapter.id.toString(), chapter.topic_id.toString()),
         refetchOnWindowFocus: false,
-        staleTime: 60,
-        gcTime: 60,
       };
     }),
   });

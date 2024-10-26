@@ -23,6 +23,7 @@ import { editTopic } from "../../../../api/Admin/topics";
 import { z } from "zod";
 import useEditContentMutation from "../../../../lib/hooks/useEditContentMutation";
 import axios, { CancelTokenSource } from "axios";
+import { LoadingButton } from "../../LoadingScreen/LoadingScreen";
 
 const EditContentModal = ({
   open,
@@ -189,6 +190,7 @@ const EditContentModal = ({
                     }}
                     className={isSubmitting ? "cursor-not-allowed" : ""}
                     disabled={isSubmitting}
+                    endIcon={isSubmitting ? <LoadingButton /> : null}
                   >
                     Save
                   </Button>
@@ -245,6 +247,7 @@ const EditContentModal = ({
                     }}
                     className={isSubmitting ? "cursor-not-allowed" : ""}
                     disabled={isSubmitting}
+                    endIcon={isSubmitting ? <LoadingButton /> : null}
                   >
                     Save
                   </Button>
