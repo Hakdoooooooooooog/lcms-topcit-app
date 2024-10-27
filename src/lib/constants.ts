@@ -320,7 +320,7 @@ export const setRegisterFields: Array<InputProps> = [
     label: "User ID",
     type: "text",
     placeholder: "Enter your user ID",
-    name: "userID",
+    name: "userid",
     value: "",
   },
   {
