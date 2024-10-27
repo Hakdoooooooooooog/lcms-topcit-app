@@ -51,7 +51,7 @@ export const usePaginationStore = create<PaginationState & PaginationActions>((s
 export const useUserStore = create<UserState & UserActions>((set) => ({
   user: {
     email: "",
-    userID: 0n,
+    userid: 0n,
     username: "",
   },
   isLoaded: false,
