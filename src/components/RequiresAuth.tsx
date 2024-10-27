@@ -4,10 +4,11 @@ import { useAuth } from "../lib/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
 import { getUserProfile } from "../api/User/userApi";
 import { useUserStore } from "../lib/store";
+import { UserProfile } from "../lib/Types/user";
 
 const RequiresAuth = ({ children }: { children: ReactNode; location: Location }) => {
   const isAuth = useAuth();
-  const { data, isLoading } = useQuery({
+  const { data, isLoading } = useQuery<UserProfile>({
     refetchInterval: 30 * 1000,
     queryKey: ["userProfile"],
     queryFn: () => getUserProfile(),

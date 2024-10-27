@@ -6,6 +6,15 @@ export type Chapter = {
   title: string;
   sub_title: string;
   created_at: Date | null;
+  FileChapter:
+    | {
+        id: bigint;
+        chapter_id: bigint;
+        file_name: string;
+        file_type: string;
+      }
+    | { file_name: string }
+    | null;
 };
 
 export type ChapterWithSubChapter = {
@@ -17,9 +26,15 @@ export type ChapterWithSubChapter = {
   sub_title: string;
   created_at: Date | null;
   SubChapters: Chapter[];
-  FileChapter: {
-    file_name: string;
-  }[];
+  FileChapter:
+    | {
+        id: bigint;
+        chapter_id: bigint;
+        file_name: string;
+        file_type: string;
+      }
+    | { file_name: string }
+    | null;
 };
 
 export type ChaptersWithSubChaptersWithinTopic = {

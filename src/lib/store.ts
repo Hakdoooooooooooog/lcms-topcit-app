@@ -55,7 +55,7 @@ export const useUserStore = create<UserState & UserActions>((set) => ({
     username: "",
   },
   isLoaded: false,
-  setUser: (user) => set({ user }),
+  setUser: (user) => set((state) => ({ user: { ...state.user, ...user } })),
   setIsLoaded: (isLoaded) => set({ isLoaded }),
 }));
 

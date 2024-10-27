@@ -78,7 +78,11 @@ export const AccordionChapter = (props: { filteredItems: ChapterWithSubChapter[]
                   data={queries[index].data}
                   isLoading={queries[index].isLoading}
                   chapterId={chapter.id.toString()}
-                  fileName={chapter.FileChapter[0].file_name}
+                  fileName={
+                    Array.isArray(chapter.FileChapter) && chapter.FileChapter.length > 0
+                      ? chapter.FileChapter[0].file_name
+                      : ""
+                  }
                   PDFversion={pdfjs.version}
                 />
 

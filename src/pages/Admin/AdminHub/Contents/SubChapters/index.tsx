@@ -172,7 +172,9 @@ const SubChapters = ({
                                     setFileData({
                                       chapterId: chapter.id.toString(),
                                       topicId: topicId,
-                                      fileName: chapter.FileChapter[0].file_name,
+                                      fileName: Array.isArray(subChapter.FileChapter)
+                                        ? subChapter.FileChapter[0].file_name
+                                        : "",
                                       title: chapter.title,
                                       subtitle: chapter.sub_title,
                                     });
@@ -208,7 +210,9 @@ const SubChapters = ({
                             setFileData({
                               chapterId: chapter.id.toString(),
                               topicId: topicId,
-                              fileName: chapter.FileChapter[0].file_name,
+                              fileName: Array.isArray(chapter.FileChapter)
+                                ? chapter.FileChapter[0].file_name
+                                : "",
                               title: chapter.title,
                               subtitle: chapter.sub_title,
                             });
