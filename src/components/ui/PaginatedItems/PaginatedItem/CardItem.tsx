@@ -69,13 +69,13 @@ export const CardTopic = <T extends Topic>({ filteredItems }: { filteredItems: A
         <LoadingContentScreen />
       ) : (
         currentItems.map((topic) => (
-          <Card key={topic.topicTitle}>
+          <Card key={topic.topictitle}>
             <CardHeader
               classes={{
                 action: "text-green-800 !self-center",
               }}
-              title={`Topic ${topic.id}: ${topic.topicTitle}`}
-              action={<Link to={`${topic.id}/${topic.topicTitle}`}>View Topic</Link>}
+              title={`Topic ${topic.id}: ${topic.topictitle}`}
+              action={<Link to={`${topic.id}/${topic.topictitle}`}>View Topic</Link>}
             />
           </Card>
         ))
