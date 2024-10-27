@@ -34,7 +34,7 @@ export const useAuthUserStore = create<UserAuthState & UserAuthActions>()(
         userId: "",
         userRole: "",
       },
-      setUserAuth: (user) => set({ user }),
+      setUserAuth: (user) => set((state) => ({ user: { ...state.user, ...user } })),
     }),
     {
       name: "session",
