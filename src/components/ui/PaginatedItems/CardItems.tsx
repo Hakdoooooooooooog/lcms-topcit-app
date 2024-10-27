@@ -25,7 +25,7 @@ export const CardTopics = <T extends Topic>({ topic }: { topic: Array<T> }) => {
       return topic;
     }
     const data = topic.filter((topic) => {
-      const topicTitle = `topic ${topic.id}: ${topic.topicTitle}`;
+      const topicTitle = `topic ${topic.id}: ${topic.topictitle}`;
       return topicTitle.toLowerCase().includes(debouncedSearch.toLowerCase());
     });
     return data;

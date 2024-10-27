@@ -2,7 +2,7 @@ import { LoginSchema, RegisterSchema } from "../schema/UserSchema";
 
 type users = {
   id: bigint;
-  userID: bigint;
+  userid: bigint;
   username: string;
   email: string;
   password: string;
@@ -12,7 +12,7 @@ type users = {
 
 type users_role = "admin" | "user";
 
-export type UserProfile = Pick<users, "email" | "userID" | "username">;
+export type UserProfile = Pick<users, "email" | "userid" | "username">;
 export type UpdateProfile = Pick<users, "username">;
 export type UserLogin = (typeof LoginSchema)["_input"];
 export type UserRegister = (typeof RegisterSchema)["_input"];

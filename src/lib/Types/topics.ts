@@ -1,6 +1,6 @@
 type topics = {
   id: bigint;
-  topicTitle: string | null;
+  topictitle: string | null;
   description: string | null;
 };
 

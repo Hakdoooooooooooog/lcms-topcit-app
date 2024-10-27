@@ -141,14 +141,14 @@ const AdminContent = () => {
                   sx={AccordionSummaryTheme}
                 >
                   <Typography variant="h5">
-                    Topic {topic.id.toString()}: {topic.topicTitle}
+                    Topic {topic.id.toString()}: {topic.topictitle}
                   </Typography>
 
                   <Button
                     onClick={() => {
                       setEditData({
                         topicId: topic.id.toString(),
-                        title: topic.topicTitle || "",
+                        title: topic.topictitle || "",
                         subtitle: topic.description || "",
                       });
                       handleButtonType("edit-topic");

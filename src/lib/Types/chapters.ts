@@ -24,7 +24,7 @@ export type ChapterWithSubChapter = {
 
 export type ChaptersWithSubChaptersWithinTopic = {
   id: bigint;
-  topicTitle: string | null;
+  topictitle: string | null;
   description: string | null;
   chapters: ChapterWithSubChapter[];
 };
