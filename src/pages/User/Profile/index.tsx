@@ -7,6 +7,7 @@ import { ProfileForm } from "../../../components/ui/Form/ProfileForm";
 import { ProfileSchema } from "../../../lib/schema/UserSchema";
 import { useEffect, useRef } from "react";
 import { useEditProfileStore, useUserStore } from "../../../lib/store";
+import { LoadingButton } from "../../../components/ui/LoadingScreen/LoadingScreen";
 
 type ProfileSchema = z.infer<typeof ProfileSchema>;
 
@@ -28,7 +29,7 @@ const Profile = () => {
     clearErrors,
   } = useForm<ProfileSchema>({
     resolver: zodResolver(ProfileSchema),
-    values: { ...user, userID: user.userid.toString() },
+    values: { ...user, userid: user.userid.toString() },
   });
 
   const handleIsEditing = () => {
@@ -92,6 +93,8 @@ const Profile = () => {
                   }}
                   variant="contained"
                   disabled={isSubmitting}
+                  className={isSubmitting ? "cursor-not-allowed" : ""}
+                  endIcon={isSubmitting ? <LoadingButton /> : null}
                 >
                   Save
                 </Button>

@@ -34,7 +34,7 @@ export const ProfileForm = forwardRef(
           <OutlinedInput
             id="userID"
             autoComplete="on"
-            {...register("userID")}
+            {...register("userid")}
             type="text"
             disabled={true}
             label="User ID"

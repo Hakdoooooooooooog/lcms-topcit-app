@@ -16,6 +16,7 @@ import {
 } from "@mui/material";
 import { NavLink } from "react-router-dom";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/16/solid";
+import { LoadingButton } from "../../../../components/ui/LoadingScreen/LoadingScreen";
 
 type RegisterSchema = z.infer<typeof RegisterSchema>;
 const Register = () => {
@@ -102,13 +103,14 @@ const Register = () => {
             );
           })}
           <Button
-            disabled={isSubmitting}
             type="submit"
             style={{
               width: "inherit",
               color: "white",
             }}
-            className="!bg-green-700 hover:!bg-green-800"
+            disabled={isSubmitting}
+            className={isSubmitting ? "cursor-not-allowed" : "!bg-green-700 hover:!bg-green-800"}
+            endIcon={isSubmitting ? <LoadingButton /> : null}
           >
             Register
           </Button>

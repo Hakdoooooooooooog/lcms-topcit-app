@@ -17,6 +17,7 @@ import {
 import { NavLink } from "react-router-dom";
 import { useInputPasswordStore } from "../../../../lib/store";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/16/solid";
+import { LoadingButton } from "../../../../components/ui/LoadingScreen/LoadingScreen";
 
 type LoginSchema = z.infer<typeof LoginSchema>;
 
@@ -73,13 +74,14 @@ const Login = () => {
           );
         })}
         <Button
-          disabled={isSubmitting}
           type="submit"
           style={{
             width: "inherit",
             color: "white",
           }}
-          className="!bg-green-700 hover:!bg-green-800"
+          disabled={isSubmitting}
+          className={isSubmitting ? "cursor-not-allowed" : "!bg-green-700 hover:!bg-green-800"}
+          endIcon={isSubmitting ? <LoadingButton /> : null}
         >
           Login
         </Button>
