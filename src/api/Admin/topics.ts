@@ -5,6 +5,7 @@ export const createTopic = async (data: FormData) => {
     .post("/admin/topic/create", data, {
       headers: {
         "Content-Type": "multipart/form-data",
+        "Access-Control-Allow-Origin": import.meta.env.VITE_APP_BASE_URL,
       },
     })
     .then((res) => res.data)
@@ -16,7 +17,12 @@ export const editTopic = async (
   topicId: string
 ) => {
   return await topicInstance
-    .put(`/admin/topic/update/${topicId}`, data)
+    .put(`/admin/topic/update/${topicId}`, data, {
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": import.meta.env.VITE_APP_BASE_URL,
+      },
+    })
     .then((res) => res.data)
     .catch((err) => err.response.data);
 };
