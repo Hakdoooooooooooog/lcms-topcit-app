@@ -1,0 +1,4 @@
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Access-control-allow-origin = "https://topcitlcms.netlify.app"
