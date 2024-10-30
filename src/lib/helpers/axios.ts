@@ -30,6 +30,11 @@ export const chapterPDFInstance = axios.create({
   withCredentials: true,
 });
 
+export const uploadInstance = axios.create({
+  baseURL: import.meta.env.VITE_APP_BASE_API_URL,
+  withCredentials: true,
+});
+
 userInstance.interceptors.request.use((config) => {
   const userData = JSON.parse(localStorage.getItem("session") || "{}");
   const userId = userData.state.user.userId;

@@ -22,8 +22,8 @@ import { getChapterPDFFiles } from "../../../../api/User/chaptersApi";
 import { editTopic } from "../../../../api/Admin/topics";
 import { z } from "zod";
 import useEditContentMutation from "../../../../lib/hooks/useEditContentMutation";
-import axios, { CancelTokenSource } from "axios";
 import { LoadingButton } from "../../LoadingScreen/LoadingScreen";
+// import { handleUpload } from "../../../../lib/helpers/handleUpload";
 
 const EditContentModal = ({
   open,
@@ -69,15 +69,10 @@ const EditContentModal = ({
     },
   });
   const [fileData, setfileData] = useState<File | string | null>(null);
-  const [cancelToken, setCancelToken] = useState<CancelTokenSource | undefined>(undefined);
 
   const { data, isLoading } = useQuery<{ url: string }>({
     queryKey: ["ChapterContentFile"],
     queryFn: () => {
-      if (cancelToken) {
-        return getChapterPDFFiles(chapterId, topicId, { cancelToken: cancelToken.token }); // Pass the cancel token to the request config
-      }
-
       return getChapterPDFFiles(chapterId, topicId);
     },
     enabled: chapterId !== undefined && topicId !== undefined,
@@ -85,12 +80,12 @@ const EditContentModal = ({
   });
 
   const editMutation = useEditContentMutation<z.infer<typeof schema>>({
-    fn: (data: z.infer<typeof schema>) => {
+    fn: async (data: z.infer<typeof schema>) => {
       const formData = new FormData();
       if (buttonType === "edit-chapter" && chapterId !== undefined) {
         for (const key in data as z.infer<typeof EditChapterSchema>) {
           if (key === "chapterFile") {
-            formData.append("chapterFile", (data as any)[key][0]);
+            formData.append("chapterFile", fileData as File);
           } else {
             formData.append(key, (data as any)[key]);
           }
@@ -100,6 +95,9 @@ const EditContentModal = ({
           showToast("Invalid file", "error");
         }
 
+        formData.forEach((value, key) => {
+          console.log(key, value);
+        });
         return updateChapter(formData, chapterId, topicId);
       } else if (buttonType === "edit-topic" && topicId !== undefined) {
         return editTopic(data, topicId);
@@ -131,8 +129,6 @@ const EditContentModal = ({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files;
     if (file?.length === 1) {
-      const source = axios.CancelToken.source(); // Create a cancel token
-      setCancelToken(source); // Set the cancel token
       setfileData(file[0]);
     } else {
       setfileData(data?.url ? data.url : null);
