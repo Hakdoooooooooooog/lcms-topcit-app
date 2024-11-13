@@ -95,7 +95,7 @@ const Register = () => {
                   label={field.label}
                 />
                 {errors && (
-                  <p className="text-red-500">
+                  <p className="text-red-500" id={field.name}>
                     {errors[field.name as keyof RegisterSchema]?.message}
                   </p>
                 )}

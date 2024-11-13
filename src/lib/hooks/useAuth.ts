@@ -21,6 +21,9 @@ export const useAuth = () => {
           if (res && res.message === "Access token valid") {
             return setUserAuth({ isAuth: true, userId: res.userId, userRole: res.role });
           }
+
+          showToast("Session expired. Please login again.", "error");
+          setUserAuth({ isAuth: false, userId: "", userRole: "" });
         } catch (error: any) {
           if (error?.message === "Refresh token expired") {
             showToast("Session expired. Please login again.", "error");

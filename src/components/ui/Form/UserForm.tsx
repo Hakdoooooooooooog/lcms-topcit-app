@@ -22,20 +22,34 @@ const UserForm = (props: IUserFormProps) => {
       try {
         const res = await userLogin(data);
 
-        if (res.error) {
-          showToast(res.message, "error");
-          return;
+        if (res.message === "Invalid username or password") {
+          return showToast(res.message, "error");
         }
 
-        setUserAuth({ isAuth: true, userId: res.userId, userRole: res.role });
         showToast(res.message, "success");
+        setUserAuth({ isAuth: true, userId: res.userId, userRole: res.role });
       } catch (error: any) {
         showToast("An error occurred", "error");
       }
     } else if (FormType === "Register") {
       try {
         const res = await userRegister(data);
-        showToast(res.message, "success");
+        if (res.errors) {
+          res.errors.map((error: any) => {
+            Object.entries(error).map(([key, value]) => {
+              const pInput = document.querySelector(`p#${key}`);
+              if (pInput) {
+                if (value) {
+                  pInput.innerHTML = value as string;
+                } else {
+                  pInput.innerHTML = "";
+                }
+              }
+            });
+          });
+        } else {
+          showToast(res.message, "success");
+        }
       } catch (error: any) {
         showToast("An error occurred", "error");
       }

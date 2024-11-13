@@ -1,4 +1,4 @@
-import { Button, Container } from "@mui/material";
+import { Box, Button, Container } from "@mui/material";
 
 import styles from "./home.module.css";
 import { Link } from "react-router-dom";
@@ -41,9 +41,9 @@ const Home = () => {
             </Button>
           </Link>
         </div>
-        <div role="presentation" className={styles.hero_content_right}>
-          <img src="hero-img.webp" alt="Hero" className={styles.hero_image} />
-        </div>
+        <Box component={"div"} className="flex items-center justify-center">
+          <img src="hero-img.webp" alt="Hero" className="h-auto max-w-full" />
+        </Box>
       </div>
     </Container>
   );
