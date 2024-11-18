@@ -30,6 +30,11 @@ export const chapterPDFInstance = axios.create({
   withCredentials: true,
 });
 
+export const quizInstance = axios.create({
+  baseURL: import.meta.env.VITE_APP_BASE_API_URL,
+  withCredentials: true,
+});
+
 export const uploadInstance = axios.create({
   baseURL: import.meta.env.VITE_APP_BASE_API_URL,
   withCredentials: true,

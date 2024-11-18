@@ -18,22 +18,18 @@ export const useAuth = () => {
         reset();
         try {
           const res = await verifyUserAccessToken();
-          if (res && res.message === "Access token valid") {
+          if (res.message === "Access token valid") {
             return setUserAuth({ isAuth: true, userId: res.userId, userRole: res.role });
           }
 
           showToast("Session expired. Please login again.", "error");
           setUserAuth({ isAuth: false, userId: "", userRole: "" });
         } catch (error: any) {
-          if (error?.message === "Refresh token expired") {
+          if (error) {
             showToast("Session expired. Please login again.", "error");
             setUserAuth({ isAuth: false, userId: "", userRole: "" });
             localStorage.removeItem("session");
           }
-
-          showToast("Session expired. Please login again.", "error");
-          setUserAuth({ isAuth: false, userId: "", userRole: "" });
-          localStorage.removeItem("session");
         }
       }
     };
