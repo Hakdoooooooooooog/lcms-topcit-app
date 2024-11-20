@@ -9,7 +9,6 @@ import { UserProfile } from "../lib/Types/user";
 const RequiresAuth = ({ children }: { children: ReactNode; location: Location }) => {
   const isAuth = useAuth();
   const { data, isLoading } = useQuery<UserProfile>({
-    refetchInterval: 30 * 1000,
     queryKey: ["userProfile"],
     queryFn: () => getUserProfile(),
   });

@@ -3,7 +3,19 @@ import { useQuery } from "@tanstack/react-query";
 import { getElementHeight } from "../../../lib/helpers/utils";
 import { objective_questions, QuizWithQuestions } from "../../../lib/Types/quiz";
 import { getQuizzesWithQuestions } from "../../../api/User/quizApi";
-import { Box, Button, Card, CardActions, CardContent, CardHeader, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Card,
+  CardActions,
+  CardContent,
+  CardHeader,
+  FormControl,
+  FormControlLabel,
+  Radio,
+  RadioGroup,
+  Typography,
+} from "@mui/material";
 import styles from "./Assessment.module.css";
 import { useSearchParams } from "react-router-dom";
 
@@ -12,6 +24,7 @@ const Assessment = () => {
     queryKey: ["quizzes"],
     queryFn: getQuizzesWithQuestions,
   });
+  const [value, setValue] = useState<{ [key: string]: string }>({});
   const [selectedQuiz, setSelectedQuiz] = useState<objective_questions[] | null>(null);
   const [searchParams, setSearchParams] = useSearchParams();
   const topicId = searchParams.get("topicId");
@@ -40,13 +53,22 @@ const Assessment = () => {
   }, [topicId, data]);
 
   useEffect(() => {
-    if (topicId) setSelectedQuiz(quizContent);
-    else setSelectedQuiz(null);
+    if (topicId) return setSelectedQuiz(quizContent);
+
+    setSelectedQuiz(null);
   }, [quizContent, topicId]);
 
   if (!data || isLoading) {
     return <div>Loading...</div>;
   }
+
+  const handleRadioChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value: answer } = event.target;
+    setValue((prevValue) => ({
+      ...prevValue,
+      [name]: answer,
+    }));
+  };
 
   return (
     <>
@@ -101,31 +123,68 @@ const Assessment = () => {
         ))}
 
       {selectedQuiz &&
-        selectedQuiz.flatMap((questions) => (
-          <Box key={questions.id} component={"section"} className="flex flex-col gap-y-3 mt-10">
+        selectedQuiz.map((questions) => (
+          <form key={questions.id} className="flex flex-col gap-y-3 mt-10">
             <Card className="flex p-4">
               <Box component="span" className={styles["list__item--bullet"]}>
                 <Box component={"span"} className={styles["list__item--bullet-inner"]} />
               </Box>
 
-              <Box className="flex flex-wrap w-full ml-2 gap-[1%]">
+              <Box className="flex flex-wrap w-full ml-2 gap-[1%] items-center">
                 <Box className="flex-[1_1_55%]">
                   <CardHeader subheader={questions.question} />
                 </Box>
               </Box>
 
               <CardContent className="flex flex-col gap-3 w-full">
-                <Box component={"ul"} className="flex flex-col gap-y-2">
-                  {questions.multiple_choice_options.map((option) => (
-                    <Box key={option.id} component={"li"} className="flex gap-1">
-                      <input type="radio" name="option" id={option.id.toString()} />
-                      <label htmlFor={option.id.toString()}>{option.option_text}</label>
-                    </Box>
-                  ))}
-                </Box>
+                <Card
+                  className="flex flex-col gap-3 p-4"
+                  sx={{
+                    border: "1px solid #e0e0e0",
+                    borderRadius: "5px",
+                  }}
+                >
+                  <CardHeader subheader="Choose the correct answer" />
+                  <Box className="flex flex-col items-start gap-1">
+                    {questions.multiple_choice_options.map((option) => (
+                      <FormControl key={option.id} component="fieldset">
+                        <RadioGroup
+                          aria-label={`quiz-${questions.id}`}
+                          name={`quiz-${questions.id}`}
+                          value={
+                            value && value[`quiz-${questions.id}`]
+                              ? value[`quiz-${questions.id}`]
+                              : ""
+                          }
+                          onChange={handleRadioChange}
+                        >
+                          <FormControlLabel
+                            value={option.option_text}
+                            control={<Radio />}
+                            label={option.option_text}
+                          />
+                        </RadioGroup>
+                      </FormControl>
+                    ))}
+                  </Box>
+                </Card>
               </CardContent>
             </Card>
-          </Box>
+
+            {questions.id === selectedQuiz[selectedQuiz.length - 1].id && (
+              <CardActions className="justify-end flex-[1_1_auto]">
+                <Button
+                  sx={{
+                    width: "100%",
+                    background: "green",
+                  }}
+                  variant="contained"
+                >
+                  Submit
+                </Button>
+              </CardActions>
+            )}
+          </form>
         ))}
     </>
   );
