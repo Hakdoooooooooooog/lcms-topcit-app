@@ -26,7 +26,7 @@ import { styledModal } from '../../../lib/constants';
 import Slider from 'react-slick';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
-import { ArrowBack } from '@mui/icons-material';
+// import { ArrowBack } from '@mui/icons-material';
 
 const Assessment = () => {
   // User
