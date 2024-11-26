@@ -1,8 +1,11 @@
-import { useEffect, useLayoutEffect, useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { getElementHeight } from "../../../lib/helpers/utils";
-import { objective_questions, QuizWithQuestions } from "../../../lib/Types/quiz";
-import { getQuizzesWithQuestions } from "../../../api/User/quizApi";
+import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { getElementHeight } from '../../../lib/helpers/utils';
+import {
+  objective_questions,
+  QuizWithQuestions,
+} from '../../../lib/Types/quiz';
+import { getQuizzesWithQuestions } from '../../../api/User/quizApi';
 import {
   Box,
   Button,
@@ -15,26 +18,32 @@ import {
   Radio,
   RadioGroup,
   Typography,
-} from "@mui/material";
-import styles from "./Assessment.module.css";
-import { useSearchParams } from "react-router-dom";
+} from '@mui/material';
+import styles from './Assessment.module.css';
+import { useSearchParams } from 'react-router-dom';
+import { useAuthUserStore } from '../../../lib/store';
 
 const Assessment = () => {
+  const { userId } = useAuthUserStore((state) => ({
+    userId: state.user?.userId,
+  }));
   const { data, isLoading } = useQuery<QuizWithQuestions[]>({
-    queryKey: ["quizzes"],
+    queryKey: ['quizzes'],
     queryFn: getQuizzesWithQuestions,
   });
   const [value, setValue] = useState<{ [key: string]: string }>({});
-  const [selectedQuiz, setSelectedQuiz] = useState<objective_questions[] | null>(null);
+  const [selectedQuiz, setSelectedQuiz] = useState<
+    objective_questions[] | null
+  >(null);
   const [searchParams, setSearchParams] = useSearchParams();
-  const topicId = searchParams.get("topicId");
+  const topicId = searchParams.get('topicId');
 
   // Dynamically set the height of the bullet to match the height of the content
   useLayoutEffect(() => {
-    getElementHeight(styles, ".MuiPaper-root");
+    getElementHeight(styles, '.MuiPaper-root');
 
     return () => {
-      getElementHeight(styles, ".MuiPaper-root");
+      getElementHeight(styles, '.MuiPaper-root');
     };
   }, [data]);
 
@@ -74,15 +83,25 @@ const Assessment = () => {
     <>
       {!selectedQuiz &&
         data.map((quiz) => (
-          <Box key={quiz.id} component={"section"} className="flex flex-col gap-y-3 mt-10">
+          <Box
+            key={quiz.id}
+            component={'section'}
+            className="flex flex-col gap-y-3 mt-10"
+          >
             <Card className="flex p-4">
-              <Box component="span" className={styles["list__item--bullet"]}>
-                <Box component={"span"} className={styles["list__item--bullet-inner"]} />
+              <Box component="span" className={styles['list__item--bullet']}>
+                <Box
+                  component={'span'}
+                  className={styles['list__item--bullet-inner']}
+                />
               </Box>
 
               <Box className="flex flex-wrap w-full ml-2 gap-[1%]">
                 <Box className="flex-[1_1_55%]">
-                  <CardHeader title={`Topic ${quiz.topic_id}`} subheader={quiz.title} />
+                  <CardHeader
+                    title={`Topic ${quiz.topic_id}`}
+                    subheader={quiz.title}
+                  />
 
                   <CardActions className="flex gap-1 w-full ml-5">
                     <Typography variant="body1">Test Type:</Typography>
@@ -96,19 +115,22 @@ const Assessment = () => {
                   <Box className=" flex flex-col gap-3 w-full md:w-[200px] lg:w-[300px]">
                     <Button
                       sx={{
-                        width: "100%",
-                        background: "green",
+                        width: '100%',
+                        background: 'green',
                       }}
                       variant="contained"
                       onClick={() => {
-                        setSearchParams({ topicId: quiz.topic_id.toString() });
+                        setSearchParams({
+                          topicId: quiz.topic_id.toString(),
+                          userId: userId?.toString() || '',
+                        });
                       }}
                     >
                       Start Assessment
                     </Button>
                     <Button
                       sx={{
-                        width: "100%",
+                        width: '100%',
                       }}
                       variant="contained"
                       color="inherit"
@@ -125,9 +147,12 @@ const Assessment = () => {
       {selectedQuiz &&
         selectedQuiz.map((questions) => (
           <form key={questions.id} className="flex flex-col gap-y-3 mt-10">
-            <Card className="flex p-4">
-              <Box component="span" className={styles["list__item--bullet"]}>
-                <Box component={"span"} className={styles["list__item--bullet-inner"]} />
+            <Card className="flex flex-wrap md:flex-nowrap p-4">
+              <Box component="span" className={styles['list__item--bullet']}>
+                <Box
+                  component={'span'}
+                  className={styles['list__item--bullet-inner']}
+                />
               </Box>
 
               <Box className="flex flex-wrap w-full ml-2 gap-[1%] items-center">
@@ -140,8 +165,8 @@ const Assessment = () => {
                 <Card
                   className="flex flex-col gap-3 p-4"
                   sx={{
-                    border: "1px solid #e0e0e0",
-                    borderRadius: "5px",
+                    border: '1px solid #e0e0e0',
+                    borderRadius: '5px',
                   }}
                 >
                   <CardHeader subheader="Choose the correct answer" />
@@ -154,7 +179,7 @@ const Assessment = () => {
                           value={
                             value && value[`quiz-${questions.id}`]
                               ? value[`quiz-${questions.id}`]
-                              : ""
+                              : ''
                           }
                           onChange={handleRadioChange}
                         >
@@ -175,8 +200,8 @@ const Assessment = () => {
               <CardActions className="justify-end flex-[1_1_auto]">
                 <Button
                   sx={{
-                    width: "100%",
-                    background: "green",
+                    width: '100%',
+                    background: 'green',
                   }}
                   variant="contained"
                 >

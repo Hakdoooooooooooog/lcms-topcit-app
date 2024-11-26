@@ -19,11 +19,3 @@ export const getTopicsWithAllChapters = async (): Promise<ChaptersWithSubChapter
       return error.response.data;
     });
 };
-export const getTopicWithId = async (topic_id: number): Promise<Topic> => {
-  return await userInstance
-    .get(`/topics/${topic_id}`)
-    .then((res) => res.data)
-    .catch((error) => {
-      return error.response.data;
-    });
-};

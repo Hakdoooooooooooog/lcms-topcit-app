@@ -22,7 +22,7 @@ export const useAuth = () => {
             return setUserAuth({ isAuth: true, userId: res.userId, userRole: res.role });
           }
         } catch (error: any) {
-          if (error) {
+          if (error && error.message === "Refresh token expired") {
             showToast("Session expired. Please login again.", "error");
             setUserAuth({ isAuth: false, userId: "", userRole: "" });
             localStorage.removeItem("session");

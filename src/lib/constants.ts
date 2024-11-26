@@ -156,12 +156,6 @@ export const rootRoutes: LinkProps[] = [
             component: lazy(() => import("../pages/User/LearningHub/Syllabus")),
           },
           {
-            name: "Content",
-            href: "syllabus/:topicId/:name",
-            isComponentUsesParams: true,
-            component: lazy(() => import("../pages/User/LearningHub/Syllabus/Content")),
-          },
-          {
             name: "Media",
             href: "media",
             component: lazy(() => import("../pages/User/LearningHub/Media")),
@@ -176,12 +170,6 @@ export const rootRoutes: LinkProps[] = [
             href: "chapters/:topicId/:name",
             isComponentUsesParams: true,
             component: lazy(() => import("../pages/User/LearningHub/Chapters/ChaptersWithinTopic")),
-          },
-          {
-            name: "Sub-Chapters",
-            href: "chapters/:topicId/:chapterId/:name",
-            isComponentUsesParams: true,
-            component: lazy(() => import("../pages/User/LearningHub/Chapters/SubChapters")),
           },
           {
             name: "Resource-Library",

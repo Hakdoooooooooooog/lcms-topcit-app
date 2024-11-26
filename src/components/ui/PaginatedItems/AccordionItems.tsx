@@ -1,41 +1,24 @@
-import { useEffect, useMemo } from "react";
-import { usePaginationStore, useSearchStore } from "../../../lib/store";
-import { useDebounce } from "@uidotdev/usehooks";
-import { AccordionChapter } from "./PaginatedItem/AccordionItem";
-import { ChapterWithSubChapter } from "../../../lib/Types/chapters";
+import { AccordionChapter } from './PaginatedItem/AccordionItem';
+import { ChapterWithSubChapter } from '../../../lib/Types/chapters';
+import useSearchFilter from '../../../lib/hooks/useSearchFilter';
 
-export const AccordionChapters = <T extends ChapterWithSubChapter>({
-  chapter,
+export const AccordionChapters = ({
+  chapters,
+  search,
 }: {
-  chapter: Array<T>;
+  chapters: ChapterWithSubChapter[];
+  search: string;
 }) => {
-  const search = useSearchStore((state) => state.search);
-  const debouncedSearch = useDebounce(search, 500);
-  const { isSearching, setIsSearching } = usePaginationStore((state) => ({
-    isSearching: state.isSearching,
-    setIsSearching: state.setIsSearching,
-  }));
-
-  const filteredItems = useMemo(() => {
-    if (!debouncedSearch) {
-      return chapter;
-    }
-    const data = chapter.filter((chapter) => {
-      const chapterTitle = `Chapter ${chapter.chapter_number}: ${chapter.title}`;
-      return chapterTitle.toLowerCase().includes(debouncedSearch.toLowerCase());
-    });
-    return data;
-  }, [chapter, debouncedSearch]);
-
-  useEffect(() => {
-    setIsSearching(true);
-
-    if (filteredItems) {
-      setIsSearching(false);
-    }
-  }, [filteredItems]);
-
+  // Selected Chapters Within Topic
+  const { isSearching, filteredItems: filteredChapters } =
+    useSearchFilter<ChapterWithSubChapter>(chapters, search);
   return (
-    <>{isSearching ? <h1>Searching...</h1> : <AccordionChapter filteredItems={filteredItems} />}</>
+    <>
+      {isSearching ? (
+        <h1>Searching...</h1>
+      ) : (
+        <AccordionChapter filteredItems={filteredChapters} />
+      )}
+    </>
   );
 };
