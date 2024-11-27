@@ -1,5 +1,5 @@
 const TOPCITLogo = ({
-  height = '120',
+  height = '100',
   width = '250',
 }: {
   height?: string;

@@ -1,5 +1,13 @@
-import { useEffect, useMemo, useState, useTransition } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+} from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useSearchParams, useBlocker } from 'react-router-dom';
 import {
   objective_questions,
   QuizWithQuestions,
@@ -19,14 +27,12 @@ import {
   RadioGroup,
   Typography,
 } from '@mui/material';
-import { useSearchParams } from 'react-router-dom';
 import { useAuthUserStore } from '../../../lib/store';
 import { LoadingContentScreen } from '../../../components/ui/LoadingScreen/LoadingScreen';
-import { styledModal } from '../../../lib/constants';
+import { styledModal, tutorialSteps } from '../../../lib/constants';
 import Slider from 'react-slick';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
-// import { ArrowBack } from '@mui/icons-material';
 
 const Assessment = () => {
   // User
@@ -40,9 +46,14 @@ const Assessment = () => {
     queryFn: getQuizzesWithQuestions,
   });
 
-  // State Management for Radio Buttons
+  // State Managements
+  let sliderRef = useRef<Slider>(null);
+
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [totalSlides, setTotalSlides] = useState(0);
   const [value, setValue] = useState<{ [key: string]: string }>({});
   const [open, setOpen] = useState(false);
+  const [tutorialOpen, setTutorialOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   // Selected Quiz
@@ -53,6 +64,19 @@ const Assessment = () => {
   // Search Params
   const [searchParams, setSearchParams] = useSearchParams();
   const topicId = searchParams.get('topicId');
+
+  // Blocking Navigation Guard
+  let [isBlocking, setBlocking] = useState(false);
+  let blocker = useBlocker(
+    useCallback(() => {
+      if (isBlocking) {
+        setOpen(true);
+        return true;
+      } else {
+        return false;
+      }
+    }, [isBlocking]),
+  );
 
   const quizContent = useMemo(() => {
     if (!data || isLoading) return [];
@@ -69,10 +93,27 @@ const Assessment = () => {
   }, [topicId, data]);
 
   useEffect(() => {
-    if (topicId) return setSelectedQuiz(quizContent);
+    if (!topicId) return setSelectedQuiz(null);
 
-    setSelectedQuiz(null);
+    setSelectedQuiz(quizContent);
+    setTotalSlides(quizContent.length - 1);
+    setTutorialOpen(true);
   }, [quizContent, topicId]);
+
+  useEffect(() => {
+    if (!isBlocking && blocker.state === 'unblocked') {
+      startTransition(() => {
+        setSearchParams({}, { replace: true });
+        setOpen(false);
+      });
+    }
+
+    return () => {
+      if (blocker.state === 'blocked') {
+        blocker.reset();
+      }
+    };
+  }, [isBlocking, blocker.state, blocker]);
 
   const handleRadioChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value: answer } = event.target;
@@ -80,6 +121,11 @@ const Assessment = () => {
       ...prevValue,
       [name]: answer,
     }));
+  };
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    console.log(value);
   };
 
   const handleCancelButtonClick = () => {
@@ -91,50 +137,133 @@ const Assessment = () => {
   };
 
   const handleConfirmCancel = () => {
+    if (isBlocking) {
+      setBlocking(false);
+    }
+
     startTransition(() => {
-      setSearchParams({});
+      setSearchParams({}, { replace: true });
+      setOpen(false);
     });
-    setOpen(false);
   };
 
-  const renderCancelModal = () => (
-    <Modal open={open} onClose={handleCloseModal}>
+  const handleNext = () => {
+    sliderRef.current?.slickNext();
+  };
+
+  const handlePrev = () => {
+    sliderRef.current?.slickPrev();
+  };
+
+  const renderCancelModal = useCallback(() => {
+    return (
+      <Modal open={open} onClose={handleCloseModal}>
+        <Box
+          sx={{
+            ...styledModal,
+            display: 'flex',
+            width: '100%',
+            maxWidth: '450px',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            gap: '1rem',
+          }}
+        >
+          <Typography variant="h5">
+            Are you sure you want to cancel taking the quiz?
+          </Typography>
+
+          <Typography variant="body1" className="m-5 text-red-400">
+            Your progress will not be saved.
+          </Typography>
+          <Box className="flex gap-3">
+            <Button
+              variant="contained"
+              color="error"
+              onClick={handleConfirmCancel}
+            >
+              Yes
+            </Button>
+            <Button variant="contained" color="info" onClick={handleCloseModal}>
+              No
+            </Button>
+          </Box>
+        </Box>
+      </Modal>
+    );
+  }, [open, isBlocking, blocker.state]);
+
+  const tutorialModal = () => (
+    <Modal open={tutorialOpen} onClose={handleCloseModal}>
       <Box
         sx={{
           ...styledModal,
           display: 'flex',
           width: '100%',
-          maxWidth: '450px',
+          maxWidth: '500px',
           flexDirection: 'column',
           justifyContent: 'center',
           alignItems: 'center',
           gap: '1rem',
         }}
       >
-        <Typography variant="h5">
-          Are you sure you want to cancel taking the quiz?
+        <Typography variant="h5" className="self-start">
+          Instructions:
         </Typography>
+        <Slider
+          dots={true}
+          infinite={false}
+          speed={500}
+          slidesToShow={1}
+          adaptiveHeight={true}
+          className="w-full absolute"
+        >
+          {tutorialSteps.map((step, index) => (
+            <Card
+              key={index}
+              className="sm:!flex flex-col justify-between gap-5 p-4"
+            >
+              <CardHeader title={step.label} />
 
-        <Typography variant="body1" className="m-5 text-red-400">
-          Your progress will not be saved.
-        </Typography>
-        <Box className="flex gap-3">
-          <Button
-            variant="contained"
-            color="error"
-            onClick={handleConfirmCancel}
-          >
-            Yes
-          </Button>
-          <Button variant="contained" color="info" onClick={handleCloseModal}>
-            No
-          </Button>
-        </Box>
+              <CardContent>
+                <Typography variant="body1">{step.content}</Typography>
+                <Box
+                  component={'img'}
+                  src={step.img}
+                  alt={step.label}
+                  sx={{
+                    width: '100%',
+                    height: 'auto',
+                    objectFit: 'cover',
+                    borderRadius: '5px',
+                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                    border: '1px solid #e0e0e0',
+                  }}
+                />
+              </CardContent>
+            </Card>
+          ))}
+        </Slider>
+        <Button
+          variant="contained"
+          color="info"
+          onClick={() => {
+            setTutorialOpen(false);
+          }}
+          sx={{
+            mt: '1rem',
+          }}
+        >
+          Got it!
+        </Button>
       </Box>
     </Modal>
   );
 
-  if (isLoading || !data) return <LoadingContentScreen />;
+  if (isLoading || !data) {
+    return <Typography variant="h5">Loading...</Typography>;
+  }
 
   return (
     <>
@@ -205,44 +334,31 @@ const Assessment = () => {
 
           {selectedQuiz && (
             <>
-              <form className="mt-10">
+              <form className="mt-10" onSubmit={handleSubmit}>
                 <Slider
+                  ref={sliderRef}
                   dots={true}
                   infinite={false}
                   speed={500}
                   slidesToShow={1}
                   adaptiveHeight={true}
-                  arrows={false}
-                  // nextArrow={
-                  //   <ArrowBack
-                  //     sx={{
-                  //       rotate: '180deg',
-                  //       backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                  //       color: 'white',
-                  //       borderRadius: '50%',
-                  //       padding: '5px',
-                  //       '&:hover': {
-                  //         backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                  //         color: 'white',
-                  //       },
-                  //     }}
-                  //   />
-                  // }
-                  // prevArrow={
-                  //   <ArrowBack
-                  //     sx={{
-                  //       backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                  //       color: 'white',
-                  //       borderRadius: '50%',
-                  //       padding: '5px',
-                  //       '&:hover': {
-                  //         backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                  //         color: 'white',
-                  //       },
-                  //     }}
-                  //   />
-                  // }
-                  className="mb-5"
+                  appendDots={(dots) => {
+                    return (
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          gap: '1rem',
+                        }}
+                      >
+                        {dots}
+                      </Box>
+                    );
+                  }}
+                  afterChange={(index) => {
+                    setCurrentSlide(index);
+                  }}
                 >
                   {selectedQuiz.map((questions, index) => (
                     <Card
@@ -282,7 +398,10 @@ const Assessment = () => {
                                       backgroundColor: 'rgba(0, 0, 0, 0.1)',
                                     },
                                   }}
-                                  onChange={handleRadioChange}
+                                  onChange={(e) => {
+                                    handleRadioChange(e);
+                                    setBlocking(e.target.checked);
+                                  }}
                                 >
                                   <FormControlLabel
                                     value={option.option_text}
@@ -298,35 +417,93 @@ const Assessment = () => {
                     </Card>
                   ))}
                 </Slider>
-                <CardActions className="justify-center flex-[1_1_auto]">
-                  <Button
-                    sx={{
-                      width: '100%',
-                      maxWidth: '200px',
-                      background: 'green',
-                    }}
-                    variant="contained"
-                  >
-                    Submit
-                  </Button>
+                <CardActions className="justify-center flex-[1_1_auto] mt-10">
+                  {currentSlide === totalSlides ? (
+                    <>
+                      <Button
+                        sx={{
+                          width: '100%',
+                          maxWidth: '200px',
+                          background: 'green',
+                        }}
+                        variant="contained"
+                        type="submit"
+                      >
+                        Submit
+                      </Button>
 
-                  <Button
-                    sx={{
-                      width: '100%',
-                      maxWidth: '200px',
-                    }}
-                    variant="contained"
-                    color="inherit"
-                    onClick={handleCancelButtonClick}
-                  >
-                    Cancel
-                  </Button>
+                      {currentSlide > 0 && (
+                        <Button
+                          sx={{
+                            width: '100%',
+                            maxWidth: '200px',
+                          }}
+                          variant="contained"
+                          onClick={handlePrev}
+                        >
+                          Previous
+                        </Button>
+                      )}
+
+                      <Button
+                        sx={{
+                          width: '100%',
+                          maxWidth: '200px',
+                        }}
+                        variant="contained"
+                        color="inherit"
+                        onClick={handleCancelButtonClick}
+                      >
+                        Cancel
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Button
+                        sx={{
+                          width: '100%',
+                          maxWidth: '200px',
+                          background: 'green',
+                        }}
+                        variant="contained"
+                        onClick={handleNext}
+                      >
+                        Next
+                      </Button>
+
+                      {currentSlide > 0 && (
+                        <Button
+                          sx={{
+                            width: '100%',
+                            maxWidth: '200px',
+                          }}
+                          variant="contained"
+                          onClick={handlePrev}
+                        >
+                          Previous
+                        </Button>
+                      )}
+
+                      <Button
+                        sx={{
+                          width: '100%',
+                          maxWidth: '200px',
+                        }}
+                        variant="contained"
+                        color="inherit"
+                        onClick={handleCancelButtonClick}
+                      >
+                        Cancel
+                      </Button>
+                    </>
+                  )}
                 </CardActions>
               </form>
             </>
           )}
 
           {renderCancelModal()}
+          {tutorialModal()}
         </>
       )}
     </>

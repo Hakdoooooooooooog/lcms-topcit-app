@@ -15,3 +15,22 @@
     background-color: black;
   }
 }
+
+.slickDots {
+  bottom: -40px;
+  left: 0;
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  position: absolute;
+  width: 100%;
+
+  & li {
+    margin: 0 5px;
+    display: inline-block;
+  }
+
+  &li.slick-active > button {
+    background-color: #000;
+  }
+}

@@ -11,43 +11,20 @@ const AssessmentLayout = () => {
 
   return (
     <>
-      {isPending ? (
-        <LoadingScreen />
-      ) : (
-        <>
-          {!topicId ? (
-            <Box
-              component={'section'}
-              className="flex flex-wrap sm:justify-between justify-center gap-4"
-            >
-              <span className="text-4xl font-semibold">
-                Assessment <span className="text-green-800 font-bold">Hub</span>
-              </span>
+      {!topicId ? (
+        <Box
+          component={'section'}
+          className="flex flex-wrap sm:justify-between justify-center gap-4"
+        >
+          <span className="text-4xl font-semibold">
+            Assessment <span className="text-green-800 font-bold">Hub</span>
+          </span>
 
-              <SearchInput />
-            </Box>
-          ) : (
-            <Box
-              component={'section'}
-              className="flex flex-wrap sm:justify-between justify-center gap-4"
-            >
-              <Button
-                variant="contained"
-                color="info"
-                onClick={() => {
-                  startTransition(() => {
-                    setSearchParams({});
-                  });
-                }}
-              >
-                Back to Assessment Hub
-              </Button>
-            </Box>
-          )}
+          <SearchInput />
+        </Box>
+      ) : null}
 
-          <Outlet />
-        </>
-      )}
+      {isPending ? <LoadingScreen /> : <Outlet />}
     </>
   );
 };

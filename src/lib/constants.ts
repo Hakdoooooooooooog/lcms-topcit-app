@@ -483,3 +483,27 @@ export const editTopicFormInputs = [
     id: 'description',
   },
 ];
+
+export const tutorialSteps = [
+  {
+    label: 'Step 1',
+    content: `Use the arrow keys to navigate through the questions or
+    swipe left or right on mobile devices.`,
+    img: './chillguy-gID_7.webp',
+  },
+  {
+    label: 'Step 2',
+    content: 'Click the "Next" button to move to the next question.',
+    img: './queen-dont-cry.png',
+  },
+  {
+    label: 'Step 3',
+    content: 'Click the "Previous" button to move to the previous question.',
+    img: './chillguy-gID_7.webp',
+  },
+  {
+    label: 'Step 4',
+    content: 'Click the "Submit" button to submit your answers.',
+    img: './chillguy-gID_7.webp',
+  },
+];

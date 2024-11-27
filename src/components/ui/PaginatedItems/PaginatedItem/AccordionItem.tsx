@@ -88,7 +88,6 @@ export const AccordionChapter = (props: {
                 <PDFViewer
                   data={queries[index].data}
                   isLoading={queries[index].isLoading}
-                  chapterId={chapter.id.toString()}
                   fileName={
                     Array.isArray(chapter.FileChapter) &&
                     chapter.FileChapter.length > 0
