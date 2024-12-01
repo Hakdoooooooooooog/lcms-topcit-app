@@ -4,9 +4,11 @@ import useSearchFilter from '../../../lib/hooks/useSearchFilter';
 
 export const AccordionChapters = ({
   chapters,
+  currentChapterId,
   search,
 }: {
   chapters: ChapterWithSubChapter[];
+  currentChapterId: string;
   search: string;
 }) => {
   // Selected Chapters Within Topic
@@ -17,7 +19,10 @@ export const AccordionChapters = ({
       {isSearching ? (
         <h1>Searching...</h1>
       ) : (
-        <AccordionChapter filteredItems={filteredChapters} />
+        <AccordionChapter
+          filteredItems={filteredChapters}
+          currentChapterId={currentChapterId}
+        />
       )}
     </>
   );

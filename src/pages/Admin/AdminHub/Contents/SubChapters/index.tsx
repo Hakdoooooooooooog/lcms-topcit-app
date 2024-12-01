@@ -1,5 +1,9 @@
-import { PencilSquareIcon } from "@heroicons/react/16/solid";
-import { Add, ArrowBackRounded, ArrowForwardRounded } from "@mui/icons-material";
+import { PencilSquareIcon } from '@heroicons/react/16/solid';
+import {
+  Add,
+  ArrowBackRounded,
+  ArrowForwardRounded,
+} from '@mui/icons-material';
 import {
   Box,
   AccordionDetails,
@@ -12,11 +16,11 @@ import {
   Stack,
   Pagination,
   PaginationItem,
-} from "@mui/material";
-import { ChapterWithSubChapter } from "../../../../../lib/Types/chapters";
-import { SetStateAction, useMemo } from "react";
-import { useModalStore } from "../../../../../lib/store";
-import { handlePaginatedItems } from "../../../../../lib/helpers/utils";
+} from '@mui/material';
+import { ChapterWithSubChapter } from '../../../../../lib/Types/chapters';
+import { SetStateAction, useMemo } from 'react';
+import { useModalStore } from '../../../../../lib/store';
+import { handlePaginatedItems } from '../../../../../lib/helpers/utils';
 
 type SubChaptersProps = {
   Chapters: ChapterWithSubChapter[];
@@ -52,15 +56,18 @@ const SubChapters = ({
   topicId,
   handleButtonType,
 }: SubChaptersProps) => {
-  const { handleEditContentModal, handleAddContentModal } = useModalStore((state) => ({
-    handleAddContentModal: state.handleAddContentModal,
-    handleEditContentModal: state.handleEditContentModal,
-  }));
+  const { handleEditContentModal, handleAddContentModal } = useModalStore(
+    (state) => ({
+      handleAddContentModal: state.handleAddContentModal,
+      handleEditContentModal: state.handleEditContentModal,
+    }),
+  );
 
-  const { page, setPage, totalPages, currentItems } = handlePaginatedItems<ChapterWithSubChapter>({
-    items: Chapters,
-    itemPerPage: 5,
-  });
+  const { page, setPage, totalPages, currentItems } =
+    handlePaginatedItems<ChapterWithSubChapter>({
+      items: Chapters,
+      itemPerPage: 5,
+    });
 
   const MemoizedCurrentItems = useMemo(() => {
     return currentItems;
@@ -73,7 +80,7 @@ const SubChapters = ({
           root: styles.accordionDetails,
         }}
       >
-        <Box component={"div"} className="flex items-end justify-between">
+        <Box component={'div'} className="flex items-end justify-between">
           {Chapters && Chapters.length > 0 && (
             <Stack spacing={2}>
               <Pagination
@@ -98,14 +105,14 @@ const SubChapters = ({
           <Button
             variant="contained"
             sx={{
-              background: "green",
+              background: 'green',
             }}
             onClick={() => {
               setAddData({
                 topicId: topicId,
                 chapterNum: (Chapters.length + 1).toString(),
               }); // Add topicId to addData
-              handleButtonType("add-chapter");
+              handleButtonType('add-chapter');
               handleAddContentModal();
             }}
             aria-describedby="add-chapter"
@@ -132,13 +139,14 @@ const SubChapters = ({
                       expandIcon={
                         <Add
                           sx={{
-                            color: "green",
+                            color: 'green',
                           }}
                         />
                       }
                     >
                       <Typography variant="h5">
-                        Chapter {chapter.chapter_number.toString()}: {chapter.title}
+                        Chapter {chapter.chapter_number.toString()}:{' '}
+                        {chapter.title}
                       </Typography>
                     </AccordionSummary>
                     <AccordionDetails>
@@ -150,35 +158,47 @@ const SubChapters = ({
                             }}
                           >
                             <Box
-                              component={"section"}
+                              component={'section'}
                               className="grid grid-cols-2 items-center relative"
                             >
                               {/* Bullet Design */}
-                              <Box component="span" className={styles["list__item--bullet"]}>
+                              <Box
+                                component="span"
+                                className={styles['list__item--bullet']}
+                              >
                                 <Box
-                                  component={"span"}
-                                  className={styles["list__item--bullet-inner"]}
+                                  component={'span'}
+                                  className={styles['list__item--bullet-inner']}
                                 />
                               </Box>
 
-                              <Box component={"div"} className="col-span-1 ml-5">
+                              <Box
+                                component={'div'}
+                                className="col-span-1 ml-5"
+                              >
                                 <Typography variant="h5">
-                                  Sub Chapter {subChapter.id.toString()}: {subChapter.title}
+                                  Sub Chapter {subChapter.id.toString()}:{' '}
+                                  {subChapter.title}
                                 </Typography>
                               </Box>
-                              <Box component={"div"} className="col-span-1 justify-self-end">
+                              <Box
+                                component={'div'}
+                                className="col-span-1 justify-self-end"
+                              >
                                 <Button
                                   onClick={() => {
                                     setFileData({
                                       chapterId: chapter.id.toString(),
                                       topicId: topicId,
-                                      fileName: Array.isArray(subChapter.FileChapter)
+                                      fileName: Array.isArray(
+                                        subChapter.FileChapter,
+                                      )
                                         ? subChapter.FileChapter[0].file_name
-                                        : "",
+                                        : '',
                                       title: chapter.title,
                                       subtitle: chapter.sub_title,
                                     });
-                                    handleButtonType("edit-chapter");
+                                    handleButtonType('edit-chapter');
                                     handleEditContentModal();
                                   }}
                                 >
@@ -198,13 +218,20 @@ const SubChapters = ({
                       root: styles.cardContent,
                     }}
                   >
-                    <Box component={"section"} className="grid grid-cols-2 items-center relative">
-                      <Box component={"div"} className="col-span-1 ml-5">
+                    <Box
+                      component={'section'}
+                      className="grid grid-cols-2 items-center relative"
+                    >
+                      <Box component={'div'} className="col-span-1 ml-5">
                         <Typography variant="h5">
-                          Chapter {chapter.chapter_number.toString()}: {chapter.title}
+                          Chapter {chapter.chapter_number.toString()}:{' '}
+                          {chapter.title}
                         </Typography>
                       </Box>
-                      <Box component={"div"} className="col-span-1 justify-self-end">
+                      <Box
+                        component={'div'}
+                        className="col-span-1 justify-self-end"
+                      >
                         <Button
                           onClick={() => {
                             setFileData({
@@ -212,11 +239,11 @@ const SubChapters = ({
                               topicId: topicId,
                               fileName: Array.isArray(chapter.FileChapter)
                                 ? chapter.FileChapter[0].file_name
-                                : "",
+                                : '',
                               title: chapter.title,
                               subtitle: chapter.sub_title,
                             });
-                            handleButtonType("edit-chapter");
+                            handleButtonType('edit-chapter');
                             handleEditContentModal();
                           }}
                         >
@@ -225,23 +252,26 @@ const SubChapters = ({
                       </Box>
                     </Box>
 
-                    <Box component={"div"} className="flex justify-end mt-3">
+                    <Box component={'div'} className="flex justify-end mt-3">
                       <Button
                         variant="contained"
                         sx={{
-                          background: "green",
+                          background: 'green',
                         }}
                         onClick={() => {
                           setAddData({
                             topicId: topicId,
                             chapterId: chapter.id.toString(),
-                            subChapterNum: (chapter.SubChapters.length + 1).toString(),
+                            subChapterNum: (
+                              chapter.SubChapters.length + 1
+                            ).toString(),
                             parentChapterNum: chapter.id.toString(),
                           }); // Add topicId and chapterId to addData
-                          handleButtonType("add-sub-chapter");
+                          handleButtonType('add-sub-chapter');
                           handleAddContentModal();
                         }}
                         endIcon={<Add />}
+                        disabled={true}
                         aria-describedby="add-sub-chapter"
                       >
                         Add Sub Chapter

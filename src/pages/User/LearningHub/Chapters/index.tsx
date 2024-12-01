@@ -15,7 +15,7 @@ import { handlePaginatedItems } from '../../../../lib/helpers/utils';
 // Components & Types
 import { Topic } from '../../../../lib/Types/topics';
 import { getTopicsWithAllChapters } from '../../../../api/User/topicsApi';
-import { EyeIcon } from '@heroicons/react/16/solid';
+import { EyeIcon, LockClosedIcon } from '@heroicons/react/16/solid';
 import { Card, CardHeader, Button, Stack, Pagination } from '@mui/material';
 import {
   ChaptersWithSubChaptersWithinTopic,
@@ -23,10 +23,20 @@ import {
 } from '../../../../lib/Types/chapters';
 import { LoadingContentScreen } from '../../../../components/ui/LoadingScreen/LoadingScreen';
 import { AccordionChapters } from '../../../../components/ui/PaginatedItems/AccordionItems';
+import { UserProgress } from '../../../../lib/Types/user';
+import { getUserProgress } from '../../../../api/User/userApi';
 
 const TopcitContents = () => {
+  const { data: userProgress, isLoading: isProgressLoading } =
+    useQuery<UserProgress>({
+      queryKey: ['UserProgress'],
+      queryFn: () => getUserProgress(),
+    });
+
   // Topics
-  const { data, isLoading } = useQuery<ChaptersWithSubChaptersWithinTopic[]>({
+  const { data: topicContents, isLoading } = useQuery<
+    ChaptersWithSubChaptersWithinTopic[]
+  >({
     queryKey: ['TopcitTopics'],
     queryFn: () => getTopicsWithAllChapters(),
   });
@@ -42,7 +52,7 @@ const TopcitContents = () => {
   // Search
   const search = useSearchStore((state) => state.search);
   const { isSearching, filteredItems: filteredTopic } =
-    useSearchFilter<ChaptersWithSubChaptersWithinTopic>(data, search);
+    useSearchFilter<ChaptersWithSubChaptersWithinTopic>(topicContents, search);
 
   // Pagination
   const { page, setPage, totalPages, currentItems } =
@@ -54,7 +64,7 @@ const TopcitContents = () => {
   const chaptersContent = useMemo<ChapterWithSubChapter[] | undefined>(() => {
     if (!topicId) return filteredTopic?.flatMap((topic) => topic.chapters);
 
-    return data?.find((topic) => Number(topic.id) === Number(topicId))
+    return topicContents?.find((topic) => Number(topic.id) === Number(topicId))
       ?.chapters;
   }, [topicId, filteredTopic]);
 
@@ -72,7 +82,7 @@ const TopcitContents = () => {
     return null;
   }, [isSearching]);
 
-  if (isLoading || !data) {
+  if (isLoading || !topicContents || isProgressLoading || !userProgress) {
     return <div>Loading...</div>;
   }
   return (
@@ -86,29 +96,63 @@ const TopcitContents = () => {
 
       {!selectedChaptersWithinTopicId && !topicId && (
         <>
-          {currentItems.map((topic) => (
-            <Card key={topic.topictitle}>
-              <CardHeader
-                classes={{
-                  action: 'text-green-800 !self-center',
-                }}
-                title={`Topic ${topic.id}: ${topic.topictitle}`}
-                action={
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={() => {
-                      setSearchParams({
-                        topicId: topic.id.toString(),
-                      });
+          {currentItems.map((topic) => {
+            if (
+              userProgress.curr_topic_id !== null &&
+              userProgress.curr_topic_id >= topic.id
+            ) {
+              return (
+                <Card
+                  key={topic.topictitle}
+                  sx={{
+                    marginTop: '1rem',
+                  }}
+                >
+                  <CardHeader
+                    classes={{
+                      action: 'text-green-800 !self-center',
                     }}
-                  >
-                    <EyeIcon className="h-5 w-5" />
-                  </Button>
-                }
-              />
-            </Card>
-          ))}
+                    title={`Topic ${topic.id}: ${topic.topictitle}`}
+                    action={
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={() => {
+                          setSearchParams({
+                            topicId: topic.id.toString(),
+                          });
+                        }}
+                      >
+                        <EyeIcon className="h-5 w-5" />
+                      </Button>
+                    }
+                  />
+                </Card>
+              );
+            } else {
+              return (
+                <Card
+                  key={topic.id}
+                  sx={{
+                    marginTop: '1rem',
+                    backgroundColor: 'rgba(0, 0, 0, 0.1)',
+                  }}
+                >
+                  <CardHeader
+                    classes={{
+                      action: 'text-green-800 !self-center',
+                    }}
+                    title={`Topic ${topic.id}: ${topic.topictitle}`}
+                    action={
+                      <Button variant="outlined" color="primary" disabled>
+                        <LockClosedIcon className="h-5 w-5" />
+                      </Button>
+                    }
+                  />
+                </Card>
+              );
+            }
+          })}
 
           <Stack spacing={2} sx={{ marginTop: '2rem' }}>
             <Pagination
@@ -129,6 +173,7 @@ const TopcitContents = () => {
       {selectedChaptersWithinTopicId && topicId && (
         <AccordionChapters
           chapters={selectedChaptersWithinTopicId}
+          currentChapterId={userProgress.curr_chap_id?.toString() || ''}
           search={search}
         />
       )}

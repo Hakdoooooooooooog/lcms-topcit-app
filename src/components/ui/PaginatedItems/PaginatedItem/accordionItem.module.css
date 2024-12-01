@@ -1,6 +1,7 @@
 .accordionDetailStyles {
   display: flex;
   align-items: center;
+  justify-content: center;
   position: relative;
   column-gap: 20px;
 }

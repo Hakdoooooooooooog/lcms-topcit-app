@@ -25,7 +25,7 @@ const PDFViewer = memo(
     const [loadProgress, setLoadProgress] = useState<number>(0);
     const [file, setFile] = useState<File | string | null>(null);
 
-    pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${PDFversion}/build/pdf.worker.min.mjs`;
+    pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${PDFversion}/pdf.worker.min.js`;
 
     const options = useMemo(
       () => ({
@@ -76,7 +76,7 @@ const PDFViewer = memo(
     };
 
     return (
-      <Box component={'div'} className="relative">
+      <Box component={'div'} className="relative py-12 w-full">
         <Document
           className={styles.pdfDocument}
           options={options}
@@ -97,8 +97,12 @@ const PDFViewer = memo(
                 <LoadingDataScreen />
               </Box>
             }
-            key={fileName}
-            width={600}
+            width={
+              window.innerWidth > 768
+                ? window.innerWidth * 0.35
+                : window.innerWidth * 0.75
+            }
+            className="!bg-transparent"
             pageNumber={pageNumber}
             renderAnnotationLayer={false}
             renderTextLayer={false}
@@ -109,13 +113,13 @@ const PDFViewer = memo(
           <>
             <Button
               variant="outlined"
+              onClick={handleDownload}
               sx={{
                 position: 'absolute',
+                zIndex: 1,
                 top: '0',
                 right: '0',
               }}
-              className="opacity-10 hover:opacity-100 transition-opacity duration-300"
-              onClick={handleDownload}
             >
               <Download />
             </Button>

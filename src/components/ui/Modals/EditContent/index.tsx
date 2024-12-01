@@ -306,7 +306,18 @@ const EditContentModal = ({
       aria-labelledby="edit-pdf-content"
       aria-describedby="edit-pdf-content"
     >
-      <Box sx={styledModal}>{formInputs}</Box>
+      <Box
+        component={'div'}
+        sx={{
+          ...styledModal,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '1rem',
+        }}
+        className="sm:max-w-3xl"
+      >
+        {formInputs}
+      </Box>
     </Modal>
   );
 };

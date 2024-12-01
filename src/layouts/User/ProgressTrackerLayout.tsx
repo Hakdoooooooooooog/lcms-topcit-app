@@ -1,49 +1,49 @@
-import { PermMedia, MenuBook } from "@mui/icons-material";
-import { Container } from "@mui/material";
-import { useEffect, useState, useTransition } from "react";
-import { Outlet, useLocation } from "react-router-dom";
-import { useSearchStore } from "../../lib/store";
-import { SelectionItems } from "../../lib/Types/types";
-import Selections from "../../components/ui/Selections";
-import { LoadingContentScreen } from "../../components/ui/LoadingScreen/LoadingScreen";
-import Breadcrumbs from "../../components/ui/Breadcrumbs";
+import { PermMedia, MenuBook } from '@mui/icons-material';
+import { Box, Container } from '@mui/material';
+import { useEffect, useState, useTransition } from 'react';
+import { Outlet, useLocation } from 'react-router-dom';
+import { useSearchStore } from '../../lib/store';
+import { SelectionItems } from '../../lib/Types/types';
+import Selections from '../../components/ui/Selections';
+import { LoadingContentScreen } from '../../components/ui/LoadingScreen/LoadingScreen';
+import Breadcrumbs from '../../components/ui/Breadcrumbs';
 
 const ProgressTrackerLayout = () => {
   const setSearch = useSearchStore((state) => state.setSearch);
   const [isPending, startTransition] = useTransition();
-  const [tab, setTab] = useState("contents");
+  const [tab, setTab] = useState('contents');
   const path = useLocation().pathname;
 
   const CardActionItems: SelectionItems = [
     {
-      label: "Contents",
+      label: 'Contents',
       icon: (
         <MenuBook
           classes={{
-            root: "fill-current text-green-800",
+            root: 'fill-current text-green-800',
           }}
         />
       ),
-      to: "/progress-tracker/contents",
+      to: '/progress-tracker/contents',
     },
     {
-      label: "Assessments",
+      label: 'Assessments',
       icon: (
         <PermMedia
           classes={{
-            root: "fill-current text-green-800",
+            root: 'fill-current text-green-800',
           }}
         />
       ),
-      to: "/progress-tracker/assessments",
+      to: '/progress-tracker/assessments',
     },
   ];
 
   useEffect(() => {
-    setSearch("");
+    setSearch('');
 
-    if (path === "/progress-tracker") {
-      setTab("progress-tracker");
+    if (path === '/progress-tracker') {
+      setTab('progress-tracker');
     }
   }, [path]);
 
@@ -53,11 +53,14 @@ const ProgressTrackerLayout = () => {
         Progress <span className="text-green-800">Tracker</span>
       </h1>
 
-      <Breadcrumbs path={path} />
+      <Box component={'section'} className="mt-4 max-w-[80rem] mx-auto">
+        <Breadcrumbs path={path} />
+        <Selections
+          props={{ CardActionItems, path, startTransition, tab, setTab }}
+        />
 
-      <Selections props={{ CardActionItems, path, startTransition, tab, setTab }} />
-
-      {isPending ? <LoadingContentScreen /> : <Outlet />}
+        {isPending ? <LoadingContentScreen /> : <Outlet />}
+      </Box>
     </Container>
   );
 };

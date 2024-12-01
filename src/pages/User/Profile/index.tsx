@@ -1,13 +1,13 @@
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Box, Button } from "@mui/material";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import UserForm from "../../../components/ui/Form/UserForm";
-import { ProfileForm } from "../../../components/ui/Form/ProfileForm";
-import { ProfileSchema } from "../../../lib/schema/UserSchema";
-import { useEffect, useRef } from "react";
-import { useEditProfileStore, useUserStore } from "../../../lib/store";
-import { LoadingButton } from "../../../components/ui/LoadingScreen/LoadingScreen";
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Box, Button } from '@mui/material';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import UserForm from '../../../components/ui/Form/UserForm';
+import { ProfileForm } from '../../../components/ui/Form/ProfileForm';
+import { ProfileSchema } from '../../../lib/schema/UserSchema';
+import { useEffect, useRef } from 'react';
+import { useEditProfileStore, useUserStore } from '../../../lib/store';
+import { LoadingButton } from '../../../components/ui/LoadingScreen/LoadingScreen';
 
 type ProfileSchema = z.infer<typeof ProfileSchema>;
 
@@ -47,13 +47,17 @@ const Profile = () => {
   return (
     <Box
       sx={{
-        margin: "auto",
-        width: "100%",
-        maxWidth: "700px",
+        margin: 'auto',
+        width: '100%',
+        maxWidth: '800px',
       }}
     >
-      <UserForm handleSubmit={handleSubmit} schema={ProfileSchema} FormType={"Edit-Profile"}>
-        <Box component={"section"} className="flex flex-col gap-5">
+      <UserForm
+        handleSubmit={handleSubmit}
+        schema={ProfileSchema}
+        FormType={'Edit-Profile'}
+      >
+        <Box component={'section'} className="flex flex-col gap-5">
           <ProfileForm
             userData={user}
             isEditing={isEdit}
@@ -63,19 +67,19 @@ const Profile = () => {
           />
         </Box>
 
-        <Box component={"section"} className="flex flex-col gap-5 pt-4">
+        <Box component={'section'} className="flex flex-col gap-5 pt-4">
           <Box
             sx={{
-              display: "flex",
-              justifyContent: "space-evenly",
-              gap: "1%",
+              display: 'flex',
+              justifyContent: 'space-evenly',
+              gap: '1%',
             }}
           >
             {!isEdit && (
               <Button
                 type="button"
                 sx={{
-                  flex: "1 1 100%",
+                  flex: '1 1 100%',
                 }}
                 variant="contained"
                 onClick={handleIsEditing}
@@ -89,11 +93,11 @@ const Profile = () => {
                 <Button
                   type="submit"
                   sx={{
-                    flex: "1 1 100%",
+                    flex: '1 1 100%',
                   }}
                   variant="contained"
                   disabled={isSubmitting}
-                  className={isSubmitting ? "cursor-not-allowed" : ""}
+                  className={isSubmitting ? 'cursor-not-allowed' : ''}
                   endIcon={isSubmitting ? <LoadingButton /> : null}
                 >
                   Save
@@ -101,7 +105,7 @@ const Profile = () => {
                 <Button
                   type="button"
                   sx={{
-                    flex: "1 1 100%",
+                    flex: '1 1 100%',
                   }}
                   variant="contained"
                   onClick={handleIsEditing}

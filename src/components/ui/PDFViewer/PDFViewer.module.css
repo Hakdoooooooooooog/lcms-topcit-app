@@ -11,22 +11,15 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  height: 500px;
+  height: 30rem;
 }
 
 .pdfControls {
   position: absolute;
-  bottom: 5%;
+  bottom: 0;
   left: 50%;
-  opacity: 0.05;
   transform: translate(-50%);
   z-index: 2;
-  transition: opacity 0.3s;
-
-  &:hover {
-    opacity: 1;
-  }
-
   & span {
     font: inherit;
     font-size: 0.8em;

@@ -1,17 +1,14 @@
-import { useTransition } from 'react';
 import { Outlet, useSearchParams } from 'react-router-dom';
-import { Box, Button } from '@mui/material';
+import { Box } from '@mui/material';
 import SearchInput from '../../components/ui/SearchInput/SearchInput';
-import LoadingScreen from '../../components/ui/LoadingScreen/LoadingScreen';
 
 const AssessmentLayout = () => {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [isPending, startTransition] = useTransition();
+  const [searchParams] = useSearchParams();
   const topicId = searchParams.get('topicId');
 
   return (
     <>
-      {!topicId ? (
+      {!topicId && (
         <Box
           component={'section'}
           className="flex flex-wrap sm:justify-between justify-center gap-4"
@@ -22,9 +19,11 @@ const AssessmentLayout = () => {
 
           <SearchInput />
         </Box>
-      ) : null}
+      )}
 
-      {isPending ? <LoadingScreen /> : <Outlet />}
+      <Box component={'section'} className="mt-4 max-w-[80rem] mx-auto">
+        <Outlet />
+      </Box>
     </>
   );
 };

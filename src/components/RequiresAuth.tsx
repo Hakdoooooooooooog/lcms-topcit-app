@@ -1,4 +1,4 @@
-import { ReactNode, useLayoutEffect } from 'react';
+import { ReactNode, useEffect } from 'react';
 import { Location, Navigate } from 'react-router-dom';
 import { useAuth } from '../lib/hooks/useAuth';
 import { useQuery } from '@tanstack/react-query';
@@ -23,7 +23,7 @@ const RequiresAuth = ({
     isLoaded: state.isLoaded,
   }));
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     setIsLoaded(true);
 
     if (data && !isLoading) {

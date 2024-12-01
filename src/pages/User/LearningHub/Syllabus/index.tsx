@@ -19,9 +19,17 @@ import {
   Typography,
 } from '@mui/material';
 import { LoadingContentScreen } from '../../../../components/ui/LoadingScreen/LoadingScreen';
-import { EyeIcon } from '@heroicons/react/16/solid';
+import { EyeIcon, LockClosedIcon } from '@heroicons/react/16/solid';
+import { getUserProgress } from '../../../../api/User/userApi';
+import { UserProgress } from '../../../../lib/Types/user';
 
 const Syllabus = () => {
+  const { data: userProgress, isLoading: isProgressLoading } =
+    useQuery<UserProgress>({
+      queryKey: ['UserProgress'],
+      queryFn: () => getUserProgress(),
+    });
+
   // Topics
   const { data, isLoading } = useQuery<Topic[]>({
     queryKey: ['Topics'],
@@ -68,7 +76,7 @@ const Syllabus = () => {
     setSelectedTopic(null);
   }, [topicContent, topicId]);
 
-  if (isLoading || !data) {
+  if (isLoading || !data || isProgressLoading || !userProgress) {
     return <div>Loading...</div>;
   }
 
@@ -80,29 +88,63 @@ const Syllabus = () => {
         <>
           {!selectedTopic && (
             <>
-              {currentItems.map((topic) => (
-                <Card key={topic.topictitle}>
-                  <CardHeader
-                    classes={{
-                      action: 'text-green-800 !self-center',
-                    }}
-                    title={`Topic ${topic.id}: ${topic.topictitle}`}
-                    action={
-                      <Button
-                        variant="contained"
-                        color="primary"
-                        onClick={() => {
-                          setSearchParams({
-                            topicId: topic.id.toString(),
-                          });
+              {currentItems.map((topic) => {
+                if (
+                  userProgress.curr_topic_id !== null &&
+                  userProgress.curr_topic_id >= topic.id
+                ) {
+                  return (
+                    <Card
+                      key={topic.topictitle}
+                      sx={{
+                        marginTop: '1rem',
+                      }}
+                    >
+                      <CardHeader
+                        classes={{
+                          action: 'text-green-800 !self-center',
                         }}
-                      >
-                        <EyeIcon className="h-5 w-5" />
-                      </Button>
-                    }
-                  />
-                </Card>
-              ))}
+                        title={`Topic ${topic.id}: ${topic.topictitle}`}
+                        action={
+                          <Button
+                            variant="contained"
+                            color="primary"
+                            onClick={() => {
+                              setSearchParams({
+                                topicId: topic.id.toString(),
+                              });
+                            }}
+                          >
+                            <EyeIcon className="h-5 w-5" />
+                          </Button>
+                        }
+                      />
+                    </Card>
+                  );
+                } else {
+                  return (
+                    <Card
+                      key={topic.id}
+                      sx={{
+                        marginTop: '1rem',
+                        backgroundColor: 'rgba(0, 0, 0, 0.1)',
+                      }}
+                    >
+                      <CardHeader
+                        classes={{
+                          action: 'text-green-800 !self-center',
+                        }}
+                        title={`Topic ${topic.id}: ${topic.topictitle}`}
+                        action={
+                          <Button variant="outlined" color="primary" disabled>
+                            <LockClosedIcon className="h-5 w-5" />
+                          </Button>
+                        }
+                      />
+                    </Card>
+                  );
+                }
+              })}
 
               <Stack spacing={2} sx={{ marginTop: '2rem' }}>
                 <Pagination

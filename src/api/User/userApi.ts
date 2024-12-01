@@ -1,9 +1,19 @@
-import { axiosRootApiUrl, accessTokenInstance, userInstance } from "../../lib/helpers/axios";
-import { UpdateProfile, UserLogin, UserProfile, UserRegister } from "../../lib/Types/user";
+import {
+  axiosRootApiUrl,
+  accessTokenInstance,
+  userInstance,
+} from '../../lib/helpers/axios';
+import {
+  UpdateProfile,
+  UserLogin,
+  UserProfile,
+  UserProgress,
+  UserRegister,
+} from '../../lib/Types/user';
 
 export const userLogin = async (login: UserLogin) => {
   return await axiosRootApiUrl
-    .post("/auth/login", login)
+    .post('/auth/login', login)
     .then((res) => res.data)
     .catch((error) => {
       return error.response.data;
@@ -12,7 +22,7 @@ export const userLogin = async (login: UserLogin) => {
 
 export const userRegister = async (register: UserRegister) => {
   return await axiosRootApiUrl
-    .post("/auth/register", register)
+    .post('/auth/register', register)
     .then((res) => res.data)
     .catch((error) => {
       return error.response.data;
@@ -21,7 +31,7 @@ export const userRegister = async (register: UserRegister) => {
 
 export const verifyUserAccessToken = async () => {
   return await accessTokenInstance
-    .post("/auth/verify")
+    .post('/auth/verify')
     .then((res) => res.data)
     .catch((error) => {
       return error.response?.data;
@@ -30,7 +40,7 @@ export const verifyUserAccessToken = async () => {
 
 export const updateUserAccessToken = async () => {
   return await accessTokenInstance
-    .put("/user/refresh")
+    .put('/user/refresh')
     .then((res) => res.data)
     .catch((error) => {
       return error.response.data;
@@ -39,7 +49,7 @@ export const updateUserAccessToken = async () => {
 
 export const userLogout = async () => {
   return await axiosRootApiUrl
-    .post("/user/logout")
+    .post('/user/logout')
     .then((res) => res.data)
     .catch((error) => {
       return error.response.data;
@@ -48,7 +58,16 @@ export const userLogout = async () => {
 
 export const getUserProfile = async (): Promise<UserProfile> => {
   return await userInstance
-    .get("/user/profile")
+    .get('/user/profile')
+    .then((res) => res.data)
+    .catch((error) => {
+      return error.response.data;
+    });
+};
+
+export const getUserProgress = async (): Promise<UserProgress> => {
+  return await userInstance
+    .get('/user/progress')
     .then((res) => res.data)
     .catch((error) => {
       return error.response.data;
@@ -57,7 +76,7 @@ export const getUserProfile = async (): Promise<UserProfile> => {
 
 export const updateUserProfile = async (data: UpdateProfile) => {
   return await userInstance
-    .put("/user/updateData", {
+    .put('/user/updateData', {
       username: data.username,
     })
     .then((res) => res.data)

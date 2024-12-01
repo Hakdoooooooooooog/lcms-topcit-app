@@ -2,7 +2,7 @@ import { useEffect, useState, useTransition } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { LibraryBooks, MenuBook, PermMedia, Toc } from '@mui/icons-material';
 import Selections from '../../components/ui/Selections';
-import { Container } from '@mui/material';
+import { Box, Container } from '@mui/material';
 import { useSearchStore } from '../../lib/store';
 import { SelectionItems } from '../../lib/Types/types';
 import { LoadingContentScreen } from '../../components/ui/LoadingScreen/LoadingScreen';
@@ -75,13 +75,15 @@ const LearningHubLayout = () => {
         Learning <span className="text-green-800">Hub</span>
       </h1>
 
-      <Breadcrumbs path={path} />
+      <Box component={'section'} className="mt-4 max-w-[80rem] mx-auto">
+        <Breadcrumbs path={path} />
 
-      <Selections
-        props={{ CardActionItems, path, startTransition, tab, setTab }}
-      />
+        <Selections
+          props={{ CardActionItems, path, startTransition, tab, setTab }}
+        />
 
-      {isPending ? <LoadingContentScreen /> : <Outlet />}
+        {isPending ? <LoadingContentScreen /> : <Outlet />}
+      </Box>
     </Container>
   );
 };

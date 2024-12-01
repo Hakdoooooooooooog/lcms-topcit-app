@@ -33,22 +33,25 @@ import { styledModal, tutorialSteps } from '../../../lib/constants';
 import Slider from 'react-slick';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
+import { ArrowBack, Cancel } from '@mui/icons-material';
 
 const Assessment = () => {
+  // Quizzes
+  const { data: quizzes, isLoading } = useQuery<QuizWithQuestions[]>({
+    queryKey: ['quizzes'],
+    queryFn: getQuizzesWithQuestions,
+  });
+
   // User
   const { userId } = useAuthUserStore((state) => ({
     userId: state.user?.userId,
   }));
 
-  // Quizzes
-  const { data, isLoading } = useQuery<QuizWithQuestions[]>({
-    queryKey: ['quizzes'],
-    queryFn: getQuizzesWithQuestions,
-  });
+  // References Values
+  let sliderRef = useRef<Slider>(null);
+  const isInitialMount = useRef(true);
 
   // State Managements
-  let sliderRef = useRef<Slider>(null);
-
   const [currentSlide, setCurrentSlide] = useState(0);
   const [totalSlides, setTotalSlides] = useState(0);
   const [value, setValue] = useState<{ [key: string]: string }>({});
@@ -70,7 +73,6 @@ const Assessment = () => {
   let blocker = useBlocker(
     useCallback(() => {
       if (isBlocking) {
-        setOpen(true);
         return true;
       } else {
         return false;
@@ -79,9 +81,9 @@ const Assessment = () => {
   );
 
   const quizContent = useMemo(() => {
-    if (!data || isLoading) return [];
+    if (!quizzes || isLoading) return [];
 
-    const quiz = data
+    const quiz = quizzes
       .filter((value) => {
         return Number(value.topic_id) === Number(topicId);
       })
@@ -90,43 +92,58 @@ const Assessment = () => {
       });
 
     return quiz;
-  }, [topicId, data]);
+  }, [topicId, quizzes]);
 
   useEffect(() => {
-    if (!topicId) return setSelectedQuiz(null);
-
-    setSelectedQuiz(quizContent);
-    setTotalSlides(quizContent.length - 1);
-    setTutorialOpen(true);
+    if (!topicId) {
+      setSelectedQuiz(null);
+      setTutorialOpen(false);
+    } else {
+      setSelectedQuiz(quizContent);
+      setTotalSlides(quizContent.length - 1);
+      setTutorialOpen(true);
+    }
   }, [quizContent, topicId]);
 
   useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+
+    if (isBlocking && blocker.state === 'blocked') {
+      setOpen(true);
+      blocker.reset();
+      return;
+    }
+
     if (!isBlocking && blocker.state === 'unblocked') {
       startTransition(() => {
         setSearchParams({}, { replace: true });
         setOpen(false);
+        setValue({});
       });
     }
+  }, [isBlocking, blocker, isInitialMount]);
 
-    return () => {
-      if (blocker.state === 'blocked') {
-        blocker.reset();
-      }
-    };
-  }, [isBlocking, blocker.state, blocker]);
+  const handleRadioChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const { name, value: answer } = event.target;
+      setValue((prevValue) => ({
+        ...prevValue,
+        [name]: answer,
+      }));
+    },
+    [],
+  );
 
-  const handleRadioChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value: answer } = event.target;
-    setValue((prevValue) => ({
-      ...prevValue,
-      [name]: answer,
-    }));
-  };
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    console.log(value);
-  };
+  const handleSubmit = useCallback(
+    (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      console.log(value);
+    },
+    [value],
+  );
 
   const handleCancelButtonClick = () => {
     setOpen(true);
@@ -136,16 +153,18 @@ const Assessment = () => {
     setOpen(false);
   };
 
-  const handleConfirmCancel = () => {
+  const handleConfirmCancel = useCallback(() => {
     if (isBlocking) {
       setBlocking(false);
-    }
-
-    startTransition(() => {
-      setSearchParams({}, { replace: true });
       setOpen(false);
-    });
-  };
+    } else {
+      startTransition(() => {
+        setSearchParams({}, { replace: true });
+        setOpen(false);
+        setValue({});
+      });
+    }
+  }, [isBlocking, startTransition]);
 
   const handleNext = () => {
     sliderRef.current?.slickNext();
@@ -162,13 +181,13 @@ const Assessment = () => {
           sx={{
             ...styledModal,
             display: 'flex',
-            width: '100%',
-            maxWidth: '450px',
             flexDirection: 'column',
             justifyContent: 'center',
             alignItems: 'center',
+            textAlign: 'center',
             gap: '1rem',
           }}
+          className="sm:max-w-md"
         >
           <Typography variant="h5">
             Are you sure you want to cancel taking the quiz?
@@ -192,76 +211,79 @@ const Assessment = () => {
         </Box>
       </Modal>
     );
-  }, [open, isBlocking, blocker.state]);
+  }, [open]);
 
-  const tutorialModal = () => (
-    <Modal open={tutorialOpen} onClose={handleCloseModal}>
-      <Box
-        sx={{
-          ...styledModal,
-          display: 'flex',
-          width: '100%',
-          maxWidth: '500px',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          alignItems: 'center',
-          gap: '1rem',
-        }}
-      >
-        <Typography variant="h5" className="self-start">
-          Instructions:
-        </Typography>
-        <Slider
-          dots={true}
-          infinite={false}
-          speed={500}
-          slidesToShow={1}
-          adaptiveHeight={true}
-          className="w-full absolute"
-        >
-          {tutorialSteps.map((step, index) => (
-            <Card
-              key={index}
-              className="sm:!flex flex-col justify-between gap-5 p-4"
-            >
-              <CardHeader title={step.label} />
-
-              <CardContent>
-                <Typography variant="body1">{step.content}</Typography>
-                <Box
-                  component={'img'}
-                  src={step.img}
-                  alt={step.label}
-                  sx={{
-                    width: '100%',
-                    height: 'auto',
-                    objectFit: 'cover',
-                    borderRadius: '5px',
-                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-                    border: '1px solid #e0e0e0',
-                  }}
-                />
-              </CardContent>
-            </Card>
-          ))}
-        </Slider>
-        <Button
-          variant="contained"
-          color="info"
-          onClick={() => {
-            setTutorialOpen(false);
-          }}
+  const tutorialModal = useCallback(
+    () => (
+      <Modal open={tutorialOpen} onClose={handleCloseModal}>
+        <Box
           sx={{
-            mt: '1rem',
+            ...styledModal,
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            gap: '1rem',
           }}
+          className="sm:max-w-md"
         >
-          Got it!
-        </Button>
-      </Box>
-    </Modal>
+          <Typography variant="h5" className="self-start">
+            Instructions:
+          </Typography>
+          <Slider
+            dots={true}
+            arrows={false}
+            infinite={false}
+            speed={500}
+            slidesToShow={1}
+            adaptiveHeight={true}
+            className="w-full absolute"
+          >
+            {tutorialSteps.map((step, index) => (
+              <Card
+                key={index}
+                className="sm:!flex flex-col justify-between gap-5 p-4"
+              >
+                <CardHeader title={step.label} />
+
+                <CardContent>
+                  <Typography variant="body1">{step.content}</Typography>
+                  <Box
+                    component={'img'}
+                    src={step.img}
+                    alt={step.label}
+                    sx={{
+                      width: '100%',
+                      height: 'auto',
+                      objectFit: 'cover',
+                      borderRadius: '5px',
+                      boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                      border: '1px solid #e0e0e0',
+                    }}
+                  />
+                </CardContent>
+              </Card>
+            ))}
+          </Slider>
+          <Button
+            variant="contained"
+            color="info"
+            onClick={() => {
+              setTutorialOpen(false);
+            }}
+            sx={{
+              mt: '1rem',
+            }}
+          >
+            Got it!
+          </Button>
+        </Box>
+      </Modal>
+    ),
+    [tutorialOpen],
   );
 
-  if (isLoading || !data) {
+  if (isLoading || !quizzes) {
     return <Typography variant="h5">Loading...</Typography>;
   }
 
@@ -274,7 +296,7 @@ const Assessment = () => {
       ) : (
         <>
           {!selectedQuiz &&
-            data.map((quiz) => (
+            quizzes.map((quiz) => (
               <Box
                 key={quiz.id}
                 component={'section'}
@@ -297,7 +319,7 @@ const Assessment = () => {
                     </Box>
 
                     <CardActions className="justify-end flex-[1_1_auto]">
-                      <Box className=" flex flex-col gap-3 w-full md:w-[200px] lg:w-[300px]">
+                      <Box className=" flex flex-col gap-3 w-full md:w-[] lg:w-[300px]">
                         <Button
                           sx={{
                             width: '100%',
@@ -334,7 +356,7 @@ const Assessment = () => {
 
           {selectedQuiz && (
             <>
-              <form className="mt-10" onSubmit={handleSubmit}>
+              <form onSubmit={handleSubmit}>
                 <Slider
                   ref={sliderRef}
                   dots={true}
@@ -387,7 +409,7 @@ const Assessment = () => {
                                   aria-label={`quiz-${questions.id}`}
                                   name={`quiz-${questions.id}`}
                                   value={
-                                    value && value[`quiz-${questions.id}`]
+                                    value[`quiz-${questions.id}`]
                                       ? value[`quiz-${questions.id}`]
                                       : ''
                                   }
@@ -423,7 +445,8 @@ const Assessment = () => {
                       <Button
                         sx={{
                           width: '100%',
-                          maxWidth: '200px',
+                          maxWidth: 'fit-content',
+                          padding: '0.5rem 1rem',
                           background: 'green',
                         }}
                         variant="contained"
@@ -432,29 +455,23 @@ const Assessment = () => {
                         Submit
                       </Button>
 
-                      {currentSlide > 0 && (
-                        <Button
-                          sx={{
-                            width: '100%',
-                            maxWidth: '200px',
-                          }}
-                          variant="contained"
-                          onClick={handlePrev}
-                        >
-                          Previous
-                        </Button>
-                      )}
-
                       <Button
                         sx={{
                           width: '100%',
-                          maxWidth: '200px',
+                          maxWidth: 'fit-content',
+                          padding: '0.5rem 1rem',
+                          '&:disabled': {
+                            backgroundColor: 'rgba(0, 0, 0, 0.1)',
+                          },
                         }}
                         variant="contained"
-                        color="inherit"
-                        onClick={handleCancelButtonClick}
+                        onClick={handlePrev}
+                        disabled={
+                          currentSlide <= 0 || currentSlide > totalSlides
+                        }
+                        endIcon={<ArrowBack />}
                       >
-                        Cancel
+                        Prev
                       </Button>
                     </>
                   ) : (
@@ -462,41 +479,60 @@ const Assessment = () => {
                       <Button
                         sx={{
                           width: '100%',
-                          maxWidth: '200px',
+                          maxWidth: 'fit-content',
+                          padding: '0.5rem 1rem',
                           background: 'green',
+                          '&:disabled': {
+                            backgroundColor: 'rgba(0, 0, 0, 0.1)',
+                          },
                         }}
                         variant="contained"
                         onClick={handleNext}
+                        disabled={currentSlide === totalSlides}
+                        endIcon={
+                          <ArrowBack
+                            sx={{
+                              transform: 'rotate(180deg)',
+                            }}
+                          />
+                        }
                       >
                         Next
                       </Button>
 
-                      {currentSlide > 0 && (
-                        <Button
-                          sx={{
-                            width: '100%',
-                            maxWidth: '200px',
-                          }}
-                          variant="contained"
-                          onClick={handlePrev}
-                        >
-                          Previous
-                        </Button>
-                      )}
-
                       <Button
                         sx={{
                           width: '100%',
-                          maxWidth: '200px',
+                          maxWidth: 'fit-content',
+                          padding: '0.5rem 1rem',
+                          '&:disabled': {
+                            backgroundColor: 'rgba(0, 0, 0, 0.1)',
+                          },
                         }}
                         variant="contained"
-                        color="inherit"
-                        onClick={handleCancelButtonClick}
+                        onClick={handlePrev}
+                        disabled={
+                          currentSlide <= 0 || currentSlide > totalSlides
+                        }
+                        endIcon={<ArrowBack />}
                       >
-                        Cancel
+                        Prev
                       </Button>
                     </>
                   )}
+
+                  <Button
+                    sx={{
+                      width: '100%',
+                      maxWidth: 'fit-content',
+                      padding: '0.5rem 1rem',
+                    }}
+                    variant="contained"
+                    color="error"
+                    onClick={handleCancelButtonClick}
+                  >
+                    <Cancel />
+                  </Button>
                 </CardActions>
               </form>
             </>

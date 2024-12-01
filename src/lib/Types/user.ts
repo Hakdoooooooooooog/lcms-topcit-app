@@ -1,4 +1,4 @@
-import { LoginSchema, RegisterSchema } from "../schema/UserSchema";
+import { LoginSchema, RegisterSchema } from '../schema/UserSchema';
 
 type users = {
   id: bigint;
@@ -10,9 +10,17 @@ type users = {
   role: users_role;
 };
 
-type users_role = "admin" | "user";
+export type UserProgress = {
+  user_id: bigint;
+  completed_lessons: number | null;
+  completed_quizzes: number | null;
+  curr_chap_id: bigint | null;
+  curr_topic_id: bigint | null;
+};
 
-export type UserProfile = Pick<users, "email" | "userid" | "username">;
-export type UpdateProfile = Pick<users, "username">;
-export type UserLogin = (typeof LoginSchema)["_input"];
-export type UserRegister = (typeof RegisterSchema)["_input"];
+type users_role = 'admin' | 'user';
+
+export type UserProfile = Pick<users, 'email' | 'userid' | 'username'>;
+export type UpdateProfile = Pick<users, 'username'>;
+export type UserLogin = (typeof LoginSchema)['_input'];
+export type UserRegister = (typeof RegisterSchema)['_input'];
