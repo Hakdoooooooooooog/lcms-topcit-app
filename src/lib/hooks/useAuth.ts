@@ -1,8 +1,8 @@
-import { useLayoutEffect } from "react";
-import { useAuthUserStore } from "../store";
-import useIdleTimerTracker from "./useIdleTimerTracker";
-import { verifyUserAccessToken } from "../../api/User/userApi";
-import { showToast } from "../../components/ui/Toasts";
+import { useLayoutEffect } from 'react';
+import { useAuthUserStore } from '../store';
+import useIdleTimerTracker from './useIdleTimerTracker';
+import { verifyUserAccessToken } from '../../api/User/userApi';
+import { showToast } from '../../components/ui/Toasts';
 
 export const useAuth = () => {
   const { isIdle, setIsIdle, reset } = useIdleTimerTracker();
@@ -18,14 +18,18 @@ export const useAuth = () => {
         reset();
         try {
           const res = await verifyUserAccessToken();
-          if (res.message === "Access token valid") {
-            return setUserAuth({ isAuth: true, userId: res.userId, userRole: res.role });
+          if (res.message === 'Access token valid') {
+            return setUserAuth({
+              isAuth: true,
+              userId: res.userId,
+              userRole: res.role,
+            });
           }
         } catch (error: any) {
-          if (error && error.message === "Refresh token expired") {
-            showToast("Session expired. Please login again.", "error");
-            setUserAuth({ isAuth: false, userId: "", userRole: "" });
-            localStorage.removeItem("session");
+          if (error && error.message === 'Refresh token expired') {
+            showToast('Session expired. Please login again.', 'error');
+            setUserAuth({ isAuth: false, userId: '', userRole: '' });
+            localStorage.removeItem('session');
           }
         }
       }

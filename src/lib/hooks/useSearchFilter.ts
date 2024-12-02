@@ -31,6 +31,14 @@ const useSearchFilter = <T extends Record<string, any>>(
           return value.toLowerCase().includes(debouncedSearch.toLowerCase());
         }
 
+        if (typeof value === 'string' && key === 'topicName') {
+          return value.toLowerCase().includes(debouncedSearch.toLowerCase());
+        }
+
+        if (typeof value === 'string' && key === 'quizTitle') {
+          return value.toLowerCase().includes(debouncedSearch.toLowerCase());
+        }
+
         return false;
       }),
     );

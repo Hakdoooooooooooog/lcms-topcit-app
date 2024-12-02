@@ -18,7 +18,12 @@ import { getTopicsWithAllChapters } from '../../../../api/User/topicsApi';
 import { ChaptersWithSubChaptersWithinTopic } from '../../../../lib/Types/chapters';
 import { handlePaginatedItems } from '../../../../lib/helpers/utils';
 import { Info } from '@mui/icons-material';
-import { LoadingContentScreen } from '../../../../components/ui/LoadingScreen/LoadingScreen';
+import {
+  LoadingContentScreen,
+  LoadingDataScreen,
+} from '../../../../components/ui/LoadingScreen/LoadingScreen';
+import useSearchFilter from '../../../../lib/hooks/useSearchFilter';
+import { useSearchStore } from '../../../../lib/store';
 
 const Contents = () => {
   const { data: userProgress, isLoading } = useQuery({
@@ -34,6 +39,8 @@ const Contents = () => {
 
   const [isPending, startTransition] = useTransition();
   const [open, setOpen] = useState(false);
+
+  const search = useSearchStore((state) => state.search);
 
   const progress = useMemo(() => {
     const array = [];
@@ -72,6 +79,7 @@ const Contents = () => {
         array.push({
           topicId: topicId,
           topicName: totalChapterPerTopic[i].topicName,
+          totalChapters: totalChapterPerTopic[i].totalChapters,
           progress: 0,
         });
       }
@@ -80,8 +88,10 @@ const Contents = () => {
     return array;
   }, [userProgress, isLoading, totalChapters, isLoadingTotalChapters]);
 
+  const { isSearching, filteredItems } = useSearchFilter(progress, search);
+
   const { page, setPage, totalPages, currentItems } = handlePaginatedItems({
-    items: progress,
+    items: filteredItems,
     itemPerPage: 1,
   });
 
@@ -109,81 +119,122 @@ const Contents = () => {
         </Box>
       ) : (
         <>
-          {currentItems &&
-            currentItems.map((item) => (
-              <Card
-                key={item.topicId}
-                sx={{
-                  padding: '15px',
-                  position: 'relative',
-                }}
-              >
-                <CardHeader
-                  title={`Topic ${item.topicId}: ${item.topicName}`}
-                />
-                <CardContent>
-                  <Box
+          {isSearching ? (
+            <LoadingDataScreen />
+          ) : (
+            <>
+              {currentItems &&
+                currentItems.map((item) => (
+                  <Card
+                    key={item.topicId}
                     sx={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: 5,
+                      padding: '15px',
+                      position: 'relative',
                     }}
                   >
-                    <LinearProgressWithLabel
-                      value={item.progress}
-                      sx={{
-                        height: 50,
-                        borderRadius: 10,
-                      }}
+                    <CardHeader
+                      title={`Topic ${item.topicId}: ${item.topicName}`}
                     />
+                    <CardContent>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: 5,
+                        }}
+                      >
+                        <LinearProgressWithLabel
+                          value={item.progress}
+                          sx={{
+                            height: 50,
+                            borderRadius: 10,
+                          }}
+                        />
 
-                    <Tooltip
-                      title="More Info"
-                      sx={{
-                        position: 'absolute',
-                        right: 0,
-                        top: 0,
-                      }}
-                    >
-                      <CardActions>
-                        <Button size="small" onClick={handleOpen}>
-                          <Info />
-                        </Button>
-                      </CardActions>
-                    </Tooltip>
+                        <Tooltip
+                          title="More Info"
+                          sx={{
+                            position: 'absolute',
+                            right: 0,
+                            top: 0,
+                          }}
+                        >
+                          <CardActions>
+                            <Button size="small" onClick={handleOpen}>
+                              <Info />
+                            </Button>
+                          </CardActions>
+                        </Tooltip>
 
-                    {open && (
-                      <>
-                        {Number(item.topicId) <=
-                        Number(userProgress.curr_topic_id) ? (
-                          <Card sx={{ mt: 2 }}>
-                            <CardContent>
-                              <Typography variant="h6" component="h2">
-                                Current Chapter :
-                                <span>
-                                  {' '}
-                                  {item.progress === 100
-                                    ? item.totalChapters
-                                    : userProgress.curr_chap_id?.toString()}
-                                </span>
-                              </Typography>
-                            </CardContent>
-                          </Card>
-                        ) : (
-                          <Card sx={{ mt: 2 }}>
-                            <CardContent>
-                              <Typography variant="h6" component="h2">
-                                Completed Chapters : <span> 0 </span>
-                              </Typography>
-                            </CardContent>
-                          </Card>
+                        {open && (
+                          <>
+                            {Number(item.topicId) <=
+                            Number(userProgress.curr_topic_id) ? (
+                              <Card sx={{ mt: 2 }}>
+                                <CardContent>
+                                  <Typography variant="h6" component="h2">
+                                    Status :{' '}
+                                    <span>
+                                      {item.progress === 100
+                                        ? 'Completed'
+                                        : 'Not Completed'}
+                                    </span>
+                                  </Typography>
+
+                                  <Typography variant="h6" component="h2">
+                                    Current Chapter :{' '}
+                                    <span>
+                                      {item.progress === 100
+                                        ? item.totalChapters
+                                        : userProgress.curr_chap_id?.toString()}
+                                    </span>
+                                  </Typography>
+
+                                  <Typography variant="h6" component="h2">
+                                    Total Chapters :{' '}
+                                    <span>
+                                      {item.totalChapters
+                                        ? item.totalChapters
+                                        : 'Not Available'}
+                                    </span>
+                                  </Typography>
+                                </CardContent>
+                              </Card>
+                            ) : (
+                              <Card sx={{ mt: 2 }}>
+                                <CardContent>
+                                  <Typography variant="h6" component="h2">
+                                    Status :{' '}
+                                    <span>
+                                      {item.progress === 100
+                                        ? 'Completed'
+                                        : 'Not Completed'}
+                                    </span>
+                                  </Typography>
+
+                                  <Typography variant="h6" component="h2">
+                                    Current Chapter : <span>0</span>
+                                  </Typography>
+
+                                  <Typography variant="h6" component="h2">
+                                    Total Chapters :{' '}
+                                    <span>
+                                      {item.totalChapters
+                                        ? item.totalChapters
+                                        : 'Not Available'}
+                                    </span>
+                                  </Typography>
+                                </CardContent>
+                              </Card>
+                            )}
+                          </>
                         )}
-                      </>
-                    )}
-                  </Box>
-                </CardContent>
-              </Card>
-            ))}
+                      </Box>
+                    </CardContent>
+                  </Card>
+                ))}
+            </>
+          )}
         </>
       )}
 
