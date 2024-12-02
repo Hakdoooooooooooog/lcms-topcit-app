@@ -8,8 +8,4 @@
     scroll-behavior: smooth;
     box-sizing: border-box;
   }
-
-  html {
-    font-family: url('./NotoSans-VariableFont_wdth,wght.ttf') format('truetype');
-  }
 }
