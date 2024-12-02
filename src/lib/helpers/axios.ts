@@ -1,5 +1,5 @@
-import axios from "axios";
-import { updateUserAccessToken } from "../../api/User/userApi";
+import axios from 'axios';
+import { updateUserAccessToken } from '../../api/User/userApi';
 export const axiosRootApiUrl = axios.create({
   baseURL: import.meta.env.VITE_APP_BASE_API_URL,
   withCredentials: true,
@@ -41,7 +41,7 @@ export const uploadInstance = axios.create({
 });
 
 userInstance.interceptors.request.use((config) => {
-  const userData = JSON.parse(localStorage.getItem("session") || "{}");
+  const userData = JSON.parse(localStorage.getItem('session') || '{}');
   const userId = userData.state.user.userId;
   const isAuth = userData.state.user.isAuth;
 
@@ -54,7 +54,7 @@ userInstance.interceptors.request.use((config) => {
 });
 
 accessTokenInstance.interceptors.request.use((config) => {
-  const userData = JSON.parse(localStorage.getItem("session") || "{}");
+  const userData = JSON.parse(localStorage.getItem('session') || '{}');
   const userId = userData.state.user.userId;
   const isAuth = userData.state.user.isAuth;
 
@@ -71,7 +71,7 @@ accessTokenInstance.interceptors.response.use(
     return response;
   },
   async (error) => {
-    if (error.response.data.message === "Access token expired") {
+    if (error.response.data.message === 'Access token expired') {
       try {
         const response = await updateUserAccessToken();
         return response;
@@ -79,11 +79,11 @@ accessTokenInstance.interceptors.response.use(
         return error;
       }
     }
-  }
+  },
 );
 
 chapterInstance.interceptors.request.use((config) => {
-  const userData = JSON.parse(localStorage.getItem("session") || "{}");
+  const userData = JSON.parse(localStorage.getItem('session') || '{}');
   const userId = userData.state.user.userId;
   const isAuth = userData.state.user.isAuth;
 
@@ -96,7 +96,7 @@ chapterInstance.interceptors.request.use((config) => {
 });
 
 topicInstance.interceptors.request.use((config) => {
-  const userData = JSON.parse(localStorage.getItem("session") || "{}");
+  const userData = JSON.parse(localStorage.getItem('session') || '{}');
   const userId = userData.state.user.userId;
   const isAuth = userData.state.user.isAuth;
 
@@ -112,18 +112,22 @@ const pendingRequests = new Map();
 
 chapterPDFInstance.interceptors.request.use(
   (config) => {
-    const userData = JSON.parse(localStorage.getItem("session") || "{}");
+    const userData = JSON.parse(localStorage.getItem('session') || '{}');
     const userId = userData.state.user.userId;
     const isAuth = userData.state.user.isAuth;
+    const userRole = userData.state.user.userRole;
     const requestKey = `${config.method}_${config.url}`;
 
     config.params = {
       isAuth: isAuth,
       userId: userId,
+      userRole: userRole,
     };
 
     if (pendingRequests.has(requestKey)) {
-      pendingRequests.get(requestKey).cancel("Request cancelled due to new request");
+      pendingRequests
+        .get(requestKey)
+        .cancel('Request cancelled due to new request');
     }
 
     const cancelToken = axios.CancelToken.source();
@@ -134,7 +138,7 @@ chapterPDFInstance.interceptors.request.use(
   },
   (error) => {
     return Promise.reject(error);
-  }
+  },
 );
 
 chapterPDFInstance.interceptors.response.use(
@@ -148,5 +152,5 @@ chapterPDFInstance.interceptors.response.use(
       return Promise.resolve();
     }
     return Promise.reject(error);
-  }
+  },
 );
