@@ -159,7 +159,7 @@ const Contents = () => {
                           <Card sx={{ mt: 2 }}>
                             <CardContent>
                               <Typography variant="h6" component="h2">
-                                Completed Chapters :
+                                Current Chapter :
                                 <span>
                                   {' '}
                                   {item.progress === 100
