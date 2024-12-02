@@ -25,7 +25,7 @@ const PDFViewer = memo(
     const [loadProgress, setLoadProgress] = useState<number>(0);
     const [file, setFile] = useState<File | string | null>(null);
 
-    pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${PDFversion}/pdf.worker.min.js`;
+    pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${PDFversion}/build/pdf.worker.min.mjs`;
 
     const options = useMemo(
       () => ({
@@ -77,64 +77,87 @@ const PDFViewer = memo(
 
     return (
       <Box component={'div'} className="relative py-12 w-full">
-        <Document
-          className={styles.pdfDocument}
-          options={options}
-          file={file}
-          onLoadSuccess={onDocumentLoadSuccess}
-          onLoadProgress={({ loaded, total }) =>
-            setLoadProgress(Math.round((loaded / total) * 100))
-          }
-          loading={
-            <Box component={'div'} className={styles.pdfLoading}>
-              Loading PDF... {loadProgress}%
-            </Box>
-          }
-        >
-          <Page
-            loading={
-              <Box component={'div'} className={styles.pdfLoading}>
-                <LoadingDataScreen />
-              </Box>
-            }
-            width={
-              window.innerWidth > 768
-                ? window.innerWidth * 0.35
-                : window.innerWidth * 0.75
-            }
-            className="!bg-transparent"
-            pageNumber={pageNumber}
-            renderAnnotationLayer={false}
-            renderTextLayer={false}
-          />
-        </Document>
-
-        {!isLoading ? (
+        {file === 'placeholder' ? (
           <>
-            <Button
-              variant="outlined"
-              onClick={handleDownload}
+            <Box
+              component={'div'}
               sx={{
-                position: 'absolute',
-                zIndex: 1,
-                top: '0',
-                right: '0',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                height: '100%',
+                width: '100%',
               }}
             >
-              <Download />
-            </Button>
-
-            <Box component={'div'} className={styles.pdfControls}>
-              <PDFControls
-                props={{
-                  pageNumber,
-                  setPageNumber,
-                  numPages: numPages ?? 1,
-                }}
+              <img
+                src="./locked_chapter.png"
+                alt="Locked Chapter"
+                className="w-full h-auto object-contain"
               />
             </Box>
           </>
-        ) : null}
+        ) : (
+          <>
+            <Document
+              className={styles.pdfDocument}
+              options={options}
+              file={file}
+              onLoadSuccess={onDocumentLoadSuccess}
+              onLoadProgress={({ loaded, total }) =>
+                setLoadProgress(Math.round((loaded / total) * 100))
+              }
+              loading={
+                <Box component={'div'} className={styles.pdfLoading}>
+                  Loading PDF... {loadProgress}%
+                </Box>
+              }
+            >
+              <Page
+                loading={
+                  <Box component={'div'} className={styles.pdfLoading}>
+                    <LoadingDataScreen />
+                  </Box>
+                }
+                width={
+                  window.innerWidth > 768
+                    ? window.innerWidth * 0.35
+                    : window.innerWidth * 0.75
+                }
+                className="!bg-transparent"
+                pageNumber={pageNumber}
+                renderAnnotationLayer={false}
+                renderTextLayer={false}
+              />
+            </Document>
+
+            {!isLoading ? (
+              <>
+                <Button
+                  variant="outlined"
+                  onClick={handleDownload}
+                  sx={{
+                    position: 'absolute',
+                    zIndex: 1,
+                    top: '0',
+                    right: '0',
+                  }}
+                >
+                  <Download />
+                </Button>
+
+                <Box component={'div'} className={styles.pdfControls}>
+                  <PDFControls
+                    props={{
+                      pageNumber,
+                      setPageNumber,
+                      numPages: numPages ?? 1,
+                    }}
+                  />
+                </Box>
+              </>
+            ) : null}
+          </>
+        )}
       </Box>
     );
   },

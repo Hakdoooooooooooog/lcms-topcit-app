@@ -147,7 +147,7 @@ export const AccordionChapter = (props: {
                   }}
                   title={`Chapter ${chapter.chapter_number}: ${chapter.title}`}
                   action={
-                    <Button variant="contained" color="primary">
+                    <Button variant="outlined" color="primary" disabled>
                       <LockClosedIcon className="h-5 w-5" />
                     </Button>
                   }

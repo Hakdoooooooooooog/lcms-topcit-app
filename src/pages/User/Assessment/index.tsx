@@ -6,8 +6,9 @@ import React, {
   useState,
   useTransition,
 } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { useSearchParams, useBlocker } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { useAuthUserStore } from '../../../lib/store';
 import {
   objective_questions,
   QuizWithQuestions,
@@ -27,14 +28,16 @@ import {
   RadioGroup,
   Typography,
 } from '@mui/material';
-import { useAuthUserStore } from '../../../lib/store';
 import { LoadingContentScreen } from '../../../components/ui/LoadingScreen/LoadingScreen';
-import { styledModal, tutorialSteps } from '../../../lib/constants';
+import {
+  slickSettings,
+  styledModal,
+  tutorialSteps,
+} from '../../../lib/constants';
 import Slider from 'react-slick';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
-import { ArrowBack, Cancel } from '@mui/icons-material';
-
+import { ArrowBack, ArrowForward, Cancel } from '@mui/icons-material';
 const Assessment = () => {
   // Quizzes
   const { data: quizzes, isLoading } = useQuery<QuizWithQuestions[]>({
@@ -49,7 +52,7 @@ const Assessment = () => {
 
   // References Values
   let sliderRef = useRef<Slider>(null);
-  const isInitialMount = useRef(true);
+  let sliderTutorialRef = useRef<Slider>(null);
 
   // State Managements
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -57,6 +60,8 @@ const Assessment = () => {
   const [value, setValue] = useState<{ [key: string]: string }>({});
   const [open, setOpen] = useState(false);
   const [tutorialOpen, setTutorialOpen] = useState(false);
+
+  // Transition
   const [isPending, startTransition] = useTransition();
 
   // Selected Quiz
@@ -98,6 +103,8 @@ const Assessment = () => {
     if (!topicId) {
       setSelectedQuiz(null);
       setTutorialOpen(false);
+      setCurrentSlide(0);
+      setValue({});
     } else {
       setSelectedQuiz(quizContent);
       setTotalSlides(quizContent.length - 1);
@@ -106,25 +113,10 @@ const Assessment = () => {
   }, [quizContent, topicId]);
 
   useEffect(() => {
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      return;
-    }
-
-    if (isBlocking && blocker.state === 'blocked') {
+    if (isBlocking && blocker.state === 'blocked' && !open) {
       setOpen(true);
-      blocker.reset();
-      return;
     }
-
-    if (!isBlocking && blocker.state === 'unblocked') {
-      startTransition(() => {
-        setSearchParams({}, { replace: true });
-        setOpen(false);
-        setValue({});
-      });
-    }
-  }, [isBlocking, blocker, isInitialMount]);
+  }, [isBlocking, blocker, open]);
 
   const handleRadioChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -149,29 +141,46 @@ const Assessment = () => {
     setOpen(true);
   };
 
-  const handleCloseModal = () => {
-    setOpen(false);
-  };
+  const handleCloseModal = useCallback(() => {
+    if (isBlocking && blocker.state === 'blocked') {
+      setOpen(false);
+      blocker.reset();
+    } else {
+      setOpen(false);
+    }
+  }, [isBlocking, blocker]);
 
   const handleConfirmCancel = useCallback(() => {
-    if (isBlocking) {
+    if (isBlocking && blocker.state === 'blocked') {
+      blocker.proceed();
       setBlocking(false);
       setOpen(false);
     } else {
       startTransition(() => {
         setSearchParams({}, { replace: true });
         setOpen(false);
-        setValue({});
       });
     }
-  }, [isBlocking, startTransition]);
+  }, [isBlocking, blocker]);
 
   const handleNext = () => {
-    sliderRef.current?.slickNext();
+    if (sliderRef.current) {
+      sliderRef.current.slickNext();
+    }
+
+    if (sliderTutorialRef.current) {
+      sliderTutorialRef.current.slickNext();
+    }
   };
 
   const handlePrev = () => {
-    sliderRef.current?.slickPrev();
+    if (sliderRef.current) {
+      sliderRef.current.slickPrev();
+    }
+
+    if (sliderTutorialRef.current) {
+      sliderTutorialRef.current.slickPrev();
+    }
   };
 
   const renderCancelModal = useCallback(() => {
@@ -185,7 +194,7 @@ const Assessment = () => {
             justifyContent: 'center',
             alignItems: 'center',
             textAlign: 'center',
-            gap: '1rem',
+            gap: '2rem',
           }}
           className="sm:max-w-md"
         >
@@ -225,24 +234,16 @@ const Assessment = () => {
             alignItems: 'center',
             gap: '1rem',
           }}
-          className="sm:max-w-md"
+          className="slider-container sm:max-w-md"
         >
           <Typography variant="h5" className="self-start">
             Instructions:
           </Typography>
-          <Slider
-            dots={true}
-            arrows={false}
-            infinite={false}
-            speed={500}
-            slidesToShow={1}
-            adaptiveHeight={true}
-            className="w-full absolute"
-          >
+          <Slider {...slickSettings} className="w-full" ref={sliderTutorialRef}>
             {tutorialSteps.map((step, index) => (
               <Card
                 key={index}
-                className="sm:!flex flex-col justify-between gap-5 p-4"
+                className="sm:!flex flex-col justify-between items-center gap-5 px-4 pt-4"
               >
                 <CardHeader title={step.label} />
 
@@ -254,11 +255,12 @@ const Assessment = () => {
                     alt={step.label}
                     sx={{
                       width: '100%',
-                      height: 'auto',
+                      height: '100%',
                       objectFit: 'cover',
                       borderRadius: '5px',
                       boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
                       border: '1px solid #e0e0e0',
+                      maxHeight: '15rem',
                     }}
                   />
                 </CardContent>
@@ -280,7 +282,7 @@ const Assessment = () => {
         </Box>
       </Modal>
     ),
-    [tutorialOpen],
+    [tutorialOpen, tutorialSteps],
   );
 
   if (isLoading || !quizzes) {
@@ -356,28 +358,25 @@ const Assessment = () => {
 
           {selectedQuiz && (
             <>
-              <form onSubmit={handleSubmit}>
+              <Button
+                variant="contained"
+                color="info"
+                onClick={() => {
+                  setTutorialOpen(true);
+                }}
+                sx={{
+                  position: 'fixed',
+                  right: '1rem',
+                  bottom: '1rem',
+                }}
+              >
+                Tutorial
+              </Button>
+
+              <form onSubmit={handleSubmit} className="slider-container">
                 <Slider
+                  {...slickSettings}
                   ref={sliderRef}
-                  dots={true}
-                  infinite={false}
-                  speed={500}
-                  slidesToShow={1}
-                  adaptiveHeight={true}
-                  appendDots={(dots) => {
-                    return (
-                      <Box
-                        sx={{
-                          display: 'flex',
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                          gap: '1rem',
-                        }}
-                      >
-                        {dots}
-                      </Box>
-                    );
-                  }}
                   afterChange={(index) => {
                     setCurrentSlide(index);
                   }}
@@ -393,7 +392,7 @@ const Assessment = () => {
                         </Box>
                       </Box>
 
-                      <CardContent className="flex flex-col flex-[1_1_auto] gap-3 w-full  h-[450px] sm:max-h-fit">
+                      <CardContent className="flex flex-col flex-[1_1_auto] gap-3 w-full h-[450px] sm:max-h-fit">
                         <Card
                           className="flex flex-col gap-3 p-4 h-full"
                           sx={{
@@ -489,13 +488,7 @@ const Assessment = () => {
                         variant="contained"
                         onClick={handleNext}
                         disabled={currentSlide === totalSlides}
-                        endIcon={
-                          <ArrowBack
-                            sx={{
-                              transform: 'rotate(180deg)',
-                            }}
-                          />
-                        }
+                        endIcon={<ArrowForward />}
                       >
                         Next
                       </Button>

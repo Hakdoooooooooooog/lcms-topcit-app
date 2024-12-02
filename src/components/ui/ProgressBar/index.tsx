@@ -3,48 +3,48 @@ import {
   LinearProgress,
   LinearProgressProps,
   Typography,
-} from "@mui/material";
+} from '@mui/material';
 
 const LinearProgressWithLabel = (
-  props: LinearProgressProps & { value: number }
+  props: LinearProgressProps & { value: number },
 ) => {
-  let color = "primary";
+  let color = 'primary';
 
   if (props.value > 0 && props.value < 100) {
-    color = "warning";
+    color = 'warning';
   } else if (props.value === 100) {
-    color = "success";
+    color = 'success';
   }
 
   return (
     <Box
       sx={{
-        position: "relative",
-        height: "50px",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
+        position: 'relative',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100%',
       }}
     >
-      <Box sx={{ width: "100%", mr: 1, position: "absolute" }}>
+      <Box sx={{ width: '100%', mr: 1, position: 'absolute' }}>
         <LinearProgress
           variant="determinate"
           color={
             color as
-              | "inherit"
-              | "primary"
-              | "secondary"
-              | "error"
-              | "info"
-              | "success"
-              | "warning"
+              | 'inherit'
+              | 'primary'
+              | 'secondary'
+              | 'error'
+              | 'info'
+              | 'success'
+              | 'warning'
           }
           {...props}
         />
       </Box>
-      <Box sx={{ minWidth: 35, position: "absolute" }}>
+      <Box sx={{ minWidth: 35, position: 'absolute' }}>
         <Typography variant="body2" color="text.secondary">{`${Math.round(
-          props.value
+          props.value,
         )}%`}</Typography>
       </Box>
     </Box>

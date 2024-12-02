@@ -1,4 +1,4 @@
-import { Card, CardContent } from "@mui/material";
+import { Card, CardContent } from '@mui/material';
 
 const ResourceLibrary = () => {
   return (
@@ -9,8 +9,13 @@ const ResourceLibrary = () => {
             Learning <span className="text-green-800">Hub</span>
           </h1>
           <p>
-            This is the resource library page of the Learning Hub. Here you can
-            find the resources for the course you are enrolled in.
+            Lorem ipsum dolor sit, amet consectetur adipisicing elit. Maxime
+            quia perspiciatis, voluptatibus sapiente placeat facilis optio
+            aliquid maiores. Nihil doloribus perspiciatis aperiam eligendi aut
+            minima vel atque odit facere. Quos. Eveniet, ad dolore quo inventore
+            rem maxime vitae, accusantium, quasi alias libero velit iste
+            corrupti voluptate quisquam dolor nam. Hic illo fugit repellendus ut
+            possimus! Culpa fugit explicabo unde eaque.
           </p>
         </CardContent>
       </Card>

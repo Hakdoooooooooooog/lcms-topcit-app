@@ -2,6 +2,7 @@ import { styled, alpha, hexToRgb, TextareaAutosize } from '@mui/material';
 import InputBase from '@mui/material/InputBase';
 import { InputProps, LinkProps } from './Types/types';
 import { lazy } from 'react';
+import { Settings } from 'react-slick';
 
 // Search bar styles
 export const Search = styled('div')(({ theme }) => ({
@@ -66,6 +67,15 @@ export const styledModal = {
   border: '2px solid #000',
   boxShadow: 24,
   p: 4,
+};
+
+export const slickSettings: Settings = {
+  dots: true,
+  arrows: false,
+  infinite: false,
+  speed: 500,
+  slidesToShow: 1,
+  adaptiveHeight: true,
 };
 
 const blue = {
@@ -494,7 +504,7 @@ export const tutorialSteps = [
   {
     label: 'Step 2',
     content: 'Click the "Next" button to move to the next question.',
-    img: './queen-dont-cry.png',
+    img: './chillguy-gID_7.webp',
   },
   {
     label: 'Step 3',

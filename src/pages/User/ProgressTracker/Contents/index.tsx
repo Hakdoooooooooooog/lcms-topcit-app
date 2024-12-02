@@ -1,27 +1,207 @@
-import { Box, Typography } from '@mui/material';
+import {
+  Box,
+  Button,
+  Card,
+  CardActions,
+  CardContent,
+  CardHeader,
+  Pagination,
+  Stack,
+  Tooltip,
+  Typography,
+} from '@mui/material';
+import LinearProgressWithLabel from '../../../../components/ui/ProgressBar';
+import { useQuery } from '@tanstack/react-query';
+import { getUserProgress } from '../../../../api/User/userApi';
+import { useMemo, useState, useTransition } from 'react';
+import { getTopicsWithAllChapters } from '../../../../api/User/topicsApi';
+import { ChaptersWithSubChaptersWithinTopic } from '../../../../lib/Types/chapters';
+import { handlePaginatedItems } from '../../../../lib/helpers/utils';
+import { Info } from '@mui/icons-material';
+import { LoadingContentScreen } from '../../../../components/ui/LoadingScreen/LoadingScreen';
 
 const Contents = () => {
-  return (
-    <Box
-      component="div"
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        width: '100%',
-        height: '100%',
-        padding: '0 20px',
-        overflowY: 'auto',
-        overflowX: 'hidden',
-      }}
-    >
-      <Typography variant="h5" sx={{ fontWeight: 600, marginBottom: '20px' }}>
-        Progress Tracker
-      </Typography>
+  const { data: userProgress, isLoading } = useQuery({
+    queryKey: ['userProgressAssessment'],
+    queryFn: getUserProgress,
+  });
+  const { data: totalChapters, isLoading: isLoadingTotalChapters } = useQuery<
+    ChaptersWithSubChaptersWithinTopic[]
+  >({
+    queryKey: ['totalQuiz'],
+    queryFn: getTopicsWithAllChapters,
+  });
 
-      <Typography variant="body1">
-        This page is under construction. Please check back later.
-      </Typography>
-    </Box>
+  const [isPending, startTransition] = useTransition();
+  const [open, setOpen] = useState(false);
+
+  const progress = useMemo(() => {
+    const array = [];
+    if (!userProgress || isLoading) {
+      return [];
+    }
+
+    if (!userProgress.curr_chap_id || !totalChapters) {
+      return [];
+    }
+
+    let currentUserChapterId = Number(userProgress.curr_chap_id);
+    let currentTopicId = Number(userProgress.curr_topic_id);
+
+    const totalChapterPerTopic = totalChapters.map((topic) => {
+      return {
+        topicId: topic.id,
+        topicName: topic.topictitle,
+        totalChapters: topic.chapters.length,
+      };
+    });
+
+    for (let i = 0; i < totalChapterPerTopic.length; i++) {
+      let topicId = totalChapterPerTopic[i].topicId;
+
+      if (currentTopicId === Number(topicId)) {
+        array.push({
+          topicId: topicId,
+          topicName: totalChapterPerTopic[i].topicName,
+          totalChapters: totalChapterPerTopic[i].totalChapters,
+          progress:
+            (currentUserChapterId / totalChapterPerTopic[i].totalChapters) *
+            100,
+        });
+      } else {
+        array.push({
+          topicId: topicId,
+          topicName: totalChapterPerTopic[i].topicName,
+          progress: 0,
+        });
+      }
+    }
+
+    return array;
+  }, [userProgress, isLoading, totalChapters, isLoadingTotalChapters]);
+
+  const { page, setPage, totalPages, currentItems } = handlePaginatedItems({
+    items: progress,
+    itemPerPage: 1,
+  });
+
+  const handleOpen = () => {
+    setOpen(!open);
+  };
+
+  if (!userProgress || isLoading || !totalChapters || isLoadingTotalChapters) {
+    return <div>Loading...</div>;
+  }
+
+  return (
+    <>
+      {isPending ? (
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: '100%',
+            width: '100%',
+          }}
+        >
+          <LoadingContentScreen />
+        </Box>
+      ) : (
+        <>
+          {currentItems &&
+            currentItems.map((item) => (
+              <Card
+                key={item.topicId}
+                sx={{
+                  padding: '15px',
+                  position: 'relative',
+                }}
+              >
+                <CardHeader
+                  title={`Topic ${item.topicId}: ${item.topicName}`}
+                />
+                <CardContent>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 5,
+                    }}
+                  >
+                    <LinearProgressWithLabel
+                      value={item.progress}
+                      sx={{
+                        height: 50,
+                        borderRadius: 10,
+                      }}
+                    />
+
+                    <Tooltip
+                      title="More Info"
+                      sx={{
+                        position: 'absolute',
+                        right: 0,
+                        top: 0,
+                      }}
+                    >
+                      <CardActions>
+                        <Button size="small" onClick={handleOpen}>
+                          <Info />
+                        </Button>
+                      </CardActions>
+                    </Tooltip>
+
+                    {open && (
+                      <>
+                        {Number(item.topicId) <=
+                        Number(userProgress.curr_topic_id) ? (
+                          <Card sx={{ mt: 2 }}>
+                            <CardContent>
+                              <Typography variant="h6" component="h2">
+                                Completed Chapters :
+                                <span>
+                                  {' '}
+                                  {item.progress === 100
+                                    ? item.totalChapters
+                                    : userProgress.curr_chap_id?.toString()}
+                                </span>
+                              </Typography>
+                            </CardContent>
+                          </Card>
+                        ) : (
+                          <Card sx={{ mt: 2 }}>
+                            <CardContent>
+                              <Typography variant="h6" component="h2">
+                                Completed Chapters : <span> 0 </span>
+                              </Typography>
+                            </CardContent>
+                          </Card>
+                        )}
+                      </>
+                    )}
+                  </Box>
+                </CardContent>
+              </Card>
+            ))}
+        </>
+      )}
+
+      <Stack spacing={2} sx={{ marginTop: '2rem' }}>
+        <Pagination
+          size="large"
+          shape="rounded"
+          count={totalPages}
+          page={page}
+          onChange={(_event, value) =>
+            startTransition(() => {
+              setPage(value);
+              setOpen(false);
+            })
+          }
+        />
+      </Stack>
+    </>
   );
 };
 
