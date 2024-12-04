@@ -14,7 +14,7 @@ import {
 
 export const userLogin = async (login: UserLogin) => {
   return await axiosRootApiUrl
-    .post('/api/auth/login', login)
+    .post('/auth/login', login)
     .then((res) => res.data)
     .catch((error) => {
       return error.response.data;
