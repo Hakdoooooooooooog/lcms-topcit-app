@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { NavLink } from 'react-router-dom';
 import MenuIcon from '@mui/icons-material/Menu';
 import headerStyle from './Header.module.css';
@@ -24,35 +25,33 @@ const Header = ({ links }: { links: LinkProps[] }) => {
   const user = useAuthUserStore((state) => state.user);
   const setUserAuth = useAuthUserStore((state) => state.setUserAuth);
 
-  const itemLinks = links[0].sublinks
-    ?.filter((sublink) => sublink.name !== 'Home' && sublink.name !== 'About')
-    .map((sublink, index) => {
-      if (sublink.name === 'Admin' && user.userRole !== 'admin') {
-        return null;
-      }
-      return (
-        sublink.href &&
-        (user.isAuth && user.userRole === 'admin'
-          ? sublink.name !== 'Join Us' && (
-              <NavLink
-                key={index}
-                to={sublink.href}
-                className={headerStyle.link}
-              >
+  const itemLinks = useMemo(
+    () =>
+      links[0].sublinks
+        ?.filter(
+          (sublink) => sublink.name !== 'Home' && sublink.name !== 'About',
+        )
+        .map((sublink, index) => {
+          if (sublink.name === 'Join Us' && user.isAuth) {
+            return null;
+          }
+
+          return sublink.href && user.userRole === 'admin' ? (
+            sublink.name === 'Admin' ? (
+              <NavLink key={index} to={sublink.href} id={sublink.name}>
                 {sublink.name}
               </NavLink>
-            )
-          : sublink.name === 'Join Us' && (
-              <NavLink
-                key={index}
-                to={sublink.href}
-                className={headerStyle.link}
-              >
+            ) : null
+          ) : sublink.href && user.userRole !== 'admin' ? (
+            sublink.name !== 'Admin' ? (
+              <NavLink key={index} to={sublink.href || ''} id={sublink.name}>
                 {sublink.name}
               </NavLink>
-            ))
-      );
-    });
+            ) : null
+          ) : null;
+        }),
+    [links, user.isAuth, user.userRole],
+  );
 
   const handleLogout = async () => {
     const res = await userLogout();
