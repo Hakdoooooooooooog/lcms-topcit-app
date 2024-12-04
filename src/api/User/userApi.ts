@@ -8,7 +8,7 @@ import {
   UserLogin,
   UserProfile,
   UserProgress,
-  UserProgressData,
+  // UserProgressData,
   UserRegister,
 } from '../../lib/Types/user';
 
