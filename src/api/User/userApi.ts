@@ -17,7 +17,7 @@ export const userLogin = async (login: UserLogin) => {
     .post('/auth/login', login)
     .then((res) => res.data)
     .catch((error) => {
-      return error.response.data;
+      throw error.response.data;
     });
 };
 
@@ -26,7 +26,7 @@ export const userRegister = async (register: UserRegister) => {
     .post('/auth/register', register)
     .then((res) => res.data)
     .catch((error) => {
-      return error.response.data;
+      throw error.response.data;
     });
 };
 
