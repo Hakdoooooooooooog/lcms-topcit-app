@@ -11,7 +11,9 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  height: 30rem;
+  height: auto;
+  min-height: 24rem;
+  width: 100%;
 }
 
 .pdfControls {

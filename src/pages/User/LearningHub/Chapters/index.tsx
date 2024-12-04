@@ -13,7 +13,7 @@ import { useSearchStore } from '../../../../lib/store';
 import { handlePaginatedItems } from '../../../../lib/helpers/utils';
 
 // Components & Types
-import { Topic } from '../../../../lib/Types/topics';
+import { Topics } from '../../../../lib/Types/topics';
 import { getTopicsWithAllChapters } from '../../../../api/User/topicsApi';
 import { EyeIcon, LockClosedIcon } from '@heroicons/react/16/solid';
 import { Card, CardHeader, Button, Stack, Pagination } from '@mui/material';
@@ -56,7 +56,7 @@ const TopcitContents = () => {
 
   // Pagination
   const { page, setPage, totalPages, currentItems } =
-    handlePaginatedItems<Topic>({
+    handlePaginatedItems<Topics>({
       items: filteredTopic,
     });
 
@@ -82,8 +82,12 @@ const TopcitContents = () => {
     return null;
   }, [isSearching]);
 
-  if (isLoading || !topicContents || isProgressLoading || !userProgress) {
-    return <div>Loading...</div>;
+  if (isLoading || !topicContents) {
+    return <LoadingContentScreen />;
+  }
+
+  if (isProgressLoading || !userProgress) {
+    return <LoadingContentScreen />;
   }
   return (
     <>
@@ -98,8 +102,8 @@ const TopcitContents = () => {
         <>
           {currentItems.map((topic) => {
             if (
-              userProgress.curr_topic_id !== null &&
-              userProgress.curr_topic_id >= topic.id
+              userProgress.user_progress?.curr_topic_id !== undefined &&
+              userProgress.user_progress?.curr_topic_id >= topic.id
             ) {
               return (
                 <Card
@@ -170,10 +174,13 @@ const TopcitContents = () => {
         </>
       )}
 
-      {selectedChaptersWithinTopicId && topicId && (
+      {selectedChaptersWithinTopicId && userProgress.user_progress && (
         <AccordionChapters
           chapters={selectedChaptersWithinTopicId}
-          currentChapterId={userProgress.curr_chap_id?.toString() || ''}
+          currentChapterId={
+            userProgress.user_progress.curr_chap_id?.toString() || ''
+          }
+          userCompletedChapterProgress={userProgress.user_completed_chapters}
           search={search}
         />
       )}

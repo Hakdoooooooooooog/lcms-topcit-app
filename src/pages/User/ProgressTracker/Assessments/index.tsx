@@ -43,12 +43,13 @@ const Assessments = () => {
       return [];
     }
 
-    const completedQuiz = Number(userProgress.completed_quizzes);
+    const completedQuiz = Number(userProgress.user_progress?.completed_quizzes);
+    const currentQuiz = Number(userProgress.user_progress?.curr_quiz_id);
 
     for (let i = 0; i < totalQuiz.length; i++) {
       let quizId = totalQuiz[i].id;
 
-      if (completedQuiz >= quizId) {
+      if (completedQuiz >= quizId && currentQuiz >= quizId) {
         array.push({
           quizId: quizId,
           quizTitle: totalQuiz[i].title,

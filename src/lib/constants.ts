@@ -499,21 +499,26 @@ export const tutorialSteps = [
     label: 'Step 1',
     content: `Use the arrow keys to navigate through the questions or
     swipe left or right on mobile devices.`,
-    img: './chillguy-gID_7.webp',
+    img: 'https://placehold.co/1024x720',
   },
   {
     label: 'Step 2',
     content: 'Click the "Next" button to move to the next question.',
-    img: './chillguy-gID_7.webp',
+    img: 'https://placehold.co/1024x720',
   },
   {
     label: 'Step 3',
     content: 'Click the "Previous" button to move to the previous question.',
-    img: './chillguy-gID_7.webp',
+    img: 'https://placehold.co/1024x720',
   },
   {
     label: 'Step 4',
     content: 'Click the "Submit" button to submit your answers.',
-    img: './chillguy-gID_7.webp',
+    img: 'https://placehold.co/1024x720',
   },
 ];
+
+export const options = {
+  cMapUrl: `https://unpkg.com/pdfjs-dist@4.4.168/cmaps/`,
+  standardFontDataUrl: `https://unpkg.com/pdfjs-dist@4.4.168/standard_fonts`,
+};

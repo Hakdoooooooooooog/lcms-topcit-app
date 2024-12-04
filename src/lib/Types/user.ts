@@ -10,12 +10,44 @@ type users = {
   role: users_role;
 };
 
-export type UserProgress = {
+export type UsersProgress = {
+  completed_lessons: number;
+  completed_quizzes: number;
+  curr_chap_id: bigint;
+  curr_topic_id: bigint;
+  curr_quiz_id: bigint;
+};
+
+export type UserCompletedChapters = {
+  id: bigint;
   user_id: bigint;
-  completed_lessons: number | null;
-  completed_quizzes: number | null;
-  curr_chap_id: bigint | null;
-  curr_topic_id: bigint | null;
+  chapter_id: bigint;
+  completion_status: string | null;
+  completed_at: Date | null;
+};
+
+export type UserProgressData = {
+  Topics: {
+    id: bigint;
+    topictitle: string | null;
+    description: string | null;
+    chapters: {
+      id: bigint;
+      title: string | null;
+      sub_title: string | null;
+    }[];
+  }[];
+  userProgress:
+    | (Pick<users, 'userid' | 'username'> & {
+        user_progress: UsersProgress | null;
+        user_completed_chapters: UserCompletedChapters[];
+      })
+    | null;
+};
+
+export type UserProgress = Pick<users, 'userid' | 'username'> & {
+  user_progress: UsersProgress | null;
+  user_completed_chapters: UserCompletedChapters[];
 };
 
 type users_role = 'admin' | 'user';

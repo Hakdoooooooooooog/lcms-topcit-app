@@ -1,4 +1,4 @@
-import React, {
+import {
   useCallback,
   useEffect,
   useMemo,
@@ -38,6 +38,11 @@ import Slider from 'react-slick';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import { ArrowBack, ArrowForward, Cancel } from '@mui/icons-material';
+import { z } from 'zod';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import styles from './Assessment.module.css';
+
 const Assessment = () => {
   // Quizzes
   const { data: quizzes, isLoading } = useQuery<QuizWithQuestions[]>({
@@ -57,7 +62,11 @@ const Assessment = () => {
   // State Managements
   const [currentSlide, setCurrentSlide] = useState(0);
   const [totalSlides, setTotalSlides] = useState(0);
-  const [value, setValue] = useState<{ [key: string]: string }>({});
+
+  const [value, setValue] = useState<{
+    [answer: string]: string;
+  }>({});
+
   const [open, setOpen] = useState(false);
   const [tutorialOpen, setTutorialOpen] = useState(false);
 
@@ -99,43 +108,70 @@ const Assessment = () => {
     return quiz;
   }, [topicId, quizzes]);
 
+  const schema = useMemo(() => {
+    return z.object(
+      quizContent.reduce((values, quiz) => {
+        values[quiz.id.toString()] = z
+          .string()
+          .min(1, 'Please select an answer');
+
+        return values;
+      }, {} as { [key: string]: z.ZodType<string> }),
+    );
+  }, [quizContent]);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm({
+    values: quizContent.reduce((values, quiz) => {
+      values[quiz.id.toString()] = '';
+
+      return values;
+    }, {} as { [key: string]: string }),
+    resolver: zodResolver(schema),
+    mode: 'onChange',
+  });
+
   useEffect(() => {
     if (!topicId) {
       setSelectedQuiz(null);
       setTutorialOpen(false);
+      setBlocking(false);
       setCurrentSlide(0);
-      setValue({});
+      reset();
     } else {
       setSelectedQuiz(quizContent);
       setTotalSlides(quizContent.length - 1);
       setTutorialOpen(true);
+      reset();
     }
   }, [quizContent, topicId]);
 
   useEffect(() => {
-    if (isBlocking && blocker.state === 'blocked' && !open) {
+    if (isBlocking && blocker.state === 'blocked') {
       setOpen(true);
     }
-  }, [isBlocking, blocker, open]);
+  }, [isBlocking, blocker]);
 
   const handleRadioChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const { name, value: answer } = event.target;
-      setValue((prevValue) => ({
-        ...prevValue,
-        [name]: answer,
-      }));
+      setValue((prev) => {
+        return {
+          ...prev,
+          [name]: answer,
+        };
+      });
     },
     [],
   );
 
-  const handleSubmit = useCallback(
-    (e: React.FormEvent<HTMLFormElement>) => {
-      e.preventDefault();
-      console.log(value);
-    },
-    [value],
-  );
+  const onSubmit = async (data: any) => {
+    console.log('data', data);
+  };
 
   const handleCancelButtonClick = () => {
     setOpen(true);
@@ -321,7 +357,7 @@ const Assessment = () => {
                     </Box>
 
                     <CardActions className="justify-end flex-[1_1_auto]">
-                      <Box className=" flex flex-col gap-3 w-full md:w-[] lg:w-[300px]">
+                      <Box className=" flex flex-col gap-3 w-full lg:w-[300px]">
                         <Button
                           sx={{
                             width: '100%',
@@ -373,13 +409,17 @@ const Assessment = () => {
                 Tutorial
               </Button>
 
-              <form onSubmit={handleSubmit} className="slider-container">
+              <form
+                onSubmit={handleSubmit(onSubmit)}
+                className="slider-container"
+              >
                 <Slider
                   {...slickSettings}
                   ref={sliderRef}
                   afterChange={(index) => {
                     setCurrentSlide(index);
                   }}
+                  dotsClass={`slick-dots ${styles.dots}`}
                 >
                   {selectedQuiz.map((questions, index) => (
                     <Card
@@ -402,36 +442,61 @@ const Assessment = () => {
                         >
                           <CardHeader subheader="Choose the correct answer" />
                           <Box className="flex flex-col flex-wrap w-full max-h-fit">
-                            {questions.multiple_choice_options.map((option) => (
-                              <FormControl key={option.id} component="fieldset">
-                                <RadioGroup
-                                  aria-label={`quiz-${questions.id}`}
-                                  name={`quiz-${questions.id}`}
-                                  value={
-                                    value[`quiz-${questions.id}`]
-                                      ? value[`quiz-${questions.id}`]
-                                      : ''
-                                  }
-                                  sx={{
-                                    padding: '0.5rem',
-                                    borderRadius: '5px',
-                                    '&:hover': {
-                                      backgroundColor: 'rgba(0, 0, 0, 0.1)',
-                                    },
-                                  }}
-                                  onChange={(e) => {
-                                    handleRadioChange(e);
-                                    setBlocking(e.target.checked);
-                                  }}
-                                >
-                                  <FormControlLabel
-                                    value={option.option_text}
-                                    control={<Radio />}
-                                    label={option.option_text}
-                                  />
-                                </RadioGroup>
-                              </FormControl>
-                            ))}
+                            <FormControl
+                              component="fieldset"
+                              error={
+                                errors[questions.id.toString()] ? true : false
+                              }
+                              sx={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '1rem',
+                              }}
+                            >
+                              {questions.multiple_choice_options.map(
+                                (option) => (
+                                  <RadioGroup
+                                    key={option.id}
+                                    {...register(questions.id.toString(), {
+                                      onChange: (e) => {
+                                        setBlocking(true);
+                                        handleRadioChange(e);
+                                      },
+                                    })}
+                                    sx={{
+                                      padding: '5px',
+                                      '&:hover': {
+                                        backgroundColor: 'rgba(0, 0, 0, 0.1)',
+                                        borderRadius: '10px',
+                                      },
+                                    }}
+                                    value={value[questions.id.toString()] || ''}
+                                  >
+                                    <FormControlLabel
+                                      value={option.option_text}
+                                      control={
+                                        <Radio
+                                          disableTouchRipple
+                                          disableRipple
+                                        />
+                                      }
+                                      label={option.option_text}
+                                    />
+                                  </RadioGroup>
+                                ),
+                              )}
+                            </FormControl>
+
+                            {errors && (
+                              <Typography
+                                variant="body2"
+                                className="text-red-500"
+                              >
+                                {errors[
+                                  `${questions.id.toString()}`
+                                ]?.message?.toString()}
+                              </Typography>
+                            )}
                           </Box>
                         </Card>
                       </CardContent>

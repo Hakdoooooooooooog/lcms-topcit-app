@@ -1,13 +1,16 @@
 import { AccordionChapter } from './PaginatedItem/AccordionItem';
 import { ChapterWithSubChapter } from '../../../lib/Types/chapters';
 import useSearchFilter from '../../../lib/hooks/useSearchFilter';
+import { UserCompletedChapters } from '../../../lib/Types/user';
 
 export const AccordionChapters = ({
   chapters,
   currentChapterId,
+  userCompletedChapterProgress,
   search,
 }: {
   chapters: ChapterWithSubChapter[];
+  userCompletedChapterProgress: UserCompletedChapters[];
   currentChapterId: string;
   search: string;
 }) => {
@@ -22,6 +25,7 @@ export const AccordionChapters = ({
         <AccordionChapter
           filteredItems={filteredChapters}
           currentChapterId={currentChapterId}
+          userCompletedChapterProgress={userCompletedChapterProgress}
         />
       )}
     </>

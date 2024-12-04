@@ -8,7 +8,7 @@ import { handlePaginatedItems } from '../../../../lib/helpers/utils';
 
 // Components & Types
 import { getAllTopics } from '../../../../api/User/topicsApi';
-import { Topic } from '../../../../lib/Types/topics';
+import { Topics } from '../../../../lib/Types/topics';
 import {
   Card,
   CardHeader,
@@ -31,13 +31,13 @@ const Syllabus = () => {
     });
 
   // Topics
-  const { data, isLoading } = useQuery<Topic[]>({
+  const { data, isLoading } = useQuery<Topics[]>({
     queryKey: ['Topics'],
     queryFn: () => getAllTopics(),
   });
 
   // Selected Topic
-  const [selectedTopic, setSelectedTopic] = useState<Topic[] | null>(null);
+  const [selectedTopic, setSelectedTopic] = useState<Topics[] | null>(null);
 
   // Transition
   const [isPending, startTransition] = useTransition();
@@ -48,11 +48,11 @@ const Syllabus = () => {
 
   // Search
   const search = useSearchStore((state) => state.search);
-  const { isSearching, filteredItems } = useSearchFilter<Topic>(data, search);
+  const { isSearching, filteredItems } = useSearchFilter<Topics>(data, search);
 
   // Pagination
   const { page, setPage, totalPages, currentItems } =
-    handlePaginatedItems<Topic>({
+    handlePaginatedItems<Topics>({
       items: filteredItems,
     });
 
@@ -90,8 +90,8 @@ const Syllabus = () => {
             <>
               {currentItems.map((topic) => {
                 if (
-                  userProgress.curr_topic_id !== null &&
-                  userProgress.curr_topic_id >= topic.id
+                  userProgress.user_progress?.curr_topic_id !== undefined &&
+                  userProgress.user_progress.curr_topic_id >= topic.id
                 ) {
                   return (
                     <Card

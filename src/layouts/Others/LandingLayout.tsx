@@ -37,7 +37,6 @@ const Landing = () => {
       >
         <div className={styles.logo}>
           <TOPCITLogo height="250" width="500" />
-          <h1>An Online Reviewer</h1>
         </div>
         <Outlet />
       </Container>

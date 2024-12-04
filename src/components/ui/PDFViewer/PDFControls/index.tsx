@@ -3,7 +3,7 @@ import { ArrowBack, ArrowForward } from '@mui/icons-material';
 type PDFControlsProps = {
   pageNumber: number;
   setPageNumber: (pageNumber: number) => void;
-  numPages: number;
+  numPages?: number;
 };
 
 const PDFControls = ({ props }: { props: PDFControlsProps }) => {

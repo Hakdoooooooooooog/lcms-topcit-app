@@ -48,12 +48,12 @@ const Contents = () => {
       return [];
     }
 
-    if (!userProgress.curr_chap_id || !totalChapters) {
+    if (!userProgress.user_progress?.curr_chap_id || !totalChapters) {
       return [];
     }
 
-    let currentUserChapterId = Number(userProgress.curr_chap_id);
-    let currentTopicId = Number(userProgress.curr_topic_id);
+    let currentUserChapterId = Number(userProgress.user_progress.curr_chap_id);
+    let currentTopicId = Number(userProgress.user_progress.curr_topic_id);
 
     const totalChapterPerTopic = totalChapters.map((topic) => {
       return {
@@ -169,7 +169,9 @@ const Contents = () => {
                         {open && (
                           <>
                             {Number(item.topicId) <=
-                            Number(userProgress.curr_topic_id) ? (
+                            Number(
+                              userProgress.user_progress?.curr_topic_id,
+                            ) ? (
                               <Card sx={{ mt: 2 }}>
                                 <CardContent>
                                   <Typography variant="h6" component="h2">
@@ -186,7 +188,7 @@ const Contents = () => {
                                     <span>
                                       {item.progress === 100
                                         ? item.totalChapters
-                                        : userProgress.curr_chap_id?.toString()}
+                                        : userProgress.user_progress?.curr_chap_id?.toString()}
                                     </span>
                                   </Typography>
 

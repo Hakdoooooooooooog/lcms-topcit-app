@@ -8,6 +8,7 @@ import {
   UserLogin,
   UserProfile,
   UserProgress,
+  UserProgressData,
   UserRegister,
 } from '../../lib/Types/user';
 
@@ -78,6 +79,19 @@ export const updateUserProfile = async (data: UpdateProfile) => {
   return await userInstance
     .put('/user/updateData', {
       username: data.username,
+    })
+    .then((res) => res.data)
+    .catch((error) => {
+      return error.response.data;
+    });
+};
+
+export const updateUserChapterProgress = async (
+  chapterId: string,
+): Promise<{ message: string }> => {
+  return await userInstance
+    .post('/user/progress/update', {
+      chapterId,
     })
     .then((res) => res.data)
     .catch((error) => {

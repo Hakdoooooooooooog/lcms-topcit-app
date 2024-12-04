@@ -1,37 +1,40 @@
-import { UseFormHandleSubmit } from "react-hook-form";
-import { z } from "zod";
-import { showToast } from "../Toasts";
-import { userLogin, userRegister } from "../../../api/User/userApi";
-import { useAuthUserStore } from "../../../lib/store";
-import useProfileMutation from "../../../lib/hooks/useProfileMutation";
+import { UseFormHandleSubmit } from 'react-hook-form';
+import { useNavigate } from 'react-router-dom';
+import { z } from 'zod';
+import { showToast } from '../Toasts';
+import { userLogin, userRegister } from '../../../api/User/userApi';
+import { useAuthUserStore } from '../../../lib/store';
+import useProfileMutation from '../../../lib/hooks/useProfileMutation';
 
 interface IUserFormProps {
   children: React.ReactNode;
   schema: z.ZodTypeAny;
-  handleSubmit: UseFormHandleSubmit<z.infer<IUserFormProps["schema"]>>;
-  FormType: "Login" | "Register" | "Edit-Profile";
+  handleSubmit: UseFormHandleSubmit<z.infer<IUserFormProps['schema']>>;
+  FormType: 'Login' | 'Register' | 'Edit-Profile';
 }
 
 const UserForm = (props: IUserFormProps) => {
+  const navigate = useNavigate();
+
   const { children, schema, handleSubmit, FormType } = props;
   const setUserAuth = useAuthUserStore((state) => state.setUserAuth);
   const profileMutation = useProfileMutation();
 
   const onSubmit = async (data: z.infer<typeof schema>) => {
-    if (FormType === "Login") {
+    if (FormType === 'Login') {
       try {
         const res = await userLogin(data);
 
-        if (res.message === "Invalid username or password") {
-          return showToast(res.message, "error");
+        if (res.message === 'Invalid username or password') {
+          return showToast(res.message, 'error');
         }
 
-        showToast(res.message, "success");
+        showToast(res.message, 'success');
         setUserAuth({ isAuth: true, userId: res.userId, userRole: res.role });
       } catch (error: any) {
-        showToast("An error occurred", "error");
+        showToast('An error occurred', 'error');
       }
-    } else if (FormType === "Register") {
+    } else if (FormType === 'Register') {
       try {
         const res = await userRegister(data);
         if (res.errors) {
@@ -42,22 +45,23 @@ const UserForm = (props: IUserFormProps) => {
                 if (value) {
                   pInput.innerHTML = value as string;
                 } else {
-                  pInput.innerHTML = "";
+                  pInput.innerHTML = '';
                 }
               }
             });
           });
         } else {
-          showToast(res.message, "success");
+          showToast(res.message, 'success');
+          navigate('/landing', { replace: true });
         }
       } catch (error: any) {
-        showToast("An error occurred", "error");
+        showToast('An error occurred', 'error');
       }
-    } else if (FormType === "Edit-Profile") {
+    } else if (FormType === 'Edit-Profile') {
       try {
         await profileMutation.mutateAsync(data);
       } catch (error: any) {
-        showToast("An error occurred", "error");
+        showToast('An error occurred', 'error');
       }
     }
   };

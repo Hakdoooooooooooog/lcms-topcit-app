@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useTransition } from 'react';
-import { pdfjs } from 'react-pdf';
 import {
   Accordion,
   AccordionDetails,
@@ -11,9 +10,8 @@ import {
   Stack,
 } from '@mui/material';
 import styles from './accordionItem.module.css';
-import { Add } from '@mui/icons-material';
+import { Add, CheckCircle } from '@mui/icons-material';
 import { handlePaginatedItems } from '../../../../lib/helpers/utils';
-import { NavLink } from 'react-router-dom';
 import { ChapterWithSubChapter } from '../../../../lib/Types/chapters';
 import PDFViewer from '../../PDFViewer';
 import { LoadingContentScreen } from '../../LoadingScreen/LoadingScreen';
@@ -21,9 +19,11 @@ import { useAccordionStore } from '../../../../lib/store';
 import { useQueries } from '@tanstack/react-query';
 import { getChapterPDFFiles } from '../../../../api/User/chaptersApi';
 import { LockClosedIcon } from '@heroicons/react/16/solid';
+import { UserCompletedChapters } from '../../../../lib/Types/user';
 
 export const AccordionChapter = (props: {
   filteredItems: ChapterWithSubChapter[] | undefined;
+  userCompletedChapterProgress: UserCompletedChapters[];
   currentChapterId: string;
 }) => {
   const { expanded, handleChanges } = useAccordionStore((state) => ({
@@ -39,20 +39,28 @@ export const AccordionChapter = (props: {
   const queries = useQueries({
     queries: currentItems.map((chapter) => {
       return {
-        queryKey: [
-          'PDFChapterFiles',
-          chapter.id.toString(),
-          chapter.topic_id.toString(),
-        ],
+        queryKey: ['PDFChapterFiles', chapter.id, chapter.topic_id],
         queryFn: () =>
           getChapterPDFFiles(
             chapter.id.toString(),
             chapter.topic_id.toString(),
           ),
         refetchOnWindowFocus: false,
+        enabled: props.currentChapterId >= chapter.id.toString(),
       };
     }),
   });
+
+  const isCompleted = (chapterId: bigint) => {
+    return props.userCompletedChapterProgress.some(
+      (chapterProgress) =>
+        Number(chapterProgress.chapter_id) === Number(chapterId),
+    );
+  };
+
+  const isUnlocked = (chapterId: bigint) => {
+    return Number(props.currentChapterId) >= Number(chapterId);
+  };
 
   useEffect(() => {
     if (page > totalPages) {
@@ -60,11 +68,23 @@ export const AccordionChapter = (props: {
     }
   }, [currentItems]);
 
+  useEffect(() => {
+    if (
+      typeof expanded === 'string' &&
+      parseInt(expanded.split('-').pop() || '0') >= 5 &&
+      parseInt(expanded.split('-').pop() || '0') % 5 === 0
+    ) {
+      startTransition(() => {
+        setPage((prevPage) => prevPage + 1);
+      });
+    }
+  }, [expanded]);
+
   const memoizedAccordion = useMemo(() => {
     return (
       <>
         {currentItems.map((chapter, index) => {
-          if (props.currentChapterId >= chapter.id.toString()) {
+          if (isUnlocked(chapter.id)) {
             return (
               <Accordion
                 key={chapter.id}
@@ -78,6 +98,7 @@ export const AccordionChapter = (props: {
                       }
                     : { marginTop: '1rem', transition: 'background-color 0.5s' }
                 }
+                slotProps={{ transition: { unmountOnExit: true } }}
               >
                 <AccordionSummary
                   aria-controls={`panel1a-content-${index}`}
@@ -89,8 +110,16 @@ export const AccordionChapter = (props: {
                       }}
                     />
                   }
+                  className={`${
+                    isCompleted(chapter.id)
+                      ? '!bg-[#0080001a] hover:bg-[#0080001a]'
+                      : ''
+                  }`}
                 >
-                  Chapter {chapter.chapter_number}: {chapter.title}
+                  Chapter {chapter.chapter_number}: {chapter.title}{' '}
+                  {isCompleted(chapter.id) ? (
+                    <CheckCircle className="h-5 w-5 self-center ml-2 text-green-900" />
+                  ) : null}
                 </AccordionSummary>
                 <AccordionDetails
                   classes={{
@@ -98,7 +127,11 @@ export const AccordionChapter = (props: {
                   }}
                 >
                   <PDFViewer
-                    data={queries[index].data}
+                    data={{
+                      url: queries[index].data?.url || '',
+                      chapterId: chapter.id.toString(),
+                      isCompleted: isCompleted(chapter.id),
+                    }}
                     isLoading={queries[index].isLoading}
                     fileName={
                       Array.isArray(chapter.FileChapter) &&
@@ -106,10 +139,9 @@ export const AccordionChapter = (props: {
                         ? chapter.FileChapter[0].file_name
                         : ''
                     }
-                    PDFversion={pdfjs.version}
                   />
 
-                  {chapter.SubChapters &&
+                  {/* {chapter.SubChapters &&
                     chapter.SubChapters.slice(0, 1).map((subChapter) => (
                       <Button
                         key={subChapter.id}
@@ -128,7 +160,7 @@ export const AccordionChapter = (props: {
                           {subChapter.title}
                         </NavLink>
                       </Button>
-                    ))}
+                    ))} */}
                 </AccordionDetails>
               </Accordion>
             );

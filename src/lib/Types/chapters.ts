@@ -1,3 +1,5 @@
+import { Topics } from './topics';
+
 export type Chapter = {
   id: bigint;
   topic_id: bigint;
@@ -6,15 +8,19 @@ export type Chapter = {
   title: string;
   sub_title: string;
   created_at: Date | null;
-  FileChapter:
-    | {
-        id: bigint;
-        chapter_id: bigint;
-        file_name: string;
-        file_type: string;
-      }
-    | { file_name: string }
-    | null;
+  FileChapter: FileChapter | null;
+};
+
+export type FileChapter = {
+  file_name: string;
+};
+
+export type UserCompletedChapters = {
+  id: bigint;
+  chapter_id: bigint;
+  user_id: bigint;
+  completion_status: string | null;
+  completed_at: Date | null;
 };
 
 export type ChapterWithSubChapter = {
@@ -26,20 +32,9 @@ export type ChapterWithSubChapter = {
   sub_title: string;
   created_at: Date | null;
   SubChapters: Chapter[];
-  FileChapter:
-    | {
-        id: bigint;
-        chapter_id: bigint;
-        file_name: string;
-        file_type: string;
-      }
-    | { file_name: string }
-    | null;
+  FileChapter: FileChapter | null;
 };
 
-export type ChaptersWithSubChaptersWithinTopic = {
-  id: bigint;
-  topictitle: string | null;
-  description: string | null;
+export type ChaptersWithSubChaptersWithinTopic = Topics & {
   chapters: ChapterWithSubChapter[];
 };

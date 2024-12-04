@@ -1,4 +1,3 @@
-import { pdfjs } from 'react-pdf';
 import {
   Modal,
   Box,
@@ -226,7 +225,6 @@ const EditContentModal = ({
                   isLoading={isLoading}
                   fileName={fileName || ''}
                   previewFile={fileData ? fileData : undefined}
-                  PDFversion={pdfjs.version}
                 />
               </Box>
             </Box>

@@ -1,5 +1,5 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { showToast } from "../../components/ui/Toasts";
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { showToast } from '../../components/ui/Toasts';
 
 type EditMutationProps<T> = {
   fn: (data: T) => Promise<T>;
@@ -7,17 +7,28 @@ type EditMutationProps<T> = {
   handleClose?: () => void;
 };
 
-const useEditContentMutation = <T>({ fn, QueryKey, handleClose }: EditMutationProps<T>) => {
+const useEditContentMutation = <T>({
+  fn,
+  QueryKey,
+  handleClose,
+}: EditMutationProps<T>) => {
   const queryClient = useQueryClient();
   const editMutation = useMutation({
     mutationFn: fn,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: Array.isArray(QueryKey) ? QueryKey : [QueryKey] });
-      showToast("Content updated successfully", "success");
+      if (Array.isArray(QueryKey)) {
+        QueryKey.forEach((key) => {
+          queryClient.invalidateQueries({ queryKey: [key] });
+        });
+      } else {
+        queryClient.invalidateQueries({ queryKey: [QueryKey] });
+      }
+
+      showToast('Content updated successfully', 'success');
       handleClose && handleClose();
     },
     onError: (error) => {
-      showToast(error.message, "error");
+      showToast(error.message, 'error');
     },
   });
 
