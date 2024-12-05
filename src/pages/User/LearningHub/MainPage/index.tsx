@@ -6,7 +6,7 @@ const Main = () => {
     <>
       <Card>
         <CardContent>
-          <Typography variant="h5" component="div" sx={{ fontWeight: 'bold' }}>
+          <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
             Welcome to Learning Hub! Dive into a comprehensive and interactive
             learning experience tailored to help you prepare for the TOPCIT
             examination. Explore the structured syllabus, engage with detailed

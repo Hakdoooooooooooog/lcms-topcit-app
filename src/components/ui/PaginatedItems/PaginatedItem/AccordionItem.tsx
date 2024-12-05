@@ -262,6 +262,7 @@ export const AccordionTopic = (props: {
                   }}
                 />
               }
+              className="!bg-[#0080001a] hover:bg-[#0080001a]"
             >
               Chapter {chapter.chapter_number}: {chapter.title}
             </AccordionSummary>
