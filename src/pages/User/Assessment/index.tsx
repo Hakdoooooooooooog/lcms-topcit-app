@@ -42,11 +42,12 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import styles from './Assessment.module.css';
+import useAssessmentMutation from '../../../lib/hooks/useAssessmentMutation';
 
 const Assessment = () => {
   // Quizzes
   const { data: quizzes, isLoading } = useQuery<QuizWithQuestions[]>({
-    queryKey: ['quizzes'],
+    queryKey: ['AssessmentQuizzes'],
     queryFn: getQuizzesWithQuestions,
   });
 
@@ -67,6 +68,7 @@ const Assessment = () => {
     [answer: string]: string;
   }>({});
 
+  // Modal
   const [open, setOpen] = useState(false);
   const [tutorialOpen, setTutorialOpen] = useState(false);
 
@@ -93,6 +95,8 @@ const Assessment = () => {
       }
     }, [isBlocking]),
   );
+
+  const assessmentMutation = useAssessmentMutation();
 
   const quizContent = useMemo(() => {
     if (!quizzes || isLoading) return [];
@@ -123,7 +127,7 @@ const Assessment = () => {
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitSuccessful },
     reset,
   } = useForm({
     values: quizContent.reduce((values, quiz) => {
@@ -154,10 +158,26 @@ const Assessment = () => {
   }, [quizContent, topicId]);
 
   useEffect(() => {
-    if (isBlocking && blocker.state === 'blocked' && !open) {
+    if (isBlocking && blocker.state === 'blocked') {
       setOpen(true);
     }
-  }, [isBlocking, blocker, open]);
+
+    if (blocker.state === 'blocked' && !isBlocking) {
+      blocker.proceed();
+    }
+  }, [isBlocking, blocker]);
+
+  useEffect(() => {
+    if (isSubmitSuccessful) {
+      startTransition(() => {
+        reset();
+        setValue({});
+        setBlocking(false);
+        setCurrentSlide(0);
+        setSearchParams({}, { replace: true });
+      });
+    }
+  }, [isSubmitSuccessful]);
 
   const handleRadioChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -173,7 +193,22 @@ const Assessment = () => {
   );
 
   const onSubmit = async (data: z.infer<typeof schema>) => {
-    console.log('data', data);
+    if (
+      !searchParams.get('topicId') ||
+      !searchParams.get('userId') ||
+      !searchParams.get('quizId')
+    ) {
+      return;
+    }
+
+    await assessmentMutation.mutateAsync({
+      assessmentData: data,
+      quizData: {
+        topicId: searchParams.get('topicId') || '',
+        userId: searchParams.get('userId') || '',
+        quizId: searchParams.get('quizId') || '',
+      },
+    });
   };
 
   const handleCancelButtonClick = () => {
@@ -221,6 +256,41 @@ const Assessment = () => {
       sliderTutorialRef.current.slickPrev();
     }
   };
+
+  const confirmSubmitAnswer = useCallback(() => {
+    return (
+      <Modal open={false} onClose={() => {}}>
+        <Box
+          sx={{
+            ...styledModal,
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            textAlign: 'center',
+            gap: '2rem',
+          }}
+          className="sm:max-w-md"
+        >
+          <Typography variant="h5">
+            Are you sure you want to submit your answers?
+          </Typography>
+
+          <Typography variant="body1" className="m-5 text-red-400">
+            Your answers will be submitted for review.
+          </Typography>
+          <Box className="flex gap-3">
+            <Button variant="contained" color="error" onClick={() => {}}>
+              Yes
+            </Button>
+            <Button variant="contained" color="info" onClick={() => {}}>
+              No
+            </Button>
+          </Box>
+        </Box>
+      </Modal>
+    );
+  }, []);
 
   const renderCancelModal = useCallback(() => {
     return (
@@ -520,8 +590,8 @@ const Assessment = () => {
                           },
                         }}
                         variant="contained"
-                        type="submit"
                         disabled={Object.keys(errors).length > 0}
+                        type="submit"
                       >
                         Submit
                       </Button>
@@ -605,6 +675,7 @@ const Assessment = () => {
 
           {renderCancelModal()}
           {tutorialModal()}
+          {confirmSubmitAnswer()}
         </>
       )}
     </>

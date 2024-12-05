@@ -8,6 +8,7 @@ import {
   CardHeader,
   Pagination,
   Stack,
+  Typography,
 } from '@mui/material';
 import styles from './accordionItem.module.css';
 import { Add, CheckCircle } from '@mui/icons-material';
@@ -190,6 +191,119 @@ export const AccordionChapter = (props: {
       })
     );
   }, [currentItems, page, expanded, queries]);
+
+  return (
+    <>
+      {isPending ? <LoadingContentScreen /> : memoizedAccordion}
+      <Stack spacing={2} sx={{ marginTop: '2rem' }}>
+        <Pagination
+          size={window.innerWidth < 600 ? 'small' : 'medium'}
+          shape="rounded"
+          count={totalPages}
+          page={page}
+          onChange={(_event, value) =>
+            startTransition(() => {
+              setPage(value);
+            })
+          }
+          showFirstButton
+          showLastButton
+        />
+      </Stack>
+    </>
+  );
+};
+
+export const AccordionTopic = (props: {
+  filteredItems: ChapterWithSubChapter[] | undefined;
+}) => {
+  const { expanded, handleChanges } = useAccordionStore((state) => ({
+    expanded: state.expanded,
+    handleChanges: state.handleChanges,
+  }));
+  const { page, setPage, totalPages, currentItems } =
+    handlePaginatedItems<ChapterWithSubChapter>({
+      items: props.filteredItems,
+    });
+  const [isPending, startTransition] = useTransition();
+
+  useEffect(() => {
+    if (page > totalPages) {
+      setPage(1);
+    }
+  }, [currentItems]);
+
+  const memoizedAccordion = useMemo(() => {
+    return (
+      currentItems &&
+      currentItems.map((chapter) => {
+        return (
+          <Accordion
+            key={chapter.id}
+            expanded={expanded === `panel1a-chapterHeader-${chapter.id}`}
+            onChange={handleChanges(`panel1a-chapterHeader-${chapter.id}`)}
+            sx={
+              expanded === `panel1a-chapterHeader-${chapter.id}`
+                ? {
+                    backgroundColor: 'rgba(0, 128, 0, 0.1)',
+                    marginTop: '1rem',
+                  }
+                : { marginTop: '1rem', transition: 'background-color 0.5s' }
+            }
+            slotProps={{ transition: { unmountOnExit: true } }}
+          >
+            <AccordionSummary
+              aria-controls={`panel1a-content-${chapter.id}-${chapter.title}`}
+              id={`panel1a-header-${chapter.id}-${chapter.title}`}
+              expandIcon={
+                <Add
+                  sx={{
+                    color: 'green',
+                  }}
+                />
+              }
+            >
+              Chapter {chapter.chapter_number}: {chapter.title}
+            </AccordionSummary>
+            <AccordionDetails
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                width: '100%',
+              }}
+            >
+              {chapter.sub_title && (
+                <Typography variant={'body1'} gutterBottom>
+                  {chapter.sub_title}
+                </Typography>
+              )}
+
+              {/* {chapter.SubChapters &&
+                    chapter.SubChapters.slice(0, 1).map((subChapter) => (
+                      <Button
+                        key={subChapter.id}
+                        variant="contained"
+                        sx={{
+                          marginTop: '1rem',
+                          backgroundColor: 'green',
+                          color: 'white',
+                        }}
+                      >
+                        <NavLink
+                          to={`${subChapter.title}`}
+                          style={{ color: 'white' }}
+                        >
+                          Next Chapter {subChapter.chapter_number} -{' '}
+                          {subChapter.title}
+                        </NavLink>
+                      </Button>
+                    ))} */}
+            </AccordionDetails>
+          </Accordion>
+        );
+      })
+    );
+  }, [currentItems, page, expanded]);
 
   return (
     <>

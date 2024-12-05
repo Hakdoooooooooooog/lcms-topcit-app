@@ -1,4 +1,7 @@
-import { AccordionChapter } from './PaginatedItem/AccordionItem';
+import {
+  AccordionChapter,
+  AccordionTopic,
+} from './PaginatedItem/AccordionItem';
 import { ChapterWithSubChapter } from '../../../lib/Types/chapters';
 import useSearchFilter from '../../../lib/hooks/useSearchFilter';
 import { UserCompletedChapters } from '../../../lib/Types/user';
@@ -27,6 +30,27 @@ export const AccordionChapters = ({
           currentChapterId={currentChapterId}
           userCompletedChapterProgress={userCompletedChapterProgress}
         />
+      )}
+    </>
+  );
+};
+
+export const AccordionTopics = ({
+  topics,
+  search,
+}: {
+  topics: ChapterWithSubChapter[];
+  search: string;
+}) => {
+  // Selected Chapters Within Topic
+  const { isSearching, filteredItems: filteredTopics } =
+    useSearchFilter<ChapterWithSubChapter>(topics, search);
+  return (
+    <>
+      {isSearching ? (
+        <h1>Searching...</h1>
+      ) : (
+        <AccordionTopic filteredItems={filteredTopics} />
       )}
     </>
   );

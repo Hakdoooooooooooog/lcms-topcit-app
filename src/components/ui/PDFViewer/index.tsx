@@ -18,6 +18,7 @@ import { options, styledModal } from '../../../lib/constants';
 import { updateUserChapterProgress } from '../../../api/User/userApi';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAccordionStore } from '../../../lib/store';
+import { useLocation } from 'react-router-dom';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
@@ -35,6 +36,7 @@ const PDFViewer = memo(
     fileName: string;
     previewFile?: File | string;
   }) => {
+    const location = useLocation().pathname;
     const { setExpanded } = useAccordionStore((state) => ({
       setExpanded: state.setExpanded,
     }));
@@ -128,10 +130,12 @@ const PDFViewer = memo(
       [],
     );
 
-    const handleSuccessChapterModal = useCallback(() => {
-      return (
-        <>
-          {numPages && numPages === pageNumber && (
+    const handleSuccessChapterModal = useCallback(
+      (path: string) => {
+        return (
+          path !== '/admin' &&
+          numPages &&
+          numPages === pageNumber && (
             <Modal
               open={successChapterModal}
               aria-labelledby="success-chapter-modal"
@@ -195,10 +199,11 @@ const PDFViewer = memo(
                 </Card>
               </Box>
             </Modal>
-          )}
-        </>
-      );
-    }, [numPages, pageNumber, data?.chapterId, successChapterModal]);
+          )
+        );
+      },
+      [numPages, pageNumber, data?.chapterId, successChapterModal],
+    );
 
     if (!data || isLoading) {
       return <LoadingDataScreen />;
@@ -298,7 +303,7 @@ const PDFViewer = memo(
                   </Box>
                 )}
 
-                {handleSuccessChapterModal()}
+                {handleSuccessChapterModal(location)}
               </>
             ) : null}
           </>

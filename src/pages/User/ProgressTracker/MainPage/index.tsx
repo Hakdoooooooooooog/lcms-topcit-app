@@ -1,19 +1,16 @@
-import { Card, CardContent } from '@mui/material';
+import { Card, CardContent, Typography } from '@mui/material';
 
 const ProgressTracker = () => {
   return (
     <>
       <Card>
         <CardContent>
-          <p>
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Est,
-            voluptatibus aut numquam illum ab iusto nostrum quam perspiciatis
-            nisi animi, quaerat quis error corrupti a. Facilis perferendis error
-            aliquam voluptatum. Laboriosam, officiis nihil! Harum laborum cumque
-            quae, cupiditate quidem et soluta quaerat architecto, optio,
-            corporis provident dignissimos quisquam explicabo non? Voluptatibus
-            ullam sunt maiores repudiandae corrupti ratione vero atque cum!
-          </p>
+          <Typography variant="h5" component="div" sx={{ fontWeight: 'bold' }}>
+            Welcome to the Progress Tracker! This is your personal dashboard to
+            monitor your journey toward TOPCIT readiness. Keep track of your
+            completed chapters, mastered topics, and assessment scores.
+            Celebrate your milestones and stay on top of your learning goals!
+          </Typography>
         </CardContent>
       </Card>
     </>

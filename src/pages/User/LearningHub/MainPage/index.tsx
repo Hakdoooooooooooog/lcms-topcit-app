@@ -1,21 +1,20 @@
 // Desc: Main page of the Learning Hub
-
-import { Card, CardContent } from '@mui/material';
+import { Card, CardContent, Typography } from '@mui/material';
 
 const Main = () => {
   return (
     <>
       <Card>
         <CardContent>
-          <p>
-            Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quibusdam
-            nisi similique aliquam, repellendus earum necessitatibus fugiat sit
-            distinctio aspernatur dolorem officiis a tenetur eos, recusandae
-            porro provident vel id doloremque! Sint, voluptatem non. Quisquam
-            error eaque optio veniam nesciunt doloribus dolore sapiente
-            laboriosam, nostrum pariatur omnis recusandae ad repudiandae qui hic
-            dolor assumenda a rem enim dignissimos praesentium aliquid eligendi.
-          </p>
+          <Typography variant="h5" component="div" sx={{ fontWeight: 'bold' }}>
+            Welcome to Learning Hub! Dive into a comprehensive and interactive
+            learning experience tailored to help you prepare for the TOPCIT
+            examination. Explore the structured syllabus, engage with detailed
+            content materials, and take your understanding to the next level.
+            Unlock chapters as you progress, and stay motivated with a
+            goal-oriented approach. Let's make learning effective, engaging, and
+            enjoyable!
+          </Typography>
         </CardContent>
       </Card>
     </>
