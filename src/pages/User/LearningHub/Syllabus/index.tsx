@@ -85,7 +85,12 @@ const Syllabus = () => {
           </Accordion>
         ))
       )}
-      <Stack spacing={2}>
+      <Stack
+        spacing={2}
+        sx={{
+          marginTop: '1rem',
+        }}
+      >
         <Pagination
           count={totalTopicPages}
           page={topicPage}
