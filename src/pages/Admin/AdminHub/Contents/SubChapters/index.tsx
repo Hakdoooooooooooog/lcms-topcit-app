@@ -84,7 +84,7 @@ const SubChapters = ({
           {Chapters && Chapters.length > 0 && (
             <Stack spacing={2}>
               <Pagination
-                size="large"
+                size={window.innerWidth < 768 ? 'small' : 'medium'}
                 shape="circular"
                 renderItem={(item) => (
                   <PaginationItem
@@ -98,6 +98,8 @@ const SubChapters = ({
                 count={totalPages}
                 page={page}
                 onChange={(_event, value) => setPage(value)}
+                showFirstButton
+                showLastButton
               />
             </Stack>
           )}

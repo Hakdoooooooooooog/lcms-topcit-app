@@ -1,13 +1,13 @@
-import { PermMedia, MenuBook, QuizRounded } from "@mui/icons-material";
-import { Container } from "@mui/material";
-import { useTransition, useState, useEffect } from "react";
-import { Outlet, useLocation, Navigate } from "react-router-dom";
-import Selections from "../../components/ui/Selections";
-import { useAuthUserStore, useSearchStore } from "../../lib/store";
-import { SelectionItems } from "../../lib/Types/types";
-import { verifyUserAccessToken } from "../../api/User/userApi";
-import { LoadingContentScreen } from "../../components/ui/LoadingScreen/LoadingScreen";
-import Breadcrumbs from "../../components/ui/Breadcrumbs";
+import { MenuBook, QuizRounded } from '@mui/icons-material';
+import { Container } from '@mui/material';
+import { useTransition, useState, useEffect } from 'react';
+import { Outlet, useLocation, Navigate } from 'react-router-dom';
+import Selections from '../../components/ui/Selections';
+import { useAuthUserStore, useSearchStore } from '../../lib/store';
+import { SelectionItems } from '../../lib/Types/types';
+import { verifyUserAccessToken } from '../../api/User/userApi';
+import { LoadingContentScreen } from '../../components/ui/LoadingScreen/LoadingScreen';
+import Breadcrumbs from '../../components/ui/Breadcrumbs';
 const AdminLayout = () => {
   const { role, setUserAuth } = useAuthUserStore((state) => ({
     role: state.user?.userRole,
@@ -15,57 +15,50 @@ const AdminLayout = () => {
   }));
   const setSearch = useSearchStore((state) => state.setSearch);
   const [isPending, startTransition] = useTransition();
-  const [tab, setTab] = useState("contents");
+  const [tab, setTab] = useState('contents');
   const path = useLocation().pathname;
 
   const CardActionItems: SelectionItems = [
     {
-      label: "Contents",
+      label: 'Contents',
       icon: (
         <MenuBook
           classes={{
-            root: "fill-current text-green-800",
+            root: 'fill-current text-green-800',
           }}
         />
       ),
-      to: "/admin/contents",
+      to: '/admin/contents',
     },
     {
-      label: "Quizzes",
+      label: 'Quizzes',
       icon: (
         <QuizRounded
           classes={{
-            root: "fill-current text-green-800",
+            root: 'fill-current text-green-800',
           }}
         />
       ),
-      to: "/admin/quiz",
-    },
-    {
-      label: "Resource Library",
-      icon: (
-        <PermMedia
-          classes={{
-            root: "fill-current text-green-800",
-          }}
-        />
-      ),
-      to: "/admin/resource-library",
+      to: '/admin/quiz',
     },
   ];
 
   useEffect(() => {
-    setSearch("");
+    setSearch('');
 
-    if (path === "/admin") {
-      setTab("admin");
+    if (path === '/admin') {
+      setTab('admin');
     }
 
-    if (role === "admin") {
+    if (role === 'admin') {
       verifyUserAccessToken()
         .then((res) => {
           if (res) {
-            setUserAuth({ isAuth: true, userId: res.userId, userRole: res.role });
+            setUserAuth({
+              isAuth: true,
+              userId: res.userId,
+              userRole: res.role,
+            });
           }
         })
         .catch((err) => {
@@ -74,28 +67,30 @@ const AdminLayout = () => {
     }
   }, [path, role]);
 
-  if (role !== "admin") {
+  if (role !== 'admin') {
     return (
       <Navigate
         to="/"
         replace
         state={{
           from: path,
-          message: "You are not authorized to view this page.",
-          severity: "error",
+          message: 'You are not authorized to view this page.',
+          severity: 'error',
         }}
       />
     );
   }
 
   return (
-    <Container maxWidth="xl" className="mt-10">
+    <Container maxWidth="xl" className="mt-10 pb-10">
       <h1 className="text-4xl font-semibold mb-12">
         Admin <span className="text-green-800">Hub</span>
       </h1>
 
       <Breadcrumbs path={path} />
-      <Selections props={{ CardActionItems, path, startTransition, tab, setTab }} />
+      <Selections
+        props={{ CardActionItems, path, startTransition, tab, setTab }}
+      />
 
       {isPending ? <LoadingContentScreen /> : <Outlet />}
     </Container>

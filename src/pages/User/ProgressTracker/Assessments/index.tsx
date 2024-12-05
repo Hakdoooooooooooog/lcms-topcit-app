@@ -142,6 +142,8 @@ const Assessments = () => {
               setPage(value);
             })
           }
+          showFirstButton
+          showLastButton
         />
       </Stack>
     </>

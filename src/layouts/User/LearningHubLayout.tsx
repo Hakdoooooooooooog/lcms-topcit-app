@@ -1,6 +1,6 @@
 import { useEffect, useState, useTransition } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
-import { LibraryBooks, MenuBook, PermMedia, Toc } from '@mui/icons-material';
+import { LibraryBooks, MenuBook } from '@mui/icons-material';
 import Selections from '../../components/ui/Selections';
 import { Box, Container } from '@mui/material';
 import { useSearchStore } from '../../lib/store';
@@ -31,28 +31,6 @@ const CardActionItems: SelectionItems = [
     ),
     to: '/learning-hub/chapters',
   },
-  {
-    label: 'Media',
-    icon: (
-      <Toc
-        classes={{
-          root: 'fill-current text-green-800',
-        }}
-      />
-    ),
-    to: '/learning-hub/media',
-  },
-  {
-    label: 'Resource Library',
-    icon: (
-      <PermMedia
-        classes={{
-          root: 'fill-current text-green-800',
-        }}
-      />
-    ),
-    to: '/learning-hub/resource-library',
-  },
 ];
 
 const LearningHubLayout = () => {
@@ -75,7 +53,7 @@ const LearningHubLayout = () => {
         Learning <span className="text-green-800">Hub</span>
       </h1>
 
-      <Box component={'section'} className="mt-4 max-w-[80rem] mx-auto">
+      <Box component={'section'} className="mt-4 max-w-[80rem] mx-auto pb-10">
         <Breadcrumbs path={path} />
 
         <Selections

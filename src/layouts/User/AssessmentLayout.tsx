@@ -21,7 +21,7 @@ const AssessmentLayout = () => {
         </Box>
       )}
 
-      <Box component={'section'} className="mt-4 max-w-[80rem] mx-auto">
+      <Box component={'section'} className="mt-4 max-w-[80rem] mx-auto pb-10">
         <Outlet />
       </Box>
     </>

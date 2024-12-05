@@ -169,6 +169,8 @@ const TopcitContents = () => {
                   setPage(value);
                 })
               }
+              showFirstButton
+              showLastButton
             />
           </Stack>
         </>

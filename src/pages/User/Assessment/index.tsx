@@ -141,20 +141,23 @@ const Assessment = () => {
       setTutorialOpen(false);
       setBlocking(false);
       setCurrentSlide(0);
-      reset();
     } else {
       setSelectedQuiz(quizContent);
       setTotalSlides(quizContent.length - 1);
       setTutorialOpen(true);
-      reset();
     }
+
+    return () => {
+      reset();
+      setValue({});
+    };
   }, [quizContent, topicId]);
 
   useEffect(() => {
-    if (isBlocking && blocker.state === 'blocked') {
+    if (isBlocking && blocker.state === 'blocked' && !open) {
       setOpen(true);
     }
-  }, [isBlocking, blocker]);
+  }, [isBlocking, blocker, open]);
 
   const handleRadioChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -169,7 +172,7 @@ const Assessment = () => {
     [],
   );
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: z.infer<typeof schema>) => {
     console.log('data', data);
   };
 
@@ -512,9 +515,13 @@ const Assessment = () => {
                           maxWidth: 'fit-content',
                           padding: '0.5rem 1rem',
                           background: 'green',
+                          '&:disabled': {
+                            backgroundColor: 'rgba(0, 0, 0, 0.1)',
+                          },
                         }}
                         variant="contained"
                         type="submit"
+                        disabled={Object.keys(errors).length > 0}
                       >
                         Submit
                       </Button>

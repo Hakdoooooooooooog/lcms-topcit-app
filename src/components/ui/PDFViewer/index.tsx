@@ -16,7 +16,7 @@ import styles from './PDFViewer.module.css';
 import { showToast } from '../Toasts';
 import { options, styledModal } from '../../../lib/constants';
 import { updateUserChapterProgress } from '../../../api/User/userApi';
-import { useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAccordionStore } from '../../../lib/store';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
@@ -35,10 +35,28 @@ const PDFViewer = memo(
     fileName: string;
     previewFile?: File | string;
   }) => {
-    const queryClient = useQueryClient();
     const { setExpanded } = useAccordionStore((state) => ({
       setExpanded: state.setExpanded,
     }));
+
+    const queryClient = useQueryClient();
+
+    const updateMutation = useMutation({
+      mutationFn: updateUserChapterProgress,
+      onSuccess: (data) => {
+        queryClient.invalidateQueries({
+          queryKey: ['UserProgress'],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ['PDFChapterFiles'],
+        });
+        showToast(data.message, 'success');
+        setExpanded(`panel1a-chapterHeader-${data.curr_chap_id}`);
+      },
+      onError: () => {
+        showToast('An error occurred', 'error');
+      },
+    });
     const [pageNumber, setPageNumber] = useState<number>(1);
     const [numPages, setNumPages] = useState<number | undefined>(undefined);
     const [loadProgress, setLoadProgress] = useState<number>(0);
@@ -99,15 +117,7 @@ const PDFViewer = memo(
         if (!chapterId) return;
 
         try {
-          const updateProgressData = await updateUserChapterProgress(chapterId);
-          queryClient.invalidateQueries({
-            queryKey: ['UserProgress'],
-          });
-          queryClient.invalidateQueries({
-            queryKey: ['UserCourses'],
-          });
-          setExpanded(`panel1a-chapterHeader-${chapterId}`);
-          showToast(updateProgressData.message, 'success');
+          await updateMutation.mutateAsync(chapterId);
         } catch (error: any) {
           showToast(
             'Error updating chapter progress: ' + error.message,

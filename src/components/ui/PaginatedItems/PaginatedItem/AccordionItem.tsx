@@ -68,80 +68,80 @@ export const AccordionChapter = (props: {
     }
   }, [currentItems]);
 
-  useEffect(() => {
-    if (
-      typeof expanded === 'string' &&
-      parseInt(expanded.split('-').pop() || '0') >= 5 &&
-      parseInt(expanded.split('-').pop() || '0') % 5 === 0
-    ) {
-      startTransition(() => {
-        setPage((prevPage) => prevPage + 1);
-      });
-    }
-  }, [expanded]);
+  // useEffect(() => {
+  //   if (
+  //     typeof expanded === 'string' &&
+  //     parseInt(expanded.split('-').pop() || '0') >= 5 &&
+  //     parseInt(expanded.split('-').pop() || '0') % 5 === 0
+  //   ) {
+  //     startTransition(() => {
+  //       setPage((prevPage) => prevPage + 1);
+  //     });
+  //   }
+  // }, [expanded]);
 
   const memoizedAccordion = useMemo(() => {
     return (
-      <>
-        {currentItems.map((chapter, index) => {
-          if (isUnlocked(chapter.id)) {
-            return (
-              <Accordion
-                key={chapter.id}
-                expanded={expanded === `panel1a-chapterHeader-${index}`}
-                onChange={handleChanges(`panel1a-chapterHeader-${index}`)}
-                sx={
-                  expanded === `panel1a-chapterHeader-${index}`
-                    ? {
-                        backgroundColor: 'rgba(0, 128, 0, 0.1)',
-                        marginTop: '1rem',
-                      }
-                    : { marginTop: '1rem', transition: 'background-color 0.5s' }
-                }
-                slotProps={{ transition: { unmountOnExit: true } }}
-              >
-                <AccordionSummary
-                  aria-controls={`panel1a-content-${index}`}
-                  id={`panel1a-header-${index}`}
-                  expandIcon={
-                    <Add
-                      sx={{
-                        color: 'green',
-                      }}
-                    />
-                  }
-                  className={`${
-                    isCompleted(chapter.id)
-                      ? '!bg-[#0080001a] hover:bg-[#0080001a]'
-                      : ''
-                  }`}
-                >
-                  Chapter {chapter.chapter_number}: {chapter.title}{' '}
-                  {isCompleted(chapter.id) ? (
-                    <CheckCircle className="h-5 w-5 self-center ml-2 text-green-900" />
-                  ) : null}
-                </AccordionSummary>
-                <AccordionDetails
-                  classes={{
-                    root: styles.accordionDetailStyles,
-                  }}
-                >
-                  <PDFViewer
-                    data={{
-                      url: queries[index].data?.url || '',
-                      chapterId: chapter.id.toString(),
-                      isCompleted: isCompleted(chapter.id),
-                    }}
-                    isLoading={queries[index].isLoading}
-                    fileName={
-                      Array.isArray(chapter.FileChapter) &&
-                      chapter.FileChapter.length > 0
-                        ? chapter.FileChapter[0].file_name
-                        : ''
+      currentItems &&
+      currentItems.map((chapter, index) => {
+        if (isUnlocked(chapter.id)) {
+          return (
+            <Accordion
+              key={chapter.id}
+              expanded={expanded === `panel1a-chapterHeader-${chapter.id}`}
+              onChange={handleChanges(`panel1a-chapterHeader-${chapter.id}`)}
+              sx={
+                expanded === `panel1a-chapterHeader-${chapter.id}`
+                  ? {
+                      backgroundColor: 'rgba(0, 128, 0, 0.1)',
+                      marginTop: '1rem',
                     }
+                  : { marginTop: '1rem', transition: 'background-color 0.5s' }
+              }
+              slotProps={{ transition: { unmountOnExit: true } }}
+            >
+              <AccordionSummary
+                aria-controls={`panel1a-content-${chapter.id}-${chapter.title}`}
+                id={`panel1a-header-${chapter.id}-${chapter.title}`}
+                expandIcon={
+                  <Add
+                    sx={{
+                      color: 'green',
+                    }}
                   />
+                }
+                className={`${
+                  isCompleted(chapter.id)
+                    ? '!bg-[#0080001a] hover:bg-[#0080001a]'
+                    : ''
+                }`}
+              >
+                Chapter {chapter.chapter_number}: {chapter.title}{' '}
+                {isCompleted(chapter.id) ? (
+                  <CheckCircle className="h-5 w-5 self-center ml-2 text-green-900" />
+                ) : null}
+              </AccordionSummary>
+              <AccordionDetails
+                classes={{
+                  root: styles.accordionDetailStyles,
+                }}
+              >
+                <PDFViewer
+                  data={{
+                    url: queries[index].data?.url || '',
+                    chapterId: chapter.id.toString(),
+                    isCompleted: isCompleted(chapter.id),
+                  }}
+                  isLoading={queries[index].isLoading}
+                  fileName={
+                    Array.isArray(chapter.FileChapter) &&
+                    chapter.FileChapter.length > 0
+                      ? chapter.FileChapter[0].file_name
+                      : ''
+                  }
+                />
 
-                  {/* {chapter.SubChapters &&
+                {/* {chapter.SubChapters &&
                     chapter.SubChapters.slice(0, 1).map((subChapter) => (
                       <Button
                         key={subChapter.id}
@@ -161,34 +161,33 @@ export const AccordionChapter = (props: {
                         </NavLink>
                       </Button>
                     ))} */}
-                </AccordionDetails>
-              </Accordion>
-            );
-          } else {
-            return (
-              <Card
-                key={chapter.id}
-                sx={{
-                  marginTop: '1rem',
-                  backgroundColor: 'rgba(0, 0, 0, 0.1)',
+              </AccordionDetails>
+            </Accordion>
+          );
+        } else {
+          return (
+            <Card
+              key={chapter.id}
+              sx={{
+                marginTop: '1rem',
+                backgroundColor: 'rgba(0, 0, 0, 0.1)',
+              }}
+            >
+              <CardHeader
+                classes={{
+                  action: 'text-green-800 !self-center',
                 }}
-              >
-                <CardHeader
-                  classes={{
-                    action: 'text-green-800 !self-center',
-                  }}
-                  title={`Chapter ${chapter.chapter_number}: ${chapter.title}`}
-                  action={
-                    <Button variant="outlined" color="primary" disabled>
-                      <LockClosedIcon className="h-5 w-5" />
-                    </Button>
-                  }
-                />
-              </Card>
-            );
-          }
-        })}
-      </>
+                title={`Chapter ${chapter.chapter_number}: ${chapter.title}`}
+                action={
+                  <Button variant="outlined" color="primary" disabled>
+                    <LockClosedIcon className="h-5 w-5" />
+                  </Button>
+                }
+              />
+            </Card>
+          );
+        }
+      })
     );
   }, [currentItems, page, expanded, queries]);
 
@@ -197,7 +196,7 @@ export const AccordionChapter = (props: {
       {isPending ? <LoadingContentScreen /> : memoizedAccordion}
       <Stack spacing={2} sx={{ marginTop: '2rem' }}>
         <Pagination
-          size="large"
+          size={window.innerWidth < 600 ? 'small' : 'medium'}
           shape="rounded"
           count={totalPages}
           page={page}
@@ -206,6 +205,8 @@ export const AccordionChapter = (props: {
               setPage(value);
             })
           }
+          showFirstButton
+          showLastButton
         />
       </Stack>
     </>

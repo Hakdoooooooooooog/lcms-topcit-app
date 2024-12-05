@@ -1,8 +1,8 @@
-import { useState } from "react";
-import { getTopicsWithAllChapters } from "../../../../api/User/topicsApi";
-import { useQuery } from "@tanstack/react-query";
-import { useAccordionStore, useModalStore } from "../../../../lib/store";
-import { ChaptersWithSubChaptersWithinTopic } from "../../../../lib/Types/chapters";
+import { useState } from 'react';
+import { getTopicsWithAllChapters } from '../../../../api/User/topicsApi';
+import { useQuery } from '@tanstack/react-query';
+import { useAccordionStore, useModalStore } from '../../../../lib/store';
+import { ChaptersWithSubChaptersWithinTopic } from '../../../../lib/Types/chapters';
 import {
   Accordion,
   AccordionSummary,
@@ -11,16 +11,16 @@ import {
   Pagination,
   Stack,
   Typography,
-} from "@mui/material";
-import { Add } from "@mui/icons-material";
-import { handlePaginatedItems } from "../../../../lib/helpers/utils";
-import EditContentModal from "../../../../components/ui/Modals/EditContent";
-import AddContentModal from "../../../../components/ui/Modals/AddContent";
-import styles from "./Contents.module.css";
-import { LoadingDataScreen } from "../../../../components/ui/LoadingScreen/LoadingScreen";
-import SubChapters from "./SubChapters";
-import { PencilSquareIcon } from "@heroicons/react/16/solid";
-import { AccordionSummaryTheme } from "../../../../lib/constants";
+} from '@mui/material';
+import { Add } from '@mui/icons-material';
+import { handlePaginatedItems } from '../../../../lib/helpers/utils';
+import EditContentModal from '../../../../components/ui/Modals/EditContent';
+import AddContentModal from '../../../../components/ui/Modals/AddContent';
+import styles from './Contents.module.css';
+import { LoadingDataScreen } from '../../../../components/ui/LoadingScreen/LoadingScreen';
+import SubChapters from './SubChapters';
+import { PencilSquareIcon } from '@heroicons/react/16/solid';
+import { AccordionSummaryTheme } from '../../../../lib/constants';
 
 const AdminContent = () => {
   const {
@@ -41,7 +41,7 @@ const AdminContent = () => {
     handleChanges: state.handleChanges,
   }));
 
-  const [buttonType, setButtonType] = useState("");
+  const [buttonType, setButtonType] = useState('');
 
   const [editData, setEditData] = useState<{
     topicId: string;
@@ -50,11 +50,11 @@ const AdminContent = () => {
     chapterId?: string;
     fileName?: string;
   }>({
-    topicId: "",
-    chapterId: "",
-    fileName: "",
-    title: "",
-    subtitle: "",
+    topicId: '',
+    chapterId: '',
+    fileName: '',
+    title: '',
+    subtitle: '',
   });
 
   const [addData, setAddData] = useState<{
@@ -67,7 +67,7 @@ const AdminContent = () => {
   }>({});
 
   const { data, isLoading } = useQuery<ChaptersWithSubChaptersWithinTopic[]>({
-    queryKey: ["AllTopicsWithChapters"],
+    queryKey: ['AllTopicsWithChapters'],
     queryFn: () => getTopicsWithAllChapters(),
   });
 
@@ -87,28 +87,30 @@ const AdminContent = () => {
 
   return (
     <>
-      <Box component={"div"} className="flex items-end justify-between mb-2">
+      <Box component={'div'} className="flex items-end justify-between mb-2">
         <Stack spacing={2}>
           <Pagination
-            size="large"
+            size={window.innerWidth < 768 ? 'small' : 'medium'}
             shape="rounded"
             count={totalTopicPages}
             page={topicPage}
             onChange={(_event, value) => setTopicPage(value)}
+            showFirstButton
+            showLastButton
           />
         </Stack>
 
-        <Box component={"div"} className="flex items-end justify-between gap-3">
+        <Box component={'div'} className="flex items-end justify-between gap-3">
           <Button
             variant="contained"
             sx={{
-              background: "green",
+              background: 'green',
             }}
             onClick={() => {
               setAddData({
                 topicNum: (currentTopics.length + 1).toString(),
               });
-              handleButtonType("add-topic");
+              handleButtonType('add-topic');
               handleAddContentModal();
             }}
             endIcon={<Add />}
@@ -119,7 +121,7 @@ const AdminContent = () => {
         </Box>
       </Box>
 
-      <Box component={"div"} className="flex flex-col gap-3">
+      <Box component={'div'} className="flex flex-col gap-3">
         {data &&
           currentTopics.map((topic) => (
             <Box key={topic.id}>
@@ -134,7 +136,7 @@ const AdminContent = () => {
                   expandIcon={
                     <Add
                       sx={{
-                        color: "green",
+                        color: 'green',
                       }}
                     />
                   }
@@ -148,10 +150,10 @@ const AdminContent = () => {
                     onClick={() => {
                       setEditData({
                         topicId: topic.id.toString(),
-                        title: topic.topictitle || "",
-                        subtitle: topic.description || "",
+                        title: topic.topictitle || '',
+                        subtitle: topic.description || '',
                       });
-                      handleButtonType("edit-topic");
+                      handleButtonType('edit-topic');
                       handleEditContentModal();
                     }}
                     aria-describedby="edit-topic"

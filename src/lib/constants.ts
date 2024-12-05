@@ -170,21 +170,9 @@ export const rootRoutes: LinkProps[] = [
             component: lazy(() => import('../pages/User/LearningHub/Syllabus')),
           },
           {
-            name: 'Media',
-            href: 'media',
-            component: lazy(() => import('../pages/User/LearningHub/Media')),
-          },
-          {
             name: 'Chapters',
             href: 'chapters',
             component: lazy(() => import('../pages/User/LearningHub/Chapters')),
-          },
-          {
-            name: 'Resource-Library',
-            href: 'resource-library',
-            component: lazy(
-              () => import('../pages/User/LearningHub/Resource Libraries'),
-            ),
           },
         ],
       },
@@ -288,13 +276,6 @@ export const rootRoutes: LinkProps[] = [
             name: 'Quiz',
             href: 'quiz',
             component: lazy(() => import('../pages/Admin/AdminHub/Quiz')),
-          },
-          {
-            name: 'Resource Library',
-            href: 'resource-library',
-            component: lazy(
-              () => import('../pages/Admin/AdminHub/ResourceLibrary'),
-            ),
           },
         ],
       },

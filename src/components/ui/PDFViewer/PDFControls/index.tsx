@@ -20,8 +20,8 @@ const PDFControls = ({ props }: { props: PDFControlsProps }) => {
           className={pageNumber <= 1 ? 'text-gray-300' : 'text-black'}
         />
       </button>
-      <span className=" pointer-events-none">
-        Page {pageNumber} of {numPages}
+      <span className=" pointer-events-none text-xs sm:text-sm">
+        {pageNumber} of {numPages}
       </span>
       <button
         type="button"

@@ -15,7 +15,7 @@ const Landing = () => {
   }
 
   return (
-    <>
+    <Box component={'section'} className={styles.container} maxWidth={'xl'}>
       <Box className={styles.btn_back}>
         {currentPath !== '/' && (
           <Link to={currentPath}>
@@ -28,19 +28,11 @@ const Landing = () => {
           </Link>
         )}
       </Box>
-      <Container
-        component={'section'}
-        classes={{
-          root: styles.container,
-        }}
-        maxWidth="md"
-      >
-        <div className={styles.logo}>
-          <TOPCITLogo height="250" width="500" />
-        </div>
-        <Outlet />
-      </Container>
-    </>
+      <div className={styles.logo}>
+        <TOPCITLogo height="250" width="500" />
+      </div>
+      <Outlet />
+    </Box>
   );
 };
 

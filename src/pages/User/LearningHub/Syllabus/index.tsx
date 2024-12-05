@@ -128,6 +128,8 @@ const Syllabus = () => {
                       setPage(value);
                     })
                   }
+                  showFirstButton
+                  showLastButton
                 />
               </Stack>
             </>

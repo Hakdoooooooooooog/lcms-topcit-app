@@ -252,6 +252,8 @@ const Contents = () => {
               setOpen(false);
             })
           }
+          showFirstButton
+          showLastButton
         />
       </Stack>
     </>

@@ -88,7 +88,7 @@ export const updateUserProfile = async (data: UpdateProfile) => {
 
 export const updateUserChapterProgress = async (
   chapterId: string,
-): Promise<{ message: string }> => {
+): Promise<{ message: string; curr_chap_id: string }> => {
   return await userInstance
     .post('/user/progress/update', {
       chapterId,

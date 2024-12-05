@@ -53,7 +53,7 @@ const ProgressTrackerLayout = () => {
         Progress <span className="text-green-800">Tracker</span>
       </h1>
 
-      <Box component={'section'} className="mt-4 max-w-[80rem] mx-auto">
+      <Box component={'section'} className="mt-4 max-w-[80rem] mx-auto pb-10">
         <Breadcrumbs path={path} />
         <Selections
           props={{ CardActionItems, path, startTransition, tab, setTab }}
