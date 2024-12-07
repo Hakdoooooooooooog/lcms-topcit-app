@@ -140,6 +140,10 @@ const PDFViewer = memo(
               open={successChapterModal}
               aria-labelledby="success-chapter-modal"
               aria-describedby="success-chapter-modal"
+              onClose={() => {
+                setPageNumber(1);
+                setSuccessChapterModal(false);
+              }}
             >
               <Box
                 component={'div'}
