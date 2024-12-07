@@ -53,6 +53,24 @@ userInstance.interceptors.request.use((config) => {
   return config;
 });
 
+quizInstance.interceptors.request.use((config) => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const topicId = urlParams.get('topicId');
+  const quizId = urlParams.get('quizId');
+  const userData = JSON.parse(localStorage.getItem('session') || '{}');
+  const userId = userData.state.user.userId;
+  const isAuth = userData.state.user.isAuth;
+
+  config.params = {
+    isAuth: isAuth,
+    userId: userId,
+    topicId: topicId,
+    quizId: quizId,
+  };
+
+  return config;
+});
+
 accessTokenInstance.interceptors.request.use((config) => {
   const userData = JSON.parse(localStorage.getItem('session') || '{}');
   const userId = userData.state.user.userId;

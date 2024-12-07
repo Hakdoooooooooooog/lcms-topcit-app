@@ -1,4 +1,4 @@
-import { UserProfile } from "./user";
+import { UserProfile } from './user';
 
 // Link props types
 export type LinkProps = {
@@ -35,7 +35,7 @@ export type UserAuthState = {
 };
 
 export type UserAuthActions = {
-  setUserAuth: (user: UserAuthState["user"]) => void;
+  setUserAuth: (user: UserAuthState['user']) => void;
 };
 
 export type UserState = {
@@ -44,8 +44,8 @@ export type UserState = {
 };
 
 export type UserActions = {
-  setUser: (user: UserState["user"]) => void;
-  setIsLoaded: (isLoaded: UserState["isLoaded"]) => void;
+  setUser: (user: UserState['user']) => void;
+  setIsLoaded: (isLoaded: UserState['isLoaded']) => void;
 };
 
 export type PaginationState = {
@@ -53,7 +53,7 @@ export type PaginationState = {
 };
 
 export type PaginationActions = {
-  setIsSearching: (isSearching: PaginationState["isSearching"]) => void;
+  setIsSearching: (isSearching: PaginationState['isSearching']) => void;
 };
 
 export type SearchState = {
@@ -61,17 +61,17 @@ export type SearchState = {
 };
 
 export type SearchActions = {
-  setSearch: (search: SearchState["search"]) => void;
+  setSearch: (search: SearchState['search']) => void;
 };
 
 export type InputPasswordState = {
-  passType: "password" | "text";
-  confirmPassType: "password" | "text";
+  passType: 'password' | 'text';
+  confirmPassType: 'password' | 'text';
 };
 
 export type InputPasswordActions = {
-  setPassType: (type: InputPasswordState["passType"]) => void;
-  setConfirmPassType: (type: InputPasswordState["confirmPassType"]) => void;
+  setPassType: (type: InputPasswordState['passType']) => void;
+  setConfirmPassType: (type: InputPasswordState['confirmPassType']) => void;
 };
 
 export type SelectionItems = {
@@ -85,24 +85,59 @@ export type EditProfileState = {
 };
 
 export type EditProfileActions = {
-  setIsEdit: (isEdit: EditProfileState["isEdit"]) => void;
+  setIsEdit: (isEdit: EditProfileState['isEdit']) => void;
 };
 
 export type ModalState = {
   editContentModal: boolean;
   addContentModal: boolean;
+  openCancelModal: boolean;
+  openTutorialModal: boolean;
+  openSubmitModal: boolean;
 };
 
 export type ModalActions = {
+  setOpenSubmitModal: (openSubmitModal: ModalState['openSubmitModal']) => void;
+  setOpenTutorialModal: (
+    openTutorialModal: ModalState['openTutorialModal'],
+  ) => void;
+  setOpenCancelModal: (openCancelModal: ModalState['openCancelModal']) => void;
+
   handleAddContentModal: () => void;
   handleEditContentModal: () => void;
 };
 
+// Accordion types
 export type AccordionState = {
   expanded: string | false;
 };
 
 export type AccordionActions = {
-  setExpanded: (expanded: AccordionState["expanded"]) => void;
-  handleChanges: (panel: string) => (event: React.SyntheticEvent, isExpanded: boolean) => void;
+  setExpanded: (expanded: AccordionState['expanded']) => void;
+  handleChanges: (
+    panel: string,
+  ) => (event: React.SyntheticEvent, isExpanded: boolean) => void;
+};
+
+// Slider types
+export type SliderState = {
+  currentSlide: number;
+  totalSlides: number;
+};
+
+export type SliderActions = {
+  setCurrentSlide: (currentSlide: SliderState['currentSlide']) => void;
+  setTotalSlides: (totalSlides: SliderState['totalSlides']) => void;
+};
+
+// Quiz types
+export type QuizState = {
+  value: {
+    [key: string]: string;
+  };
+  isBlocked: boolean;
+};
+export type QuizActions = {
+  setValue: (value: QuizState['value']) => void;
+  setIsBlocked: (isBlocked: QuizState['isBlocked']) => void;
 };

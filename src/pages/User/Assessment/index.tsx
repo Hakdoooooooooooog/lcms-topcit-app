@@ -8,12 +8,17 @@ import {
 } from 'react';
 import { useSearchParams, useBlocker } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { useAuthUserStore } from '../../../lib/store';
+import {
+  useAuthUserStore,
+  useModalStore,
+  useQuizStore,
+  useSliderStore,
+} from '../../../lib/store';
 import {
   objective_questions,
   QuizWithQuestions,
 } from '../../../lib/Types/quiz';
-import { getQuizzesWithQuestions } from '../../../api/User/quizApi';
+import { getQuizzesWithQuestions, startQuiz } from '../../../api/User/quizApi';
 import {
   Box,
   Button,
@@ -21,11 +26,7 @@ import {
   CardActions,
   CardContent,
   CardHeader,
-  FormControl,
-  FormControlLabel,
   Modal,
-  Radio,
-  RadioGroup,
   Typography,
 } from '@mui/material';
 import { LoadingContentScreen } from '../../../components/ui/LoadingScreen/LoadingScreen';
@@ -37,18 +38,15 @@ import {
 import Slider from 'react-slick';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
-import { ArrowBack, ArrowForward, Cancel } from '@mui/icons-material';
-import { z } from 'zod';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import styles from './Assessment.module.css';
-import useAssessmentMutation from '../../../lib/hooks/useAssessmentMutation';
+import Quiz from './Quiz';
+import { showToast } from '../../../components/ui/Toasts';
 
 const Assessment = () => {
   // Quizzes
   const { data: quizzes, isLoading } = useQuery<QuizWithQuestions[]>({
     queryKey: ['AssessmentQuizzes'],
     queryFn: getQuizzesWithQuestions,
+    refetchOnWindowFocus: false,
   });
 
   // User
@@ -56,21 +54,38 @@ const Assessment = () => {
     userId: state.user?.userId,
   }));
 
-  // References Values
-  let sliderRef = useRef<Slider>(null);
-  let sliderTutorialRef = useRef<Slider>(null);
+  // Slider Refs
+  const tutorialSlider = useRef<Slider | null>(null);
 
-  // State Managements
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [totalSlides, setTotalSlides] = useState(0);
+  // Slider States
+  const { currentSlide, setCurrentSlide, setTotalSlides } = useSliderStore(
+    (state) => ({
+      currentSlide: state.currentSlide,
+      setCurrentSlide: state.setCurrentSlide,
+      setTotalSlides: state.setTotalSlides,
+    }),
+  );
 
-  const [value, setValue] = useState<{
-    [answer: string]: string;
-  }>({});
+  // User Form States
+  const { setValue, isBlocked, setIsBlocked } = useQuizStore((state) => ({
+    setValue: state.setValue,
+    isBlocked: state.isBlocked,
+    setIsBlocked: state.setIsBlocked,
+  }));
 
-  // Modal
-  const [open, setOpen] = useState(false);
-  const [tutorialOpen, setTutorialOpen] = useState(false);
+  // Modal States
+  const {
+    openCancelModal,
+    openTutorialModal,
+    setOpenCancelModal,
+    setOpenTutorialModal,
+  } = useModalStore((state) => ({
+    openCancelModal: state.openCancelModal,
+    openTutorialModal: state.openTutorialModal,
+    openSubmitModal: state.openSubmitModal,
+    setOpenCancelModal: state.setOpenCancelModal,
+    setOpenTutorialModal: state.setOpenTutorialModal,
+  }));
 
   // Transition
   const [isPending, startTransition] = useTransition();
@@ -85,25 +100,22 @@ const Assessment = () => {
   const topicId = searchParams.get('topicId');
 
   // Blocking Navigation Guard
-  let [isBlocking, setBlocking] = useState(false);
   let blocker = useBlocker(
     useCallback(() => {
-      if (isBlocking) {
+      if (isBlocked) {
         return true;
       } else {
         return false;
       }
-    }, [isBlocking]),
+    }, [isBlocked]),
   );
-
-  const assessmentMutation = useAssessmentMutation();
 
   const quizContent = useMemo(() => {
     if (!quizzes || isLoading) return [];
 
     const quiz = quizzes
       .filter((value) => {
-        return Number(value.topic_id) === Number(topicId);
+        return value.topic_id === Number(topicId);
       })
       .flatMap((quiz) => {
         return quiz.objective_questions;
@@ -112,189 +124,89 @@ const Assessment = () => {
     return quiz;
   }, [topicId, quizzes]);
 
-  const schema = useMemo(() => {
-    return z.object(
-      quizContent.reduce((values, quiz) => {
-        values[quiz.id.toString()] = z
-          .string()
-          .min(1, 'Please select an answer');
-
-        return values;
-      }, {} as { [key: string]: z.ZodType<string> }),
-    );
-  }, [quizContent]);
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitSuccessful },
-    reset,
-  } = useForm({
-    values: quizContent.reduce((values, quiz) => {
-      values[quiz.id.toString()] = '';
-
-      return values;
-    }, {} as { [key: string]: string }),
-    resolver: zodResolver(schema),
-    mode: 'onChange',
-  });
-
   useEffect(() => {
     if (!topicId) {
       setSelectedQuiz(null);
-      setTutorialOpen(false);
-      setBlocking(false);
+      setOpenTutorialModal(false);
+      setIsBlocked(false);
       setCurrentSlide(0);
     } else {
       setSelectedQuiz(quizContent);
       setTotalSlides(quizContent.length - 1);
-      setTutorialOpen(true);
+      setOpenTutorialModal(true);
     }
 
     return () => {
-      reset();
       setValue({});
     };
   }, [quizContent, topicId]);
 
   useEffect(() => {
-    if (isBlocking && blocker.state === 'blocked') {
-      setOpen(true);
+    if (isBlocked && blocker.state === 'blocked') {
+      setOpenCancelModal(true);
     }
 
-    if (blocker.state === 'blocked' && !isBlocking) {
+    if (blocker.state === 'blocked' && !isBlocked) {
       blocker.proceed();
     }
-  }, [isBlocking, blocker]);
-
-  useEffect(() => {
-    if (isSubmitSuccessful) {
-      startTransition(() => {
-        reset();
-        setValue({});
-        setBlocking(false);
-        setCurrentSlide(0);
-        setSearchParams({}, { replace: true });
-      });
-    }
-  }, [isSubmitSuccessful]);
-
-  const handleRadioChange = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      const { name, value: answer } = event.target;
-      setValue((prev) => {
-        return {
-          ...prev,
-          [name]: answer,
-        };
-      });
-    },
-    [],
-  );
-
-  const onSubmit = async (data: z.infer<typeof schema>) => {
-    if (
-      !searchParams.get('topicId') ||
-      !searchParams.get('userId') ||
-      !searchParams.get('quizId')
-    ) {
-      return;
-    }
-
-    await assessmentMutation.mutateAsync({
-      assessmentData: data,
-      quizData: {
-        topicId: searchParams.get('topicId') || '',
-        userId: searchParams.get('userId') || '',
-        quizId: searchParams.get('quizId') || '',
-      },
-    });
-  };
-
-  const handleCancelButtonClick = () => {
-    setOpen(true);
-  };
+  }, [isBlocked, blocker]);
 
   const handleCloseModal = useCallback(() => {
-    if (isBlocking && blocker.state === 'blocked') {
-      setOpen(false);
+    if (isBlocked && blocker.state === 'blocked') {
+      setOpenCancelModal(false);
       blocker.reset();
     } else {
-      setOpen(false);
+      setOpenCancelModal(false);
     }
-  }, [isBlocking, blocker]);
+  }, [isBlocked, blocker]);
 
-  const handleConfirmCancel = useCallback(() => {
-    if (isBlocking && blocker.state === 'blocked') {
-      blocker.proceed();
-      setBlocking(false);
-      setOpen(false);
+  const handleConfirmCancel = useCallback(async () => {
+    if (isBlocked && blocker.state === 'blocked') {
+      startTransition(() => {
+        blocker.proceed();
+        setIsBlocked(false);
+        setOpenCancelModal(false);
+      });
+
+      showToast('Quiz cancelled successfully', 'success');
     } else {
       startTransition(() => {
         setSearchParams({}, { replace: true });
-        setOpen(false);
+        setOpenCancelModal(false);
       });
+
+      showToast('Quiz cancelled successfully', 'success');
     }
-  }, [isBlocking, blocker]);
+  }, [isBlocked, blocker]);
 
-  const handleNext = () => {
-    if (sliderRef.current) {
-      sliderRef.current.slickNext();
-    }
+  const handleStartQuiz = useCallback(
+    async (quiz: QuizWithQuestions) => {
+      if (!quiz) {
+        return;
+      }
 
-    if (sliderTutorialRef.current) {
-      sliderTutorialRef.current.slickNext();
-    }
-  };
+      try {
+        await startQuiz(quiz.id.toString(), quiz.topic_id.toString());
 
-  const handlePrev = () => {
-    if (sliderRef.current) {
-      sliderRef.current.slickPrev();
-    }
+        startTransition(() =>
+          setSearchParams({
+            topicId: quiz.topic_id.toString(),
+            quizId: quiz.id.toString(),
+            userId: userId?.toString() || '',
+          }),
+        );
 
-    if (sliderTutorialRef.current) {
-      sliderTutorialRef.current.slickPrev();
-    }
-  };
-
-  const confirmSubmitAnswer = useCallback(() => {
-    return (
-      <Modal open={false} onClose={() => {}}>
-        <Box
-          sx={{
-            ...styledModal,
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            alignItems: 'center',
-            textAlign: 'center',
-            gap: '2rem',
-          }}
-          className="sm:max-w-md"
-        >
-          <Typography variant="h5">
-            Are you sure you want to submit your answers?
-          </Typography>
-
-          <Typography variant="body1" className="m-5 text-red-400">
-            Your answers will be submitted for review.
-          </Typography>
-          <Box className="flex gap-3">
-            <Button variant="contained" color="error" onClick={() => {}}>
-              Yes
-            </Button>
-            <Button variant="contained" color="info" onClick={() => {}}>
-              No
-            </Button>
-          </Box>
-        </Box>
-      </Modal>
-    );
-  }, []);
+        showToast('Quiz started successfully', 'success');
+      } catch (error: any) {
+        showToast('Error starting quiz: ' + error.error, 'error');
+      }
+    },
+    [userId, topicId],
+  );
 
   const renderCancelModal = useCallback(() => {
     return (
-      <Modal open={open} onClose={handleCloseModal}>
+      <Modal open={openCancelModal} onClose={handleCloseModal}>
         <Box
           sx={{
             ...styledModal,
@@ -329,11 +241,11 @@ const Assessment = () => {
         </Box>
       </Modal>
     );
-  }, [open]);
+  }, [openCancelModal]);
 
   const tutorialModal = useCallback(
     () => (
-      <Modal open={tutorialOpen} onClose={handleCloseModal}>
+      <Modal open={openTutorialModal} onClose={handleCloseModal}>
         <Box
           sx={{
             ...styledModal,
@@ -348,7 +260,12 @@ const Assessment = () => {
           <Typography variant="h5" className="self-start">
             Instructions:
           </Typography>
-          <Slider {...slickSettings} className="w-full" ref={sliderTutorialRef}>
+          <Slider
+            {...slickSettings}
+            className="w-full"
+            ref={tutorialSlider}
+            afterChange={(currentSlide) => setCurrentSlide(currentSlide)}
+          >
             {tutorialSteps.map((step, index) => (
               <Card
                 key={index}
@@ -380,18 +297,20 @@ const Assessment = () => {
             variant="contained"
             color="info"
             onClick={() => {
-              setTutorialOpen(false);
+              setOpenTutorialModal(false);
+              setCurrentSlide(0);
             }}
             sx={{
               mt: '1rem',
             }}
+            disabled={currentSlide !== tutorialSteps.length - 1}
           >
             Got it!
           </Button>
         </Box>
       </Modal>
     ),
-    [tutorialOpen, tutorialSteps],
+    [openTutorialModal, tutorialSteps, currentSlide],
   );
 
   if (isLoading || !quizzes) {
@@ -431,32 +350,49 @@ const Assessment = () => {
 
                     <CardActions className="justify-end flex-[1_1_auto]">
                       <Box className=" flex flex-col gap-3 w-full lg:w-[300px]">
+                        {quiz.max_attempts && (
+                          <Button
+                            sx={{
+                              width: '100%',
+                              '&:disabled': {
+                                backgroundColor: 'gray',
+                              },
+                            }}
+                            variant="contained"
+                            color="info"
+                            onClick={() => handleStartQuiz(quiz)}
+                            disabled={
+                              (quiz.user_quiz_attempts?.attempt_count ?? 0) >=
+                              (quiz.max_attempts ?? 0)
+                            }
+                          >
+                            Attempts:{' '}
+                            {quiz.user_quiz_attempts?.attempt_count || 0} /{' '}
+                            {quiz.max_attempts}
+                          </Button>
+                        )}
                         <Button
+                          disableRipple={true}
+                          disableTouchRipple={true}
                           sx={{
                             width: '100%',
-                            background: 'green',
-                          }}
-                          variant="contained"
-                          onClick={() => {
-                            startTransition(() =>
-                              setSearchParams({
-                                topicId: quiz.topic_id.toString(),
-                                quizId: quiz.id.toString(),
-                                userId: userId?.toString() || '',
-                              }),
-                            );
-                          }}
-                        >
-                          Start Assessment
-                        </Button>
-                        <Button
-                          sx={{
-                            width: '100%',
+                            cursor: 'default',
+                            ...(quiz.user_quiz_attempts?.score === null
+                              ? {
+                                  backgroundColor: '#00800030',
+                                }
+                              : {
+                                  backgroundColor: 'rgba(0, 128, 0, 0.2)',
+
+                                  '&:hover': {
+                                    backgroundColor: 'rgba(0, 128, 0, 0.4)',
+                                  },
+                                }),
                           }}
                           variant="contained"
                           color="inherit"
                         >
-                          Score: Pending
+                          Score: {quiz.user_quiz_attempts?.score ?? 'N/A'}
                         </Button>
                       </Box>
                     </CardActions>
@@ -466,216 +402,15 @@ const Assessment = () => {
             ))}
 
           {selectedQuiz && (
-            <>
-              <Button
-                variant="contained"
-                color="info"
-                onClick={() => {
-                  setTutorialOpen(true);
-                }}
-                sx={{
-                  position: 'fixed',
-                  right: '1rem',
-                  bottom: '1rem',
-                }}
-              >
-                Tutorial
-              </Button>
-
-              <form
-                onSubmit={handleSubmit(onSubmit)}
-                className="slider-container"
-              >
-                <Slider
-                  {...slickSettings}
-                  ref={sliderRef}
-                  afterChange={(index) => {
-                    setCurrentSlide(index);
-                  }}
-                  dotsClass={`slick-dots ${styles.dots}`}
-                >
-                  {selectedQuiz.map((questions, index) => (
-                    <Card
-                      key={index}
-                      className="sm:!flex justify-between gap-5 p-4"
-                    >
-                      <Box className="flex flex-[1_1_100%] ml-2 gap-[1%] items-center">
-                        <Box className="flex-[1_1_55%]">
-                          <CardHeader subheader={questions.question} />
-                        </Box>
-                      </Box>
-
-                      <CardContent className="flex flex-col flex-[1_1_auto] gap-3 w-full h-[450px] sm:max-h-fit">
-                        <Card
-                          className="flex flex-col gap-3 p-4 h-full"
-                          sx={{
-                            border: '1px solid #e0e0e0',
-                            borderRadius: '5px',
-                          }}
-                        >
-                          <CardHeader subheader="Choose the correct answer" />
-                          <Box className="flex flex-col flex-wrap w-full max-h-fit">
-                            <FormControl
-                              component="fieldset"
-                              error={
-                                errors[questions.id.toString()] ? true : false
-                              }
-                              sx={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: '1rem',
-                              }}
-                            >
-                              {questions.multiple_choice_options.map(
-                                (option) => (
-                                  <RadioGroup
-                                    key={option.id}
-                                    {...register(questions.id.toString(), {
-                                      onChange: (e) => {
-                                        setBlocking(true);
-                                        handleRadioChange(e);
-                                      },
-                                    })}
-                                    sx={{
-                                      padding: '5px',
-                                      '&:hover': {
-                                        backgroundColor: 'rgba(0, 0, 0, 0.1)',
-                                        borderRadius: '10px',
-                                      },
-                                    }}
-                                    value={value[questions.id.toString()] || ''}
-                                  >
-                                    <FormControlLabel
-                                      value={option.option_text}
-                                      control={
-                                        <Radio
-                                          disableTouchRipple
-                                          disableRipple
-                                        />
-                                      }
-                                      label={option.option_text}
-                                    />
-                                  </RadioGroup>
-                                ),
-                              )}
-                            </FormControl>
-
-                            {errors && (
-                              <Typography
-                                variant="body2"
-                                className="text-red-500"
-                              >
-                                {errors[
-                                  `${questions.id.toString()}`
-                                ]?.message?.toString()}
-                              </Typography>
-                            )}
-                          </Box>
-                        </Card>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </Slider>
-                <CardActions className="justify-center flex-[1_1_auto] mt-10">
-                  {currentSlide === totalSlides ? (
-                    <>
-                      <Button
-                        sx={{
-                          width: '100%',
-                          maxWidth: 'fit-content',
-                          padding: '0.5rem 1rem',
-                          background: 'green',
-                          '&:disabled': {
-                            backgroundColor: 'rgba(0, 0, 0, 0.1)',
-                          },
-                        }}
-                        variant="contained"
-                        disabled={Object.keys(errors).length > 0}
-                        type="submit"
-                      >
-                        Submit
-                      </Button>
-
-                      <Button
-                        sx={{
-                          width: '100%',
-                          maxWidth: 'fit-content',
-                          padding: '0.5rem 1rem',
-                          '&:disabled': {
-                            backgroundColor: 'rgba(0, 0, 0, 0.1)',
-                          },
-                        }}
-                        variant="contained"
-                        onClick={handlePrev}
-                        disabled={
-                          currentSlide <= 0 || currentSlide > totalSlides
-                        }
-                        endIcon={<ArrowBack />}
-                      >
-                        Prev
-                      </Button>
-                    </>
-                  ) : (
-                    <>
-                      <Button
-                        sx={{
-                          width: '100%',
-                          maxWidth: 'fit-content',
-                          padding: '0.5rem 1rem',
-                          background: 'green',
-                          '&:disabled': {
-                            backgroundColor: 'rgba(0, 0, 0, 0.1)',
-                          },
-                        }}
-                        variant="contained"
-                        onClick={handleNext}
-                        disabled={currentSlide === totalSlides}
-                        endIcon={<ArrowForward />}
-                      >
-                        Next
-                      </Button>
-
-                      <Button
-                        sx={{
-                          width: '100%',
-                          maxWidth: 'fit-content',
-                          padding: '0.5rem 1rem',
-                          '&:disabled': {
-                            backgroundColor: 'rgba(0, 0, 0, 0.1)',
-                          },
-                        }}
-                        variant="contained"
-                        onClick={handlePrev}
-                        disabled={
-                          currentSlide <= 0 || currentSlide > totalSlides
-                        }
-                        endIcon={<ArrowBack />}
-                      >
-                        Prev
-                      </Button>
-                    </>
-                  )}
-
-                  <Button
-                    sx={{
-                      width: '100%',
-                      maxWidth: 'fit-content',
-                      padding: '0.5rem 1rem',
-                    }}
-                    variant="contained"
-                    color="error"
-                    onClick={handleCancelButtonClick}
-                  >
-                    <Cancel />
-                  </Button>
-                </CardActions>
-              </form>
-            </>
+            <Quiz
+              selectedQuiz={selectedQuiz}
+              startTransition={startTransition}
+              topicId={topicId || ''}
+            />
           )}
 
           {renderCancelModal()}
           {tutorialModal()}
-          {confirmSubmitAnswer()}
         </>
       )}
     </>
