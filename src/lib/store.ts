@@ -12,10 +12,14 @@ import {
   PaginationState,
   SearchActions,
   SearchState,
+  SliderState,
+  SliderActions,
   UserActions,
   UserAuthActions,
   UserAuthState,
   UserState,
+  QuizActions,
+  QuizState,
 } from './Types/types';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
@@ -79,6 +83,16 @@ export const useEditProfileStore = create<
 export const useModalStore = create<ModalState & ModalActions>((set) => ({
   addContentModal: false,
   editContentModal: false,
+  openCancelModal: false,
+  openSubmitModal: false,
+  openTutorialModal: false,
+
+  setOpenCancelModal: (openCancelModal) =>
+    set((prevState) => ({ ...prevState, openCancelModal })),
+  setOpenSubmitModal: (openSubmitModal) =>
+    set((prevState) => ({ ...prevState, openSubmitModal })),
+  setOpenTutorialModal: (openTutorialModal) =>
+    set((prevState) => ({ ...prevState, openTutorialModal })),
 
   handleAddContentModal: () =>
     set((state) => ({ addContentModal: !state.addContentModal })),
@@ -94,3 +108,20 @@ export const useAccordionStore = create<AccordionState & AccordionActions>(
       set({ expanded: isExpanded ? panel : false }),
   }),
 );
+
+export const useSliderStore = create<SliderState & SliderActions>((set) => ({
+  currentSlide: 0,
+  totalSlides: 0,
+
+  setCurrentSlide: (currentSlide) => set((prev) => ({ ...prev, currentSlide })),
+  setTotalSlides: (totalSlides) => set((prev) => ({ ...prev, totalSlides })),
+}));
+
+export const useQuizStore = create<QuizState & QuizActions>((set) => ({
+  value: {
+    '': '',
+  },
+  isBlocked: false,
+  setValue: (value) => set((prev) => ({ ...prev, value })),
+  setIsBlocked: (isBlocked) => set((prev) => ({ ...prev, isBlocked })),
+}));

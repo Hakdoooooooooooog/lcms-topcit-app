@@ -497,6 +497,17 @@ export const tutorialSteps = [
     content: 'Click the "Submit" button to submit your answers.',
     img: 'https://placehold.co/1024x720',
   },
+  {
+    label: 'Step 5',
+    content:
+      'Caution: Once you click the "Submit" button, you cannot go back. Make sire to review your answers before submitting.',
+    img: 'https://placehold.co/1024x720',
+  },
+  {
+    label: 'Step 6',
+    content: 'Good luck!',
+    img: 'https://placehold.co/1024x720',
+  },
 ];
 
 export const options = {

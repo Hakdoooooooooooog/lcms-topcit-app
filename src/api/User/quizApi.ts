@@ -14,20 +14,28 @@ export const getQuizzesWithQuestions = async (): Promise<
     });
 };
 
-export const submitQuiz = async (
-  assessmentData: {
-    [key: string]: string;
-  },
-  quizData: { topicId: string; userId: string; quizId: string },
+export const startQuiz = async (
+  quizId: string,
+  topicId: string,
 ): Promise<any> => {
   return await quizInstance
-    .post(`/quizzes/submit`, assessmentData, {
-      params: {
-        topicId: quizData.topicId,
-        userId: quizData.userId,
-        quizId: quizData.quizId,
-      },
+    .post(`/quizzes/start`, {
+      quizId,
+      topicId,
     })
+    .then((res) => {
+      return res.data;
+    })
+    .catch((error) => {
+      throw error.response.data;
+    });
+};
+
+export const submitQuiz = async (assessmentData: {
+  [key: string]: string;
+}): Promise<any> => {
+  return await quizInstance
+    .post(`/quizzes/submit`, assessmentData)
     .then((res) => {
       return res.data;
     })
