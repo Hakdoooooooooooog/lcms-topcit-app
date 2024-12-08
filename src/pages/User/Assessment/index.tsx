@@ -66,7 +66,7 @@ const Assessment = () => {
     }),
   );
 
-  // User Form States
+  // User Quiz States
   const { setValue, isBlocked, setIsBlocked } = useQuizStore((state) => ({
     setValue: state.setValue,
     isBlocked: state.isBlocked,
@@ -264,7 +264,9 @@ const Assessment = () => {
             {...slickSettings}
             className="w-full"
             ref={tutorialSlider}
-            afterChange={(currentSlide) => setCurrentSlide(currentSlide)}
+            beforeChange={(_currentSlide, nextSlide) =>
+              setCurrentSlide(nextSlide)
+            }
           >
             {tutorialSteps.map((step, index) => (
               <Card
@@ -362,12 +364,12 @@ const Assessment = () => {
                             color="info"
                             onClick={() => handleStartQuiz(quiz)}
                             disabled={
-                              (quiz.user_quiz_attempts?.attempt_count ?? 0) >=
-                              (quiz.max_attempts ?? 0)
+                              (quiz.user_quiz_attempts[0]?.attempt_count ??
+                                0) >= (quiz.max_attempts ?? 0)
                             }
                           >
                             Attempts:{' '}
-                            {quiz.user_quiz_attempts?.attempt_count || 0} /{' '}
+                            {quiz.user_quiz_attempts[0]?.attempt_count || 0} /{' '}
                             {quiz.max_attempts}
                           </Button>
                         )}
@@ -377,7 +379,7 @@ const Assessment = () => {
                           sx={{
                             width: '100%',
                             cursor: 'default',
-                            ...(quiz.user_quiz_attempts?.score === null
+                            ...(quiz.user_quiz_attempts[0]?.score === null
                               ? {
                                   backgroundColor: '#00800030',
                                 }
@@ -392,7 +394,7 @@ const Assessment = () => {
                           variant="contained"
                           color="inherit"
                         >
-                          Score: {quiz.user_quiz_attempts?.score ?? 'N/A'}
+                          Score: {quiz.user_quiz_attempts[0]?.score ?? 'N/A'}
                         </Button>
                       </Box>
                     </CardActions>

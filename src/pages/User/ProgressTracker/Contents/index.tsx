@@ -52,27 +52,53 @@ const Contents = () => {
       return [];
     }
 
-    let currentUserChapterId = Number(userProgress.user_progress.curr_chap_id);
     let currentTopicId = Number(userProgress.user_progress.curr_topic_id);
+    let currentUserChapterId = userProgress.user_completed_chapters
+      .filter(
+        (chapter) =>
+          chapter.completion_status === 'completed' && chapter.topic_id,
+      )
+      .reduce((acc: { [key: number]: number }, chapter) => {
+        const topicId = Number(chapter.topic_id);
+        if (!acc[topicId]) {
+          acc[topicId] = 0;
+        }
+        acc[topicId]++;
+        return acc;
+      }, {});
+
+    // Check if there are any topics that have not been completed, default to 0
+    totalChapters.forEach((topic) => {
+      const topicId = Number(topic.id);
+      if (!currentUserChapterId[topicId]) {
+        currentUserChapterId[topicId] = 0;
+      }
+    });
 
     const totalChapterPerTopic = totalChapters.map((topic) => {
       return {
         topicId: topic.id,
         topicName: topic.topictitle,
-        totalChapters: topic.chapters.length,
+        totalChapters: topic.chapters.filter((chapter) => chapter.topic_id)
+          .length,
       };
     });
 
     for (let i = 0; i < totalChapterPerTopic.length; i++) {
       let topicId = totalChapterPerTopic[i].topicId;
 
-      if (currentTopicId === Number(topicId)) {
+      if (
+        currentTopicId >= Number(topicId) &&
+        currentUserChapterId[Number(topicId)] !== 0
+      ) {
         array.push({
           topicId: topicId,
           topicName: totalChapterPerTopic[i].topicName,
           totalChapters: totalChapterPerTopic[i].totalChapters,
+          currentChapter: currentUserChapterId[Number(topicId)],
           progress:
-            (currentUserChapterId / totalChapterPerTopic[i].totalChapters) *
+            (currentUserChapterId[Number(topicId)] /
+              totalChapterPerTopic[i].totalChapters) *
             100,
         });
       } else {
@@ -80,6 +106,7 @@ const Contents = () => {
           topicId: topicId,
           topicName: totalChapterPerTopic[i].topicName,
           totalChapters: totalChapterPerTopic[i].totalChapters,
+          currentChapter: 0,
           progress: 0,
         });
       }
@@ -188,7 +215,10 @@ const Contents = () => {
                                     <span>
                                       {item.progress === 100
                                         ? item.totalChapters
-                                        : userProgress.user_progress?.curr_chap_id?.toString()}
+                                        : progress.find(
+                                            (chapter) =>
+                                              chapter.topicId === item.topicId,
+                                          )?.currentChapter}
                                     </span>
                                   </Typography>
 

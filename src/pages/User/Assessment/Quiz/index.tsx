@@ -59,13 +59,13 @@ const Quiz = ({ selectedQuiz, startTransition, topicId }: QuizProps) => {
   const sliderRef = useRef<Slider>(null);
 
   // State Managements
-  const { currentSlide, totalSlides, setCurrentSlide } = useSliderStore(
-    (state) => ({
+  const { currentSlide, totalSlides, setTotalSlides, setCurrentSlide } =
+    useSliderStore((state) => ({
       currentSlide: state.currentSlide,
       totalSlides: state.totalSlides,
       setCurrentSlide: state.setCurrentSlide,
-    }),
-  );
+      setTotalSlides: state.setTotalSlides,
+    }));
   const { setOpenTutorialModal, setOpenCancelModal } = useModalStore(
     (state) => ({
       setOpenTutorialModal: state.setOpenTutorialModal,
@@ -95,25 +95,25 @@ const Quiz = ({ selectedQuiz, startTransition, topicId }: QuizProps) => {
   });
 
   useEffect(() => {
-    if (!topicId) {
-      setValue({});
-      reset();
-      return;
+    if (selectedQuiz.length > 0) {
+      setCurrentSlide(0);
+      setTotalSlides(selectedQuiz.length - 1);
     }
-  }, [topicId]);
+  }, [selectedQuiz]);
 
   useEffect(() => {
-    if (isSubmitSuccessful) {
+    if (isSubmitSuccessful || !topicId) {
       startTransition(() => {
         reset();
         setValue({});
         setIsBlocked(false);
-        setCurrentSlide(0);
         setOpenTutorialModal(false);
+        setCurrentSlide(0);
+        setTotalSlides(0);
         setSearchParams({}, { replace: true });
       });
     }
-  }, [isSubmitSuccessful]);
+  }, [isSubmitSuccessful, startTransition, topicId]);
 
   const handleRadioChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -218,7 +218,7 @@ const Quiz = ({ selectedQuiz, startTransition, topicId }: QuizProps) => {
                 </Box>
               </Box>
 
-              <CardContent className="flex flex-col flex-[1_1_auto] gap-3 w-full h-[450px] sm:max-h-fit">
+              <CardContent className="flex flex-col flex-[1_1_auto] gap-3 w-full sm:max-h-fit">
                 <Card
                   className="flex flex-col gap-3 p-4 h-full"
                   sx={{

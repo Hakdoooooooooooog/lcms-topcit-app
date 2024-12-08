@@ -22,6 +22,7 @@ export type UserCompletedChapters = {
   id: bigint;
   user_id: bigint;
   chapter_id: bigint;
+  topic_id: bigint;
   completion_status: string | null;
   completed_at: Date | null;
 };
@@ -45,9 +46,17 @@ export type UserProgressData = {
     | null;
 };
 
+export type UserCompletedQuizzes = {
+  id: bigint;
+  user_id: bigint;
+  quiz_id: bigint;
+  completed_at: Date | null;
+} | null;
+
 export type UserProgress = Pick<users, 'userid' | 'username'> & {
   user_progress: UsersProgress | null;
   user_completed_chapters: UserCompletedChapters[];
+  user_completed_quizzes: UserCompletedQuizzes;
 };
 
 type users_role = 'admin' | 'user';

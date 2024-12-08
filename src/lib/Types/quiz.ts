@@ -21,7 +21,7 @@ export type multiple_choice_options = {
   option_text: string;
 };
 
-export type quiz_attempt = {
+export type quiz_attempts = {
   quiz_id: number;
   score: number;
   attempt_count: number;
@@ -30,5 +30,5 @@ export type quiz_attempt = {
 
 export interface QuizWithQuestions extends quiz {
   objective_questions: objective_questions[];
-  user_quiz_attempts: quiz_attempt;
+  user_quiz_attempts: quiz_attempts[];
 }

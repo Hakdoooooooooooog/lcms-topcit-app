@@ -88,10 +88,16 @@ export const updateUserProfile = async (data: UpdateProfile) => {
 
 export const updateUserChapterProgress = async (
   chapterId: string,
-): Promise<{ message: string; curr_chap_id: string }> => {
+  topicId: string,
+): Promise<{
+  message: string;
+  curr_chap_id: string;
+  curr_topic_id: string;
+}> => {
   return await userInstance
     .post('/user/progress/update', {
       chapterId,
+      topic_id: topicId,
     })
     .then((res) => res.data)
     .catch((error) => {

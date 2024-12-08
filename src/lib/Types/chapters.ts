@@ -19,6 +19,7 @@ export type UserCompletedChapters = {
   id: bigint;
   chapter_id: bigint;
   user_id: bigint;
+  topic_id: bigint;
   completion_status: string | null;
   completed_at: Date | null;
 };

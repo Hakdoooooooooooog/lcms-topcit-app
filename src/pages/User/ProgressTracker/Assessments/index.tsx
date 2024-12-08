@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { useTransition, useMemo } from 'react';
+import { useTransition } from 'react';
 
 import {
   Box,
@@ -37,37 +37,10 @@ const Assessments = () => {
   const [isPending, startTransition] = useTransition();
   const search = useSearchStore((state) => state.search);
 
-  const progress = useMemo(() => {
-    let array = [];
-    if (!userProgress || isLoading || !totalQuiz || isLoadingTotalQuiz) {
-      return [];
-    }
-
-    const completedQuiz = Number(userProgress.user_progress?.completed_quizzes);
-    const currentQuiz = Number(userProgress.user_progress?.curr_quiz_id);
-
-    for (let i = 0; i < totalQuiz.length; i++) {
-      let quizId = totalQuiz[i].id;
-
-      if (completedQuiz >= quizId && currentQuiz >= quizId) {
-        array.push({
-          quizId: quizId,
-          quizTitle: totalQuiz[i].title,
-          completed: true,
-        });
-      } else {
-        array.push({
-          quizId: quizId,
-          quizTitle: totalQuiz[i].title,
-          completed: false,
-        });
-      }
-    }
-
-    return array;
-  }, [userProgress, totalQuiz]);
-
-  const { isSearching, filteredItems } = useSearchFilter(progress, search);
+  const { isSearching, filteredItems } = useSearchFilter<QuizWithQuestions>(
+    totalQuiz,
+    search,
+  );
 
   const { page, setPage, totalPages, currentItems } = handlePaginatedItems({
     items: filteredItems,
@@ -101,15 +74,13 @@ const Assessments = () => {
               {currentItems &&
                 currentItems.map((item) => (
                   <Card
-                    key={item.quizId}
+                    key={item.id}
                     sx={{
                       padding: '15px',
                       position: 'relative',
                     }}
                   >
-                    <CardHeader
-                      title={`Topic ${item.quizId}: ${item.quizTitle}`}
-                    />
+                    <CardHeader title={`Topic ${item.id}: ${item.title}`} />
                     <CardContent>
                       <Box
                         sx={{
@@ -120,7 +91,11 @@ const Assessments = () => {
                       >
                         <Typography variant="body1">
                           Status:{' '}
-                          {item.completed ? 'Completed' : 'Not Completed'}
+                          {userProgress.user_completed_quizzes &&
+                          Number(userProgress.user_completed_quizzes?.id) ===
+                            item.id
+                            ? 'Completed'
+                            : 'Not Completed'}
                         </Typography>
                       </Box>
                     </CardContent>

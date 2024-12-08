@@ -18,7 +18,7 @@ import { options, styledModal } from '../../../lib/constants';
 import { updateUserChapterProgress } from '../../../api/User/userApi';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAccordionStore } from '../../../lib/store';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useSearchParams } from 'react-router-dom';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
@@ -37,14 +37,21 @@ const PDFViewer = memo(
     previewFile?: File | string;
   }) => {
     const location = useLocation().pathname;
+    const [searchParams] = useSearchParams();
+    const queryClient = useQueryClient();
+    const topicId = searchParams.get('topicId');
     const { setExpanded } = useAccordionStore((state) => ({
       setExpanded: state.setExpanded,
     }));
 
-    const queryClient = useQueryClient();
-
     const updateMutation = useMutation({
-      mutationFn: updateUserChapterProgress,
+      mutationFn: ({
+        chapterId,
+        topicId,
+      }: {
+        chapterId: string;
+        topicId: string;
+      }) => updateUserChapterProgress(chapterId, topicId),
       onSuccess: (data) => {
         queryClient.invalidateQueries({
           queryKey: ['UserProgress'],
@@ -81,6 +88,12 @@ const PDFViewer = memo(
         setNumPages(undefined);
       }
     }, [previewFile]);
+
+    useEffect(() => {
+      if (pageNumber === numPages && !data?.isCompleted) {
+        setSuccessChapterModal(true);
+      }
+    }, [pageNumber, data?.isCompleted]);
 
     const memoiozedOptions = useMemo(() => {
       return options;
@@ -119,7 +132,10 @@ const PDFViewer = memo(
         if (!chapterId) return;
 
         try {
-          await updateMutation.mutateAsync(chapterId);
+          await updateMutation.mutateAsync({
+            chapterId,
+            topicId: topicId || '',
+          });
         } catch (error: any) {
           showToast(
             'Error updating chapter progress: ' + error.message,
@@ -135,15 +151,13 @@ const PDFViewer = memo(
         return (
           path !== '/admin' &&
           numPages &&
-          numPages === pageNumber && (
+          data &&
+          numPages === pageNumber &&
+          !data.isCompleted && (
             <Modal
               open={successChapterModal}
               aria-labelledby="success-chapter-modal"
               aria-describedby="success-chapter-modal"
-              onClose={() => {
-                setPageNumber(1);
-                setSuccessChapterModal(false);
-              }}
             >
               <Box
                 component={'div'}
@@ -192,7 +206,7 @@ const PDFViewer = memo(
                       variant="contained"
                       onClick={() => {
                         setPageNumber(1);
-                        handleUpdateChapterUserProgress(data?.chapterId);
+                        handleUpdateChapterUserProgress(data.chapterId);
                         setSuccessChapterModal(false);
                       }}
                       endIcon={<ArrowForward />}
@@ -206,7 +220,7 @@ const PDFViewer = memo(
           )
         );
       },
-      [numPages, pageNumber, data?.chapterId, successChapterModal],
+      [numPages, pageNumber, data, successChapterModal],
     );
 
     if (!data || isLoading) {
