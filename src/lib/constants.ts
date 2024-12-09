@@ -475,38 +475,42 @@ export const editTopicFormInputs = [
   },
 ];
 
-export const tutorialSteps = [
+export const tutorialSteps: Array<{
+  label: string;
+  content: string;
+  img?: string | null;
+}> = [
   {
     label: 'Step 1',
     content: `Use the arrow keys to navigate through the questions or
     swipe left or right on mobile devices.`,
-    img: 'https://placehold.co/1024x720',
+    img: '/tutorial/tut_1.gif',
   },
   {
     label: 'Step 2',
     content: 'Click the "Next" button to move to the next question.',
-    img: 'https://placehold.co/1024x720',
+    img: '/tutorial/tut_2.gif',
   },
   {
     label: 'Step 3',
     content: 'Click the "Previous" button to move to the previous question.',
-    img: 'https://placehold.co/1024x720',
+    img: '/tutorial/tut_3.gif',
   },
   {
     label: 'Step 4',
     content: 'Click the "Submit" button to submit your answers.',
-    img: 'https://placehold.co/1024x720',
+    img: '/tutorial/tut_4.gif',
   },
   {
     label: 'Step 5',
     content:
       'Caution: Once you click the "Submit" button, you cannot go back. Make sire to review your answers before submitting.',
-    img: 'https://placehold.co/1024x720',
+    img: null,
   },
   {
     label: 'Step 6',
     content: 'Good luck!',
-    img: 'https://placehold.co/1024x720',
+    img: null,
   },
 ];
 

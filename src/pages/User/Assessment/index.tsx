@@ -277,20 +277,22 @@ const Assessment = () => {
 
                 <CardContent>
                   <Typography variant="body1">{step.content}</Typography>
-                  <Box
-                    component={'img'}
-                    src={step.img}
-                    alt={step.label}
-                    sx={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover',
-                      borderRadius: '5px',
-                      boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-                      border: '1px solid #e0e0e0',
-                      maxHeight: '15rem',
-                    }}
-                  />
+                  {step.img && step.img !== null && (
+                    <Box
+                      component={'img'}
+                      src={step.img}
+                      alt={step.label}
+                      sx={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        borderRadius: '5px',
+                        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                        border: '1px solid #e0e0e0',
+                        maxHeight: '15rem',
+                      }}
+                    />
+                  )}
                 </CardContent>
               </Card>
             ))}
