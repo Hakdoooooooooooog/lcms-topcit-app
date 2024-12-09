@@ -173,20 +173,30 @@ const PDFViewer = memo(
                 className="sm:max-w-3xl"
               >
                 <Card className="p-4 bg-green-100 text-green-800">
-                  <CardContent>
-                    <h2 className="text-2xl font-bold">Congratulations!</h2>
-                    <p className="text-lg">
+                  <CardContent
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '0.5rem',
+                    }}
+                  >
+                    <h2 className="text-lg sm:text-2xl font-bold">
+                      Congratulations!
+                    </h2>
+                    <p className="text-sm sm:text-lg">
                       You have successfully completed the chapter. You can now
                       move on to the next chapter or download the chapter for
                       offline viewing.
                     </p>
                     <Box
                       component={'img'}
-                      src="https://placehold.co/1024x720"
+                      src="/confetti.png"
                       alt="Success"
                       sx={{
-                        width: '100%',
-                        height: '100%',
+                        width: '75%',
+                        height: '75%',
                         objectFit: 'cover',
                         borderRadius: '5px',
                         boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',

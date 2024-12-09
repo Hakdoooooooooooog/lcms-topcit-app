@@ -67,6 +67,10 @@ export const styledModal = {
   border: '2px solid #000',
   boxShadow: 24,
   p: 4,
+
+  '@media (min-width: 600px)': {
+    width: '50%',
+  },
 };
 
 export const slickSettings: Settings = {
