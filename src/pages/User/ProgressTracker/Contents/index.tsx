@@ -52,14 +52,14 @@ const Contents = () => {
       return [];
     }
 
-    let currentTopicId = Number(userProgress.user_progress.curr_topic_id);
+    let currentTopicId = userProgress.user_progress.curr_topic_id;
     let currentUserChapterId = userProgress.user_completed_chapters
       .filter(
         (chapter) =>
           chapter.completion_status === 'completed' && chapter.topic_id,
       )
       .reduce((acc: { [key: number]: number }, chapter) => {
-        const topicId = Number(chapter.topic_id);
+        const topicId = chapter.topic_id;
         if (!acc[topicId]) {
           acc[topicId] = 0;
         }
@@ -69,7 +69,7 @@ const Contents = () => {
 
     // Check if there are any topics that have not been completed, default to 0
     totalChapters.forEach((topic) => {
-      const topicId = Number(topic.id);
+      const topicId = topic.id;
       if (!currentUserChapterId[topicId]) {
         currentUserChapterId[topicId] = 0;
       }
@@ -87,17 +87,14 @@ const Contents = () => {
     for (let i = 0; i < totalChapterPerTopic.length; i++) {
       let topicId = totalChapterPerTopic[i].topicId;
 
-      if (
-        currentTopicId >= Number(topicId) &&
-        currentUserChapterId[Number(topicId)] !== 0
-      ) {
+      if (currentTopicId >= topicId && currentUserChapterId[topicId] !== 0) {
         array.push({
           topicId: topicId,
           topicName: totalChapterPerTopic[i].topicName,
           totalChapters: totalChapterPerTopic[i].totalChapters,
-          currentChapter: currentUserChapterId[Number(topicId)],
+          currentChapter: currentUserChapterId[topicId],
           progress:
-            (currentUserChapterId[Number(topicId)] /
+            (currentUserChapterId[topicId] /
               totalChapterPerTopic[i].totalChapters) *
             100,
         });
@@ -195,10 +192,8 @@ const Contents = () => {
 
                         {open && (
                           <>
-                            {Number(item.topicId) <=
-                            Number(
-                              userProgress.user_progress?.curr_topic_id,
-                            ) ? (
+                            {item.topicId <=
+                            (userProgress.user_progress?.curr_topic_id || 0) ? (
                               <Card sx={{ mt: 2 }}>
                                 <CardContent>
                                   <Typography variant="h6" component="h2">

@@ -64,7 +64,7 @@ const TopcitContents = () => {
   const chaptersContent = useMemo<ChapterWithSubChapter[] | undefined>(() => {
     if (!topicId) return filteredTopic?.flatMap((topic) => topic.chapters);
 
-    return topicContents?.find((topic) => Number(topic.id) === Number(topicId))
+    return topicContents?.find((topic) => topic.id === Number(topicId))
       ?.chapters;
   }, [topicId, filteredTopic]);
 

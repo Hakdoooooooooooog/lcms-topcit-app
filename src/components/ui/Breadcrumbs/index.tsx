@@ -1,17 +1,13 @@
-import { Link } from "react-router-dom";
-import styles from "./Breadcrumbs.module.css";
+import { Link } from 'react-router-dom';
+import styles from './Breadcrumbs.module.css';
 
 const Breadcrumbs = ({ path }: { path: string }) => {
-  let currentTab = "";
+  let currentTab = '';
   const crumbs = path
-    .split("/")
-    .filter((crumb) => crumb !== "")
+    .split('/')
+    .filter((crumb) => crumb !== '')
     .map((crumb) => {
-      crumb = crumb.replace(/%20|\s+/g, "-").toLowerCase();
-
-      if (Number(crumb)) {
-        return;
-      }
+      crumb = crumb.replace(/%20|\s+/g, '-').toLowerCase();
       currentTab += `/${crumb}`;
 
       return (

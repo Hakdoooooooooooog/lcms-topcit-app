@@ -92,9 +92,8 @@ const Assessments = () => {
                         <Typography variant="body1">
                           Status:{' '}
                           {userProgress.user_completed_quizzes &&
-                          Number(
-                            userProgress.user_completed_quizzes?.quiz_id,
-                          ) === item.user_quiz_attempts[0]?.quiz_id
+                          userProgress.user_completed_quizzes?.quiz_id ===
+                            item.user_quiz_attempts[0]?.quiz_id
                             ? 'Completed'
                             : 'Not Completed'}
                         </Typography>
