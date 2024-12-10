@@ -254,11 +254,11 @@ const PDFViewer = memo(
               <img
                 src="/locked_chapter.png"
                 alt="Locked Chapter"
-                className="h-auto object-contain rounded-lg"
+                className="w-auto h-auto object-contain rounded-lg"
                 width={
-                  window.innerWidth > 768
-                    ? window.innerWidth * 0.35
-                    : window.innerWidth * 0.75
+                  typeof window !== 'undefined'
+                    ? Math.min(window.innerWidth * 0.75, 900)
+                    : 900
                 }
               />
             </Box>
@@ -288,9 +288,9 @@ const PDFViewer = memo(
                     </Box>
                   }
                   width={
-                    typeof window !== 'undefined' && window.innerWidth > 768
-                      ? window.innerWidth * 0.35
-                      : window.innerWidth * 0.75
+                    typeof window !== 'undefined'
+                      ? Math.min(window.innerWidth * 0.75, 800)
+                      : 800
                   }
                   className="!bg-transparent"
                   pageNumber={numPages ? pageNumber : 1}
