@@ -47,7 +47,7 @@ export const AccordionChapter = (props: {
             chapter.topic_id.toString(),
           ),
         refetchOnWindowFocus: false,
-        enabled: props.currentChapterId >= chapter.id.toString(),
+        enabled: Number(props.currentChapterId) >= Number(chapter.id),
       };
     }),
   });
