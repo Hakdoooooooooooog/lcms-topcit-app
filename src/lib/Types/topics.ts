@@ -1,5 +1,5 @@
 export type Topics = {
-  id: bigint;
+  id: number;
   topictitle: string | null;
   description: string | null;
 };

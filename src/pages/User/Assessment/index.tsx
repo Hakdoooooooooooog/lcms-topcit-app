@@ -12,6 +12,7 @@ import {
   useAuthUserStore,
   useModalStore,
   useQuizStore,
+  useSearchStore,
   useSliderStore,
 } from '../../../lib/store';
 import {
@@ -27,6 +28,8 @@ import {
   CardContent,
   CardHeader,
   Modal,
+  Pagination,
+  Stack,
   Typography,
 } from '@mui/material';
 import { LoadingContentScreen } from '../../../components/ui/LoadingScreen/LoadingScreen';
@@ -40,6 +43,8 @@ import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import Quiz from './Quiz';
 import { showToast } from '../../../components/ui/Toasts';
+import { handlePaginatedItems } from '../../../lib/helpers/utils';
+import useSearchFilter from '../../../lib/hooks/useSearchFilter';
 
 const Assessment = () => {
   // Quizzes
@@ -48,6 +53,20 @@ const Assessment = () => {
     queryFn: getQuizzesWithQuestions,
     refetchOnWindowFocus: false,
   });
+
+  // Pagination
+  const { page, setPage, totalPages, currentItems } =
+    handlePaginatedItems<QuizWithQuestions>({
+      items: quizzes,
+      itemPerPage: 5,
+    });
+
+  // Search Filtering
+  const { search } = useSearchStore((state) => ({
+    search: state.search,
+  }));
+  const { isSearching, filteredItems: filteredQuizzes } =
+    useSearchFilter<QuizWithQuestions>(currentItems, search);
 
   // User
   const { userId } = useAuthUserStore((state) => ({
@@ -329,8 +348,20 @@ const Assessment = () => {
         </Box>
       ) : (
         <>
-          {!selectedQuiz &&
-            quizzes.map((quiz) => (
+          {selectedQuiz && (
+            <Quiz
+              selectedQuiz={selectedQuiz}
+              startTransition={startTransition}
+              topicId={topicId || ''}
+            />
+          )}
+
+          {isSearching ? (
+            <LoadingContentScreen />
+          ) : (
+            !selectedQuiz &&
+            filteredQuizzes &&
+            filteredQuizzes.map((quiz) => (
               <Box
                 key={quiz.id}
                 component={'section'}
@@ -403,15 +434,24 @@ const Assessment = () => {
                   </Box>
                 </Card>
               </Box>
-            ))}
-
-          {selectedQuiz && (
-            <Quiz
-              selectedQuiz={selectedQuiz}
-              startTransition={startTransition}
-              topicId={topicId || ''}
-            />
+            ))
           )}
+
+          <Stack spacing={2} sx={{ marginTop: '2rem' }}>
+            <Pagination
+              size={window.innerWidth < 600 ? 'small' : 'medium'}
+              shape="rounded"
+              count={totalPages}
+              page={page}
+              onChange={(_event, value) =>
+                startTransition(() => {
+                  setPage(value);
+                })
+              }
+              showFirstButton
+              showLastButton
+            />
+          </Stack>
 
           {renderCancelModal()}
           {tutorialModal()}
