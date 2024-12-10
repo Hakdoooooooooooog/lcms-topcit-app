@@ -25,20 +25,19 @@ const UserForm = (props: IUserFormProps) => {
       try {
         const res = await userLogin(data);
 
-        if (res.message === 'Invalid username or password') {
-          return showToast(res.message, 'error');
-        }
-
         showToast(res.message, 'success');
         setUserAuth({ isAuth: true, userId: res.userId, userRole: res.role });
       } catch (error: any) {
-        showToast('An error occurred', 'error');
+        showToast(error.message, 'error');
       }
     } else if (FormType === 'Register') {
       try {
         const res = await userRegister(data);
-        if (res.errors) {
-          res.errors.map((error: any) => {
+        showToast(res.message, 'success');
+        navigate('/landing', { replace: true });
+      } catch (error: any) {
+        if (Array.isArray(error.errors)) {
+          error.errors.map((error: any) => {
             Object.entries(error).map(([key, value]) => {
               const pInput = document.querySelector(`p#${key}`);
               if (pInput) {
@@ -50,12 +49,10 @@ const UserForm = (props: IUserFormProps) => {
               }
             });
           });
-        } else {
-          showToast(res.message, 'success');
-          navigate('/landing', { replace: true });
+
+          showToast(error.message, 'error');
+          return;
         }
-      } catch (error: any) {
-        showToast('An error occurred', 'error');
       }
     } else if (FormType === 'Edit-Profile') {
       try {

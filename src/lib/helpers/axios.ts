@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { updateUserAccessToken } from '../../api/User/userApi';
 export const axiosRootApiUrl = axios.create({
   baseURL: import.meta.env.VITE_APP_BASE_API_URL,
   withCredentials: true,
@@ -41,7 +40,7 @@ export const uploadInstance = axios.create({
 });
 
 userInstance.interceptors.request.use((config) => {
-  const userData = JSON.parse(localStorage.getItem('session') || '{}');
+  const userData = JSON.parse(sessionStorage.getItem('session') || '{}');
   const userId = userData.state.user.userId;
   const isAuth = userData.state.user.isAuth;
 
@@ -57,7 +56,7 @@ quizInstance.interceptors.request.use((config) => {
   const urlParams = new URLSearchParams(window.location.search);
   const topicId = urlParams.get('topicId');
   const quizId = urlParams.get('quizId');
-  const userData = JSON.parse(localStorage.getItem('session') || '{}');
+  const userData = JSON.parse(sessionStorage.getItem('session') || '{}');
   const userId = userData.state.user.userId;
   const isAuth = userData.state.user.isAuth;
 
@@ -72,7 +71,7 @@ quizInstance.interceptors.request.use((config) => {
 });
 
 accessTokenInstance.interceptors.request.use((config) => {
-  const userData = JSON.parse(localStorage.getItem('session') || '{}');
+  const userData = JSON.parse(sessionStorage.getItem('session') || '{}');
   const userId = userData.state.user.userId;
   const isAuth = userData.state.user.isAuth;
 
@@ -84,24 +83,8 @@ accessTokenInstance.interceptors.request.use((config) => {
   return config;
 });
 
-accessTokenInstance.interceptors.response.use(
-  (response) => {
-    return response;
-  },
-  async (error) => {
-    if (error.response.data.message === 'Access token expired') {
-      try {
-        const response = await updateUserAccessToken();
-        return response;
-      } catch (error) {
-        return error;
-      }
-    }
-  },
-);
-
 chapterInstance.interceptors.request.use((config) => {
-  const userData = JSON.parse(localStorage.getItem('session') || '{}');
+  const userData = JSON.parse(sessionStorage.getItem('session') || '{}');
   const userId = userData.state.user.userId;
   const isAuth = userData.state.user.isAuth;
 
@@ -114,7 +97,7 @@ chapterInstance.interceptors.request.use((config) => {
 });
 
 topicInstance.interceptors.request.use((config) => {
-  const userData = JSON.parse(localStorage.getItem('session') || '{}');
+  const userData = JSON.parse(sessionStorage.getItem('session') || '{}');
   const userId = userData.state.user.userId;
   const isAuth = userData.state.user.isAuth;
 
@@ -130,7 +113,7 @@ const pendingRequests = new Map();
 
 chapterPDFInstance.interceptors.request.use(
   (config) => {
-    const userData = JSON.parse(localStorage.getItem('session') || '{}');
+    const userData = JSON.parse(sessionStorage.getItem('session') || '{}');
     const userId = userData.state.user.userId;
     const isAuth = userData.state.user.isAuth;
     const userRole = userData.state.user.userRole;

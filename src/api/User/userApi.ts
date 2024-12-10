@@ -8,7 +8,6 @@ import {
   UserLogin,
   UserProfile,
   UserProgress,
-  // UserProgressData,
   UserRegister,
 } from '../../lib/Types/user';
 
@@ -30,21 +29,18 @@ export const userRegister = async (register: UserRegister) => {
     });
 };
 
-export const verifyUserAccessToken = async () => {
+export const verifyUserAccessToken = async (): Promise<{
+  userData: {
+    isAuth: boolean;
+    userId: string;
+    userRole: string;
+  };
+}> => {
   return await accessTokenInstance
     .post('/auth/verify')
     .then((res) => res.data)
     .catch((error) => {
-      return error.response?.data;
-    });
-};
-
-export const updateUserAccessToken = async () => {
-  return await accessTokenInstance
-    .put('/user/refresh')
-    .then((res) => res.data)
-    .catch((error) => {
-      return error.response.data;
+      throw error.response.data;
     });
 };
 
@@ -53,7 +49,7 @@ export const userLogout = async () => {
     .post('/user/logout')
     .then((res) => res.data)
     .catch((error) => {
-      return error.response.data;
+      throw error.response.data;
     });
 };
 
@@ -62,7 +58,7 @@ export const getUserProfile = async (): Promise<UserProfile> => {
     .get('/user/profile')
     .then((res) => res.data)
     .catch((error) => {
-      return error.response.data;
+      throw error.response.data;
     });
 };
 
@@ -71,7 +67,7 @@ export const getUserProgress = async (): Promise<UserProgress> => {
     .get('/user/progress')
     .then((res) => res.data)
     .catch((error) => {
-      return error.response.data;
+      throw error.response.data;
     });
 };
 
@@ -82,7 +78,7 @@ export const updateUserProfile = async (data: UpdateProfile) => {
     })
     .then((res) => res.data)
     .catch((error) => {
-      return error.response.data;
+      throw error.response.data;
     });
 };
 
@@ -101,6 +97,6 @@ export const updateUserChapterProgress = async (
     })
     .then((res) => res.data)
     .catch((error) => {
-      return error.response.data;
+      throw error.response.data;
     });
 };

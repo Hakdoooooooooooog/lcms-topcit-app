@@ -45,7 +45,7 @@ export const useAuthUserStore = create<UserAuthState & UserAuthActions>()(
     }),
     {
       name: 'session',
-      storage: createJSONStorage(() => localStorage),
+      storage: createJSONStorage(() => sessionStorage),
     },
   ),
 );

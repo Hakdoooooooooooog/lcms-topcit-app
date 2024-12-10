@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { useIdleTimer } from "react-idle-timer";
+import { useEffect, useState } from 'react';
+import { useIdleTimer } from 'react-idle-timer';
 
 const useIdleTimerTracker = () => {
   const [elapsedTime, setElapsedTime] = useState(0);
@@ -15,10 +15,10 @@ const useIdleTimerTracker = () => {
       setElapsedTime(Math.ceil(getElapsedTime() / 1000));
     }, 1000);
 
-    // If the elapsed time is greater than or equal to 30 seconds, set isIdle to true
-    if (elapsedTime >= 30) {
+    // If the elapsed time is greater than or equal to 3 mins, set isIdle to true
+    if (elapsedTime >= 60 * 3) {
       setIsIdle(true);
-    } else if (elapsedTime < 30) {
+    } else if (elapsedTime < 60 * 3) {
       setIsIdle(false);
     }
 

@@ -101,9 +101,6 @@ const EditContentModal = ({
           showToast('Invalid file', 'error');
         }
 
-        formData.forEach((value, key) => {
-          console.log(key, value);
-        });
         return updateChapter(formData, chapterId, topicId);
       } else if (buttonType === 'edit-topic' && topicId !== undefined) {
         return editTopic(data, topicId);

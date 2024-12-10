@@ -8,6 +8,7 @@ import { SelectionItems } from '../../lib/Types/types';
 import { verifyUserAccessToken } from '../../api/User/userApi';
 import { LoadingContentScreen } from '../../components/ui/LoadingScreen/LoadingScreen';
 import Breadcrumbs from '../../components/ui/Breadcrumbs';
+import { showToast } from '../../components/ui/Toasts';
 const AdminLayout = () => {
   const { role, setUserAuth } = useAuthUserStore((state) => ({
     role: state.user?.userRole,
@@ -62,7 +63,7 @@ const AdminLayout = () => {
           }
         })
         .catch((err) => {
-          console.log(err);
+          showToast(err.message, 'error');
         });
     }
   }, [path, role]);

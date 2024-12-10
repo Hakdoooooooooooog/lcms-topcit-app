@@ -58,7 +58,7 @@ const Header = ({ links }: { links: LinkProps[] }) => {
 
     if (res.message === 'Logged out') {
       setUserAuth({ isAuth: false, userId: '', userRole: '' });
-      localStorage.removeItem('session');
+      sessionStorage.removeItem('session');
       showToast('Logged out successfully', 'success');
     }
   };
