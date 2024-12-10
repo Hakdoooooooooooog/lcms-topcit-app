@@ -33,7 +33,7 @@ export const verifyUserAccessToken = async (): Promise<{
   userData: {
     isAuth: boolean;
     userId: string;
-    userRole: string;
+    role: string;
   };
 }> => {
   return await accessTokenInstance

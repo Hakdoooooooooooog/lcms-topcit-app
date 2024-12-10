@@ -1,9 +1,9 @@
 import { Topics } from './topics';
 
 export type Chapter = {
-  id: bigint;
-  topic_id: bigint;
-  parent_chapter_id: bigint | null;
+  id: number;
+  topic_id: number;
+  parent_chapter_id: number | null;
   chapter_number: string;
   title: string;
   sub_title: string;
@@ -16,18 +16,18 @@ export type FileChapter = {
 };
 
 export type UserCompletedChapters = {
-  id: bigint;
-  chapter_id: bigint;
-  user_id: bigint;
-  topic_id: bigint;
+  id: number;
+  chapter_id: number;
+  user_id: number;
+  topic_id: number;
   completion_status: string | null;
   completed_at: Date | null;
 };
 
 export type ChapterWithSubChapter = {
-  id: bigint;
-  topic_id: bigint;
-  parent_chapter_id: bigint | null;
+  id: number;
+  topic_id: number;
+  parent_chapter_id: number | null;
   chapter_number: string;
   title: string;
   sub_title: string;

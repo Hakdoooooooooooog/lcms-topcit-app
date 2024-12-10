@@ -47,20 +47,19 @@ export const AccordionChapter = (props: {
             chapter.topic_id.toString(),
           ),
         refetchOnWindowFocus: false,
-        enabled: Number(props.currentChapterId) >= Number(chapter.id),
+        enabled: Number(props.currentChapterId) >= chapter.id,
       };
     }),
   });
 
-  const isCompleted = (chapterId: bigint) => {
+  const isCompleted = (chapterId: number) => {
     return props.userCompletedChapterProgress.some(
-      (chapterProgress) =>
-        Number(chapterProgress.chapter_id) === Number(chapterId),
+      (chapterProgress) => chapterProgress.chapter_id === chapterId,
     );
   };
 
-  const isUnlocked = (chapterId: bigint) => {
-    return Number(props.currentChapterId) >= Number(chapterId);
+  const isUnlocked = (chapterId: number) => {
+    return Number(props.currentChapterId) >= chapterId;
   };
 
   useEffect(() => {

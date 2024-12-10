@@ -58,12 +58,12 @@ const AdminLayout = () => {
             setUserAuth({
               isAuth: true,
               userId: res.userData.userId,
-              userRole: res.userData.userRole,
+              userRole: res.userData.role,
             });
           }
         })
         .catch((err) => {
-          showToast(err.message, 'error');
+          showToast('There was an error: ' + err.message, 'error');
         });
     }
   }, [path, role]);

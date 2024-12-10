@@ -1,8 +1,8 @@
 import { LoginSchema, RegisterSchema } from '../schema/UserSchema';
 
 type users = {
-  id: bigint;
-  userid: bigint;
+  id: number;
+  userid: number;
   username: string;
   email: string;
   password: string;
@@ -13,27 +13,27 @@ type users = {
 export type UsersProgress = {
   completed_lessons: number;
   completed_quizzes: number;
-  curr_chap_id: bigint;
-  curr_topic_id: bigint;
-  curr_quiz_id: bigint;
+  curr_chap_id: number;
+  curr_topic_id: number;
+  curr_quiz_id: number;
 };
 
 export type UserCompletedChapters = {
-  id: bigint;
-  user_id: bigint;
-  chapter_id: bigint;
-  topic_id: bigint;
+  id: number;
+  user_id: number;
+  chapter_id: number;
+  topic_id: number;
   completion_status: string | null;
   completed_at: Date | null;
 };
 
 export type UserProgressData = {
   Topics: {
-    id: bigint;
+    id: number;
     topictitle: string | null;
     description: string | null;
     chapters: {
-      id: bigint;
+      id: number;
       title: string | null;
       sub_title: string | null;
     }[];
@@ -47,9 +47,9 @@ export type UserProgressData = {
 };
 
 export type UserCompletedQuizzes = {
-  id: bigint;
-  user_id: bigint;
-  quiz_id: bigint;
+  id: number;
+  user_id: number;
+  quiz_id: number;
   completed_at: Date | null;
 } | null;
 
