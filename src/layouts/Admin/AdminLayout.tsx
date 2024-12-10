@@ -57,8 +57,8 @@ const AdminLayout = () => {
           if (res) {
             setUserAuth({
               isAuth: true,
-              userId: res.userId,
-              userRole: res.role,
+              userId: res.userData.userId,
+              userRole: res.userData.userRole,
             });
           }
         })
