@@ -121,12 +121,12 @@ export type AccordionActions = {
 
 // Slider types
 export type SliderState = {
-  currentSlide: number;
+  currentSliderSlide: number;
   totalSlides: number;
 };
 
 export type SliderActions = {
-  setCurrentSlide: (currentSlide: SliderState['currentSlide']) => void;
+  setCurrentSlide: (currentSlide: SliderState['currentSliderSlide']) => void;
   setTotalSlides: (totalSlides: SliderState['totalSlides']) => void;
 };
 

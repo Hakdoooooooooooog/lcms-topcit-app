@@ -2,7 +2,6 @@ import { styled, alpha, hexToRgb, TextareaAutosize } from '@mui/material';
 import InputBase from '@mui/material/InputBase';
 import { InputProps, LinkProps } from './Types/types';
 import { lazy } from 'react';
-import { Settings } from 'react-slick';
 
 // Search bar styles
 export const Search = styled('div')(({ theme }) => ({
@@ -71,15 +70,6 @@ export const styledModal = {
   '@media (min-width: 600px)': {
     width: '50%',
   },
-};
-
-export const slickSettings: Settings = {
-  dots: true,
-  arrows: false,
-  infinite: false,
-  speed: 500,
-  slidesToShow: 1,
-  adaptiveHeight: true,
 };
 
 const blue = {
@@ -486,33 +476,27 @@ export const tutorialSteps: Array<{
 }> = [
   {
     label: 'Step 1',
-    content: `Use the arrow keys to navigate through the questions or
-    swipe left or right on mobile devices.`,
+    content: 'Click the "Next" button to move to the next question.',
     img: '/tutorial/tut_1.gif',
   },
   {
     label: 'Step 2',
-    content: 'Click the "Next" button to move to the next question.',
+    content: 'Click the "Previous" button to move to the previous question.',
     img: '/tutorial/tut_2.gif',
   },
   {
     label: 'Step 3',
-    content: 'Click the "Previous" button to move to the previous question.',
+    content: 'Click the "Submit" button to submit your answers.',
     img: '/tutorial/tut_3.gif',
   },
   {
     label: 'Step 4',
-    content: 'Click the "Submit" button to submit your answers.',
-    img: '/tutorial/tut_4.gif',
-  },
-  {
-    label: 'Step 5',
     content:
-      'Caution: Once you click the "Submit" button, you cannot go back. Make sire to review your answers before submitting.',
+      'Caution: Once you click the "Submit" button, you cannot go back. Make sure to review your answers before submitting.',
     img: null,
   },
   {
-    label: 'Step 6',
+    label: 'Step 5',
     content: 'Good luck!',
     img: null,
   },

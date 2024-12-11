@@ -109,19 +109,39 @@ export const useAccordionStore = create<AccordionState & AccordionActions>(
   }),
 );
 
-export const useSliderStore = create<SliderState & SliderActions>((set) => ({
-  currentSlide: 0,
-  totalSlides: 0,
+export const useSliderAssessmentStore = create<SliderState & SliderActions>(
+  (set) => ({
+    currentSliderSlide: 0,
+    totalSlides: 0,
 
-  setCurrentSlide: (currentSlide) => set((prev) => ({ ...prev, currentSlide })),
-  setTotalSlides: (totalSlides) => set((prev) => ({ ...prev, totalSlides })),
-}));
+    setCurrentSlide: (currentSliderSlide) =>
+      set((prev) => ({ ...prev, currentSliderSlide })),
+    setTotalSlides: (totalSlides) => set((prev) => ({ ...prev, totalSlides })),
+  }),
+);
 
-export const useQuizStore = create<QuizState & QuizActions>((set) => ({
-  value: {
-    '': '',
-  },
-  isBlocked: false,
-  setValue: (value) => set((prev) => ({ ...prev, value })),
-  setIsBlocked: (isBlocked) => set((prev) => ({ ...prev, isBlocked })),
-}));
+export const useSliderQuizStore = create<SliderState & SliderActions>(
+  (set) => ({
+    currentSliderSlide: 0,
+    totalSlides: 0,
+
+    setCurrentSlide: (currentSliderSlide) =>
+      set((prev) => ({ ...prev, currentSliderSlide })),
+    setTotalSlides: (totalSlides) => set((prev) => ({ ...prev, totalSlides })),
+  }),
+);
+
+export const useQuizStore = create<QuizState & QuizActions>()(
+  persist(
+    (set) => ({
+      value: {},
+      isBlocked: false,
+      setValue: (value) => set({ value }),
+      setIsBlocked: (isBlocked) => set({ isBlocked }),
+    }),
+    {
+      name: 'quiz-storage',
+      storage: createJSONStorage(() => localStorage),
+    },
+  ),
+);

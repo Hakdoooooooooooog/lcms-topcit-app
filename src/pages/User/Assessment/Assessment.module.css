@@ -26,3 +26,18 @@
     background-color: #000;
   }
 }
+
+.slider {
+  @apply w-full;
+
+  & button {
+    background-color: #000;
+    border-radius: 50%;
+    color: #fff;
+    @apply w-4 h-4;
+
+    &:hover:focus {
+      @apply text-slate-600 bg-slate-100 border-slate-100;
+    }
+  }
+}

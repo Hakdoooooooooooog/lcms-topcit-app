@@ -1,5 +1,4 @@
 import { ArrowBack, ArrowForward, Cancel } from '@mui/icons-material';
-import Slider from 'react-slick';
 import {
   Box,
   Button,
@@ -12,11 +11,12 @@ import {
   Modal,
   Radio,
   RadioGroup,
+  Tooltip,
   Typography,
 } from '@mui/material';
-import { slickSettings, styledModal } from '../../../../lib/constants';
+import { styledModal } from '../../../../lib/constants';
 import { objective_questions } from '../../../../lib/Types/quiz';
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -24,12 +24,12 @@ import { useSearchParams } from 'react-router-dom';
 import {
   useModalStore,
   useQuizStore,
-  useSliderStore,
+  useSliderQuizStore,
 } from '../../../../lib/store';
 import useAssessmentMutation from '../../../../lib/hooks/useAssessmentMutation';
-import styles from './Quiz.module.css';
 import { LoadingButton } from '../../../../components/ui/LoadingScreen/LoadingScreen';
 import { showToast } from '../../../../components/ui/Toasts';
+import Carousel from 'react-material-ui-carousel';
 
 type QuizProps = {
   selectedQuiz: objective_questions[];
@@ -39,7 +39,6 @@ type QuizProps = {
 
 const Quiz = ({ selectedQuiz, startTransition, topicId }: QuizProps) => {
   const [searchParams, setSearchParams] = useSearchParams();
-
   const assessmentMutation = useAssessmentMutation();
 
   // Form Validation
@@ -47,21 +46,20 @@ const Quiz = ({ selectedQuiz, startTransition, topicId }: QuizProps) => {
     return z.object(
       selectedQuiz.reduce((values, quiz) => {
         values[quiz.id.toString()] = z
-          .string()
-          .min(1, 'Please select an answer');
+          .union([z.string(), z.null()])
+          .refine((val): val is string => val !== null && val.trim() !== '', {
+            message: 'Please select an answer',
+          });
 
         return values;
-      }, {} as { [key: string]: z.ZodType<string> }),
+      }, {} as { [key: string]: z.ZodType<string | null> }),
     );
   }, [selectedQuiz]);
 
-  // References Values
-  const sliderRef = useRef<Slider>(null);
-
   // State Managements
-  const { currentSlide, totalSlides, setTotalSlides, setCurrentSlide } =
-    useSliderStore((state) => ({
-      currentSlide: state.currentSlide,
+  const { currentSliderSlide, totalSlides, setTotalSlides, setCurrentSlide } =
+    useSliderQuizStore((state) => ({
+      currentSliderSlide: state.currentSliderSlide,
       totalSlides: state.totalSlides,
       setCurrentSlide: state.setCurrentSlide,
       setTotalSlides: state.setTotalSlides,
@@ -85,13 +83,8 @@ const Quiz = ({ selectedQuiz, startTransition, topicId }: QuizProps) => {
     formState: { errors, isSubmitSuccessful, isSubmitting },
     reset,
   } = useForm({
-    values: selectedQuiz.reduce((values, quiz) => {
-      values[quiz.id.toString()] = '';
-
-      return values;
-    }, {} as { [key: string]: string }),
+    values: value,
     resolver: zodResolver(schema),
-    mode: 'onChange',
   });
 
   useEffect(() => {
@@ -120,7 +113,7 @@ const Quiz = ({ selectedQuiz, startTransition, topicId }: QuizProps) => {
       const { name, value: answer } = event.target;
       setValue({ ...value, [name]: answer });
     },
-    [setValue, value],
+    [value],
   );
 
   const onSubmit = async (data: z.infer<typeof schema>) => {
@@ -133,20 +126,16 @@ const Quiz = ({ selectedQuiz, startTransition, topicId }: QuizProps) => {
     }
 
     try {
+      const filteredData = Object.fromEntries(
+        Object.entries(data).map(([key, value]) => [key, value || '']),
+      );
+
       await assessmentMutation.mutateAsync({
-        assessmentData: data,
+        assessmentData: filteredData,
       });
     } catch (error: any) {
       showToast('An error occurred' + error.message, 'error');
     }
-  };
-
-  const handleNext = () => {
-    sliderRef.current?.slickNext();
-  };
-
-  const handlePrev = () => {
-    sliderRef.current?.slickPrev();
   };
 
   const confirmSubmitAnswer = useCallback(() => {
@@ -201,24 +190,20 @@ const Quiz = ({ selectedQuiz, startTransition, topicId }: QuizProps) => {
         Tutorial
       </Button>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="slider-container">
-        <Slider
-          {...slickSettings}
-          ref={sliderRef}
-          afterChange={(index) => {
-            setCurrentSlide(index);
-          }}
-          dotsClass={`slick-dots ${styles.dots}`}
-        >
-          {selectedQuiz.map((questions, index) => (
-            <Card key={index} className="sm:!flex justify-between gap-5 p-4">
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <Carousel
+          children={selectedQuiz.map((questions, index) => (
+            <Card
+              key={index}
+              className="flex flex-col sm:flex-row justify-evenly gap-5 pb-8 h-[48rem] sm:h-full"
+            >
               <Box className="flex flex-[1_1_100%] ml-2 gap-[1%] items-center">
                 <Box className="flex-[1_1_55%]">
                   <CardHeader subheader={questions.question} />
                 </Box>
               </Box>
 
-              <CardContent className="flex flex-col flex-[1_1_auto] gap-3 w-full sm:max-h-fit">
+              <CardContent className="flex flex-col flex-[1_1_auto] gap-3 w-full max-h-fit">
                 <Card
                   className="flex flex-col gap-3 p-4 h-full"
                   sx={{
@@ -276,10 +261,64 @@ const Quiz = ({ selectedQuiz, startTransition, topicId }: QuizProps) => {
               </CardContent>
             </Card>
           ))}
-        </Slider>
-        <CardActions className="justify-center flex-[1_1_auto] mt-10">
-          {currentSlide === totalSlides ? (
-            <>
+          next={(next = 0) => setCurrentSlide(next)}
+          prev={(prev = 0) => setCurrentSlide(prev)}
+          animation="slide"
+          autoPlay={false}
+          indicators={false}
+          swipe={false}
+          NavButton={({ onClick, next }) => (
+            <Button
+              onClick={() => onClick()}
+              variant="contained"
+              color="info"
+              sx={{
+                position: 'absolute',
+                bottom: '0.5rem',
+                backgroundColor: 'green',
+
+                ...(next
+                  ? window.innerWidth < 640
+                    ? {
+                        right: '5rem',
+                      }
+                    : {
+                        right: '30rem',
+                        transform: 'translateX(50%)',
+                      }
+                  : window.innerWidth < 640
+                  ? {
+                      left: '5rem',
+                    }
+                  : {
+                      left: '30rem',
+                      transform: 'translateX(-50%)',
+                    }),
+              }}
+              disableRipple={true}
+              disableTouchRipple={true}
+              disabled={
+                next
+                  ? currentSliderSlide === selectedQuiz.length - 1
+                  : currentSliderSlide === 0
+              }
+            >
+              {next ? (
+                <Tooltip title="Next" arrow>
+                  <ArrowForward />
+                </Tooltip>
+              ) : (
+                <Tooltip title="Previous" arrow>
+                  <ArrowBack />
+                </Tooltip>
+              )}
+            </Button>
+          )}
+        />
+
+        <CardActions className="justify-center flex-[1_1_auto] mt-5">
+          {currentSliderSlide === totalSlides && (
+            <Tooltip title="Submit Quiz" arrow>
               <Button
                 sx={{
                   width: '100%',
@@ -297,77 +336,25 @@ const Quiz = ({ selectedQuiz, startTransition, topicId }: QuizProps) => {
               >
                 Submit
               </Button>
-
-              <Button
-                sx={{
-                  width: '100%',
-                  maxWidth: 'fit-content',
-                  padding: '0.5rem 1rem',
-                  '&:disabled': {
-                    backgroundColor: 'rgba(0, 0, 0, 0.1)',
-                  },
-                }}
-                variant="contained"
-                onClick={handlePrev}
-                disabled={currentSlide <= 0 || currentSlide > totalSlides}
-                endIcon={<ArrowBack />}
-              >
-                Prev
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button
-                sx={{
-                  width: '100%',
-                  maxWidth: 'fit-content',
-                  padding: '0.5rem 1rem',
-                  background: 'green',
-                  '&:disabled': {
-                    backgroundColor: 'rgba(0, 0, 0, 0.1)',
-                  },
-                }}
-                variant="contained"
-                onClick={handleNext}
-                disabled={currentSlide === totalSlides}
-                endIcon={<ArrowForward />}
-              >
-                Next
-              </Button>
-
-              <Button
-                sx={{
-                  width: '100%',
-                  maxWidth: 'fit-content',
-                  padding: '0.5rem 1rem',
-                  '&:disabled': {
-                    backgroundColor: 'rgba(0, 0, 0, 0.1)',
-                  },
-                }}
-                variant="contained"
-                onClick={handlePrev}
-                disabled={currentSlide <= 0 || currentSlide > totalSlides}
-                endIcon={<ArrowBack />}
-              >
-                Prev
-              </Button>
-            </>
+            </Tooltip>
           )}
 
-          <Button
-            sx={{
-              width: '100%',
-              maxWidth: 'fit-content',
-              padding: '0.5rem 1rem',
-            }}
-            variant="contained"
-            color="error"
-            onClick={() => {
-              setOpenCancelModal(true);
-            }}
-          >
-            <Cancel />
-          </Button>
+          <Tooltip title="Cancel Quiz" arrow>
+            <Button
+              sx={{
+                width: '100%',
+                maxWidth: 'fit-content',
+                padding: '0.5rem 1rem',
+              }}
+              variant="contained"
+              color="error"
+              onClick={() => {
+                setOpenCancelModal(true);
+              }}
+            >
+              <Cancel />
+            </Button>
+          </Tooltip>
         </CardActions>
       </form>
 

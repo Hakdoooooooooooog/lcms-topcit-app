@@ -2,7 +2,6 @@ import {
   useCallback,
   useEffect,
   useMemo,
-  useRef,
   useState,
   useTransition,
 } from 'react';
@@ -13,7 +12,7 @@ import {
   useModalStore,
   useQuizStore,
   useSearchStore,
-  useSliderStore,
+  useSliderAssessmentStore,
 } from '../../../lib/store';
 import {
   objective_questions,
@@ -30,21 +29,17 @@ import {
   Modal,
   Pagination,
   Stack,
+  Tooltip,
   Typography,
 } from '@mui/material';
 import { LoadingContentScreen } from '../../../components/ui/LoadingScreen/LoadingScreen';
-import {
-  slickSettings,
-  styledModal,
-  tutorialSteps,
-} from '../../../lib/constants';
-import Slider from 'react-slick';
-import 'slick-carousel/slick/slick.css';
-import 'slick-carousel/slick/slick-theme.css';
+import { styledModal, tutorialSteps } from '../../../lib/constants';
 import Quiz from './Quiz';
 import { showToast } from '../../../components/ui/Toasts';
 import { handlePaginatedItems } from '../../../lib/helpers/utils';
 import useSearchFilter from '../../../lib/hooks/useSearchFilter';
+import Carousel from 'react-material-ui-carousel';
+import { ArrowBack, ArrowForward } from '@mui/icons-material';
 
 const Assessment = () => {
   // Quizzes
@@ -73,24 +68,23 @@ const Assessment = () => {
     userId: state.user?.userId,
   }));
 
-  // Slider Refs
-  const tutorialSlider = useRef<Slider | null>(null);
-
   // Slider States
-  const { currentSlide, setCurrentSlide, setTotalSlides } = useSliderStore(
-    (state) => ({
-      currentSlide: state.currentSlide,
+  const { currentSliderSlide, setCurrentSlide, setTotalSlides } =
+    useSliderAssessmentStore((state) => ({
+      currentSliderSlide: state.currentSliderSlide,
       setCurrentSlide: state.setCurrentSlide,
       setTotalSlides: state.setTotalSlides,
-    }),
-  );
+    }));
 
   // User Quiz States
-  const { setValue, isBlocked, setIsBlocked } = useQuizStore((state) => ({
-    setValue: state.setValue,
-    isBlocked: state.isBlocked,
-    setIsBlocked: state.setIsBlocked,
-  }));
+  const { value, setValue, isBlocked, setIsBlocked } = useQuizStore(
+    (state) => ({
+      value: state.value,
+      setValue: state.setValue,
+      isBlocked: state.isBlocked,
+      setIsBlocked: state.setIsBlocked,
+    }),
+  );
 
   // Modal States
   const {
@@ -149,26 +143,31 @@ const Assessment = () => {
       setOpenTutorialModal(false);
       setIsBlocked(false);
       setCurrentSlide(0);
+      setValue({});
     } else {
       setSelectedQuiz(quizContent);
       setTotalSlides(quizContent.length - 1);
       setOpenTutorialModal(true);
     }
-
-    return () => {
-      setValue({});
-    };
   }, [quizContent, topicId]);
 
   useEffect(() => {
-    if (isBlocked && blocker.state === 'blocked') {
+    if (
+      isBlocked &&
+      blocker.state === 'blocked' &&
+      Object.keys(value).length > 0
+    ) {
       setOpenCancelModal(true);
     }
 
-    if (blocker.state === 'blocked' && !isBlocked) {
+    if (
+      !isBlocked &&
+      blocker.state === 'blocked' &&
+      Object.keys(value).length <= 0
+    ) {
       blocker.proceed();
     }
-  }, [isBlocked, blocker]);
+  }, [blocker.state, isBlocked, value]);
 
   const handleCloseModal = useCallback(() => {
     if (isBlocked && blocker.state === 'blocked') {
@@ -225,7 +224,7 @@ const Assessment = () => {
 
   const renderCancelModal = useCallback(() => {
     return (
-      <Modal open={openCancelModal} onClose={handleCloseModal}>
+      <Modal open={openCancelModal}>
         <Box
           sx={{
             ...styledModal,
@@ -264,37 +263,30 @@ const Assessment = () => {
 
   const tutorialModal = useCallback(
     () => (
-      <Modal open={openTutorialModal} onClose={handleCloseModal}>
+      <Modal open={openTutorialModal}>
         <Box
           sx={{
             ...styledModal,
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            alignItems: 'center',
-            gap: '1rem',
           }}
-          className="slider-container sm:max-w-md"
+          className="sm:max-w-md"
         >
           <Typography variant="h5" className="self-start">
             Instructions:
           </Typography>
-          <Slider
-            {...slickSettings}
-            className="w-full"
-            ref={tutorialSlider}
-            beforeChange={(_currentSlide, nextSlide) =>
-              setCurrentSlide(nextSlide)
-            }
-          >
-            {tutorialSteps.map((step, index) => (
+          <Carousel
+            className="w-full pb-12"
+            index={currentSliderSlide}
+            children={tutorialSteps.map((step, index) => (
               <Card
                 key={index}
-                className="sm:!flex flex-col justify-between items-center gap-5 px-4 pt-4"
+                className="flex flex-col justify-evenly items-center px-4 pt-4 h-[450px]"
               >
                 <CardHeader title={step.label} />
 
-                <CardContent>
+                <CardContent
+                  className="flex flex-col gap-3 w-full"
+                  sx={{ textAlign: 'center' }}
+                >
                   <Typography variant="body1">{step.content}</Typography>
                   {step.img && step.img !== null && (
                     <Box
@@ -309,31 +301,80 @@ const Assessment = () => {
                         boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
                         border: '1px solid #e0e0e0',
                         maxHeight: '15rem',
+                        pointerEvents: 'none',
                       }}
                     />
                   )}
                 </CardContent>
               </Card>
             ))}
-          </Slider>
-          <Button
-            variant="contained"
-            color="info"
-            onClick={() => {
-              setOpenTutorialModal(false);
-              setCurrentSlide(0);
-            }}
-            sx={{
-              mt: '1rem',
-            }}
-            disabled={currentSlide !== tutorialSteps.length - 1}
-          >
-            Got it!
-          </Button>
+            next={(next = 0) => setCurrentSlide(next)}
+            prev={(prev = 0) => setCurrentSlide(prev)}
+            animation="slide"
+            autoPlay={false}
+            indicators={false}
+            swipe={false}
+            NavButton={({ onClick, next }) => (
+              <Button
+                onClick={() => onClick()}
+                variant="contained"
+                color="info"
+                sx={{
+                  backgroundColor: 'green',
+                  position: 'absolute',
+                  bottom: '0',
+
+                  ...(next
+                    ? {
+                        right: '1rem',
+                      }
+                    : {
+                        left: '1rem',
+                      }),
+                }}
+                disabled={
+                  next
+                    ? currentSliderSlide === tutorialSteps.length - 1
+                    : currentSliderSlide === 0
+                }
+              >
+                {next ? (
+                  <Tooltip title="Next" arrow>
+                    <ArrowForward />
+                  </Tooltip>
+                ) : (
+                  <Tooltip title="Previous" arrow>
+                    <ArrowBack />
+                  </Tooltip>
+                )}
+              </Button>
+            )}
+          />
+
+          {currentSliderSlide === tutorialSteps.length - 1 && (
+            <Tooltip title="Start Quiz" arrow>
+              <Button
+                variant="contained"
+                color="info"
+                onClick={() => {
+                  setOpenTutorialModal(false);
+                  setCurrentSlide(0);
+                }}
+                sx={{
+                  position: 'absolute',
+                  bottom: '0.5rem',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                }}
+              >
+                Start Quiz
+              </Button>
+            </Tooltip>
+          )}
         </Box>
       </Modal>
     ),
-    [openTutorialModal, tutorialSteps, currentSlide],
+    [openTutorialModal, tutorialSteps, currentSliderSlide],
   );
 
   if (isLoading || !quizzes) {
@@ -437,21 +478,23 @@ const Assessment = () => {
             ))
           )}
 
-          <Stack spacing={2} sx={{ marginTop: '2rem' }}>
-            <Pagination
-              size={window.innerWidth < 600 ? 'small' : 'medium'}
-              shape="rounded"
-              count={totalPages}
-              page={page}
-              onChange={(_event, value) =>
-                startTransition(() => {
-                  setPage(value);
-                })
-              }
-              showFirstButton
-              showLastButton
-            />
-          </Stack>
+          {!selectedQuiz && (
+            <Stack spacing={2} sx={{ marginTop: '2rem' }}>
+              <Pagination
+                size={window.innerWidth < 600 ? 'small' : 'medium'}
+                shape="rounded"
+                count={totalPages}
+                page={page}
+                onChange={(_event, value) =>
+                  startTransition(() => {
+                    setPage(value);
+                  })
+                }
+                showFirstButton
+                showLastButton
+              />
+            </Stack>
+          )}
 
           {renderCancelModal()}
           {tutorialModal()}
