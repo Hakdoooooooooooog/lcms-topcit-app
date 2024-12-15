@@ -101,3 +101,61 @@ export const addSubChapterSchema = z.object({
       return false;
     }, 'File must be a PDF'),
 });
+
+export const addQuizSchema = z.object({
+  topicId: z.string().min(1, 'Please enter a topic id'),
+  quizTitle: z.string().min(1, 'Please enter a quiz title'),
+  quizDescription: z.string().min(1, 'Please enter a quiz description'),
+  maxAttempts: z
+    .number()
+    .min(1, 'Please enter a number of attempts')
+    .default(3),
+  numofQuestions: z.number().min(1, 'Please enter a number of questions'),
+  quizQuestions: z.array(
+    z.object({
+      quizId: z.string().min(1, 'Please enter a quiz id'),
+      questionId: z.string().min(1, 'Please enter a question id'),
+      question: z.string().min(1, 'Please enter a question'),
+      questionType: z
+        .string()
+        .min(1, 'Please enter a question type')
+        .default('objective'),
+      multipleChoiceOptions: z.array(
+        z.object({
+          objectiveQuestionId: z.string().min(1, 'Please enter a question id'),
+          optionText: z.string().min(1, 'Please enter an option'),
+        }),
+      ),
+    }),
+  ),
+});
+
+export const editQuizSchema = z.object({
+  quizTitle: z.string().min(1, 'Please enter a quiz title').optional(),
+  quizDescription: z
+    .string()
+    .min(1, 'Please enter a quiz description')
+    .optional(),
+  maxAttempts: z
+    .number()
+    .min(1, 'Please enter a number of attempts')
+    .optional(),
+  numofQuestions: z
+    .number()
+    .min(1, 'Please enter a number of questions')
+    .optional(),
+  quizQuestions: z.array(
+    z.object({
+      question: z.string().min(1, 'Please enter a question').optional(),
+      questionType: z
+        .string()
+        .min(1, 'Please enter a question type')
+        .optional(),
+      multipleChoiceOptions: z.array(
+        z.object({
+          optionText: z.string().min(1, 'Please enter an option').optional(),
+        }),
+      ),
+    }),
+  ),
+});
