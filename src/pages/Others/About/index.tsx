@@ -130,6 +130,7 @@ const About = () => {
           Testimonies from <span>Students</span>
         </Typography>
         <Carousel
+          fullHeightHover
           className="w-full"
           animation="slide"
           indicators={true}
@@ -138,7 +139,7 @@ const About = () => {
           interval={5000}
           navButtonsAlwaysInvisible={true}
           children={testimonies.map((testimony, index) => (
-            <Card key={index} className={styles.card}>
+            <Card key={index} className={styles.testimony__card}>
               <Typography className={styles.card__title}>
                 <span>{testimony.name}</span>
               </Typography>
@@ -148,7 +149,7 @@ const About = () => {
                   variant="body1"
                   component="p"
                 >
-                  {testimony.testimony}
+                  {testimony.testimonyText}
                 </Typography>
               </CardContent>
             </Card>

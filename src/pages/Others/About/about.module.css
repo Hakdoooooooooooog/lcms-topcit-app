@@ -17,6 +17,53 @@
       }
     }
 
+    & .testimony__card {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-evenly;
+      padding: 30px;
+      max-width: 80rem;
+      margin: 0 auto;
+      @apply h-[30rem] sm:max-h-80 bg-white shadow-md rounded-md;
+
+      & .card__title {
+        @apply text-xl sm:text-3xl font-bold;
+        & span {
+          @apply text-xl sm:text-3xl font-bold;
+          color: green;
+          font-weight: 800;
+        }
+      }
+
+      & .card__content {
+        & .card__lists {
+          display: flex;
+          flex-wrap: wrap;
+          & .card__lists--item {
+            margin-bottom: 10px;
+            position: relative;
+
+            & .list__item--bullet {
+              position: absolute;
+              left: -15px;
+              top: 0;
+              background-color: green;
+              width: 8px;
+
+              & .list__item--bullet-inner {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: inherit;
+                height: 25%;
+                background-color: black;
+              }
+            }
+          }
+        }
+      }
+    }
+
     & .card {
       display: flex;
       flex-direction: column;
@@ -24,7 +71,7 @@
       padding: 30px;
       max-width: 80rem;
       margin: 0 auto;
-      @apply min-h-[35dvh] bg-white shadow-md rounded-md;
+
       & .card__title {
         @apply text-xl sm:text-3xl font-bold;
         & span {
