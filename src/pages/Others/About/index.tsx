@@ -10,6 +10,8 @@ import {
 
 import styles from './about.module.css';
 import { useEffect } from 'react';
+import Carousel from 'react-material-ui-carousel';
+import { testimonies } from '../../../lib/constants';
 
 const About = () => {
   // Dynamically set the height of the bullet point to match the height of the list item
@@ -28,6 +30,7 @@ const About = () => {
         }
       });
     };
+
     getElementHeight();
     window.addEventListener('resize', getElementHeight);
 
@@ -37,16 +40,16 @@ const About = () => {
   }, []);
 
   return (
-    <section className={styles.about_wrapper}>
-      <div className={styles.topcit}>
-        <h1 className={styles.title}>
+    <Box component={'section'} className={styles.about_wrapper}>
+      <Box className={styles.topcit}>
+        <Typography className={styles.title}>
           About <span>TOPCIT</span>
-        </h1>
+        </Typography>
 
         <Card className={styles.card}>
-          <h1 className={styles.card__title}>
+          <Typography className={styles.card__title}>
             <span>TOPCIT</span>
-          </h1>
+          </Typography>
           <CardContent component={'div'} className={styles.card__content}>
             <List className={styles.card__lists}>
               <Typography
@@ -120,8 +123,39 @@ const About = () => {
             </Button>
           </CardActions>
         </Card>
-      </div>
-    </section>
+      </Box>
+
+      <Box className={styles.topcit}>
+        <Typography className={styles.title}>
+          Testimonies from <span>Students</span>
+        </Typography>
+        <Carousel
+          className="w-full"
+          animation="slide"
+          indicators={true}
+          autoPlay={true}
+          duration={500}
+          interval={5000}
+          navButtonsAlwaysInvisible={true}
+          children={testimonies.map((testimony, index) => (
+            <Card key={index} className={styles.card}>
+              <Typography className={styles.card__title}>
+                <span>{testimony.name}</span>
+              </Typography>
+              <CardContent component={'div'} className={styles.card__content}>
+                <Typography
+                  className={styles.card__content__text}
+                  variant="body1"
+                  component="p"
+                >
+                  {testimony.testimony}
+                </Typography>
+              </CardContent>
+            </Card>
+          ))}
+        />
+      </Box>
+    </Box>
   );
 };
 

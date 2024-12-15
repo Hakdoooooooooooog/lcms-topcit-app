@@ -469,6 +469,81 @@ export const editTopicFormInputs = [
   },
 ];
 
+export const addQuizFormInputs = [
+  {
+    quiz: [
+      {
+        label: 'Topic ID',
+        name: 'topicId',
+        type: 'text',
+        id: 'topicId',
+      },
+      {
+        label: 'Quiz Title',
+        name: 'quizTitle',
+        type: 'text',
+        id: 'quizTitle',
+      },
+      {
+        label: 'Quiz Type',
+        name: 'quizType',
+        type: 'text',
+        id: 'quizType',
+      },
+      {
+        label: 'Max Attempts',
+        name: 'maxAttempts',
+        type: 'text',
+        id: 'maxAttempts',
+      },
+    ],
+  },
+  {
+    quizQuestions: [
+      {
+        label: 'Quiz ID',
+        name: 'quizId',
+        type: 'text',
+        id: 'quizId',
+      },
+      {
+        label: 'Question ID',
+        name: 'questionId',
+        type: 'text',
+        id: 'questionId',
+      },
+      {
+        label: 'Question',
+        name: 'question',
+        type: 'text',
+        id: 'question',
+      },
+      {
+        label: 'Question Type',
+        name: 'questionType',
+        type: 'text',
+        id: 'questionType',
+      },
+    ],
+  },
+  {
+    multipleChoiceOptions: [
+      {
+        label: 'Objective Question ID',
+        name: 'objectiveQuestionId',
+        type: 'text',
+        id: 'objectiveQuestionId',
+      },
+      {
+        label: 'Option Text',
+        name: 'optionText',
+        type: 'text',
+        id: 'optionText',
+      },
+    ],
+  },
+];
+
 export const tutorialSteps: Array<{
   label: string;
   content: string;
@@ -499,6 +574,34 @@ export const tutorialSteps: Array<{
     label: 'Step 5',
     content: 'Good luck!',
     img: null,
+  },
+];
+
+export const testimonies = [
+  {
+    name: 'Shania Gwyneth E. Nuga (2024)',
+    testimony:
+      '" TOPCIT Examination has become a mind opening for me as a computer science student because of the topics covered in the examination that could help us in our field. This examination tests our knowledge in information technology and computer science and how we could apply it in real world scenarios. One of the benefits of taking this exam is the certificate acquired here could serve as a proof of our expertise in the field. "',
+  },
+  {
+    name: 'Anonymous TOPCIT Taker (2024)',
+    testimony:
+      '" I found the TOPCIT exam to be an excellent way to evaluate my skills, especially in areas like coding and IT problem-solving. It’s definitely challenging, but the emphasis on practical applications made it worthwhile. I would recommend it because it helps you understand your strengths and weaknesses while preparing for real-world IT tasks. "',
+  },
+  {
+    name: 'Anonymous TOPCIT Taker (2024)',
+    testimony:
+      '" Before the exam, I didn’t know much about it, so I faced some difficulties preparing. Despite that, it turned out to be an eye-opener, pointing out the gaps in my knowledge that I need to work on. I think others should take it as well because it sets a benchmark for IT skills and helps you grow professionally. "',
+  },
+  {
+    name: 'Anonymous TOPCIT Taker (2024)',
+    testimony:
+      '" TOPCIT does a great job balancing theory and technical assessments. I enjoyed how it focused on practical skills, and the results gave me clear feedback on where I stand in terms of industry readiness. It’s an impressive credential to have and shows employers you’re serious about your IT career. "',
+  },
+  {
+    name: 'Anonymous TOPCIT Taker (2024)',
+    testimony:
+      '" TOPCIT can be helpful to know which field you know best and what you should learn more about. "',
   },
 ];
 
