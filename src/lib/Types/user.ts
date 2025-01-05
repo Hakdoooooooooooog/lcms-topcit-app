@@ -66,3 +66,13 @@ export type UserProfile = Pick<users, 'email' | 'userid' | 'username'>;
 export type UpdateProfile = Pick<users, 'username'>;
 export type UserLogin = (typeof LoginSchema)['_input'];
 export type UserRegister = (typeof RegisterSchema)['_input'];
+
+export type OTPVerificationState = {
+  email: string;
+  otp: string;
+};
+
+export type OTPVerificationActions = {
+  setEmail: (email: OTPVerificationState['email']) => void;
+  setOTP: (otp: OTPVerificationState['otp']) => void;
+};
