@@ -393,6 +393,18 @@ const Assessment = () => {
     [openTutorialModal, tutorialSteps, currentSliderSlide],
   );
 
+  const handleAttemptQuizCount = useCallback((quiz: QuizWithQuestions) => {
+    return quiz.user_quiz_attempts
+      ?.filter((attempt) => attempt?.quiz_id === quiz.id)
+      .flatMap((attempt) => attempt?.attempt_count);
+  }, []);
+
+  const handleAttemptQuizScore = useCallback((quiz: QuizWithQuestions) => {
+    return quiz.user_quiz_attempts
+      ?.filter((attempt) => attempt?.quiz_id === quiz.id)
+      .flatMap((attempt) => attempt?.score);
+  }, []);
+
   const memoizedAccordionTopic = useMemo(() => {
     return (
       (!selectedQuiz || selectedQuiz.length <= 0) &&
@@ -435,7 +447,7 @@ const Assessment = () => {
               }}
             >
               {topic.quiz && topic.quiz.length > 0 ? (
-                topic.quiz.map((quiz) => (
+                topic.quiz.map((quiz, index) => (
                   <Box
                     key={quiz.id}
                     component={'section'}
@@ -471,13 +483,16 @@ const Assessment = () => {
                                 color="info"
                                 onClick={() => handleStartQuiz(quiz)}
                                 disabled={
-                                  (quiz.user_quiz_attempts?.attempt_count ??
-                                    0) >= (quiz.max_attempts ?? 0)
+                                  handleAttemptQuizCount(quiz) &&
+                                  (handleAttemptQuizCount(quiz)[index] ?? 0) >=
+                                    quiz.max_attempts
                                 }
                               >
                                 Attempts:{' '}
-                                {quiz.user_quiz_attempts?.attempt_count || 0} /{' '}
-                                {quiz.max_attempts}
+                                {handleAttemptQuizCount(quiz) &&
+                                  (handleAttemptQuizCount(quiz)[index] ??
+                                    0)}{' '}
+                                / {quiz.max_attempts}
                               </Button>
                             )}
                             <Tooltip title="Score" arrow>
@@ -487,7 +502,8 @@ const Assessment = () => {
                                 sx={{
                                   width: '100%',
                                   cursor: 'default',
-                                  ...(quiz.user_quiz_attempts?.score === null
+                                  ...(handleAttemptQuizScore(quiz) &&
+                                  handleAttemptQuizScore(quiz)[index] === null
                                     ? {
                                         backgroundColor: '#00800030',
                                       }
@@ -503,7 +519,11 @@ const Assessment = () => {
                                 variant="contained"
                                 color="inherit"
                               >
-                                Score: {quiz.user_quiz_attempts?.score ?? 'N/A'}
+                                Score:{' '}
+                                {handleAttemptQuizScore(quiz) &&
+                                  (handleAttemptQuizScore(quiz)[index] ??
+                                    0)}{' '}
+                                / {quiz.objective_questions.length}
                               </Button>
                             </Tooltip>
 
