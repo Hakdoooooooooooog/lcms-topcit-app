@@ -248,6 +248,20 @@ export const rootRoutes: LinkProps[] = [
               () => import('../pages/Others/Landing/Forgot-Password'),
             ),
           },
+          {
+            name: 'OTP Verification',
+            href: 'otp-verification',
+            component: lazy(
+              () => import('../pages/Others/Landing/OTP-Verification'),
+            ),
+          },
+          {
+            name: 'New Password',
+            href: 'new-password',
+            component: lazy(
+              () => import('../pages/Others/Landing/New-Password'),
+            ),
+          },
         ],
       },
       {
@@ -282,6 +296,8 @@ export const landingPaths = [
   '/landing',
   '/landing/register',
   '/landing/forgot-password',
+  '/landing/otp-verification',
+  '/landing/new-password',
 ];
 
 // Fields for the user form

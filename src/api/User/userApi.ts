@@ -2,6 +2,7 @@ import {
   axiosRootApiUrl,
   accessTokenInstance,
   userInstance,
+  forgotPasswordInstance,
 } from '../../lib/helpers/axios';
 import {
   UpdateProfile,
@@ -94,6 +95,64 @@ export const updateUserChapterProgress = async (
     .post('/user/progress/update', {
       chapterId,
       topic_id: topicId,
+    })
+    .then((res) => res.data)
+    .catch((error) => {
+      throw error.response.data;
+    });
+};
+
+export const verifyOTP = async (
+  email: string,
+  otp: string,
+): Promise<{ message: string }> => {
+  return await forgotPasswordInstance
+    .post('/user/verify-OTP', {
+      email,
+      otp,
+    })
+    .then((res) => res.data)
+    .catch((error) => {
+      console.log(error);
+      throw error.response.data;
+    });
+};
+
+export const retryOTP = async (email: string): Promise<{ message: string }> => {
+  return await forgotPasswordInstance
+    .post('/user/retry-sendOTP', {
+      email,
+    })
+    .then((res) => res.data)
+    .catch((error) => {
+      throw error.response.data;
+    });
+};
+
+// for Check Email if exists
+export const forgotPassword = async (
+  email: string,
+): Promise<{ message: string }> => {
+  return await forgotPasswordInstance
+    .post('/user/forgot-password', {
+      email,
+    })
+    .then((res) => res.data)
+    .catch((error) => {
+      throw error.response.data;
+    });
+};
+
+export const newPassword = async (
+  email: string,
+  password: string,
+  confirmPassword: string,
+): Promise<{ message: string }> => {
+  return await forgotPasswordInstance
+    .post('/user/new-password', {
+      email,
+      password,
+      confirmPassword,
     })
     .then((res) => res.data)
     .catch((error) => {

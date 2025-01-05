@@ -22,6 +22,7 @@ import {
   QuizState,
 } from './Types/types';
 import { createJSONStorage, persist } from 'zustand/middleware';
+import { OTPVerificationActions, OTPVerificationState } from './Types/user';
 
 export const useInputPasswordStore = create<
   InputPasswordState & InputPasswordActions
@@ -145,3 +146,12 @@ export const useQuizStore = create<QuizState & QuizActions>()(
     },
   ),
 );
+
+export const useForgotPasswordStore = create<
+  OTPVerificationState & OTPVerificationActions
+>((set) => ({
+  email: '',
+  otp: '',
+  setEmail: (email) => set({ email }),
+  setOTP: (otp) => set({ otp }),
+}));

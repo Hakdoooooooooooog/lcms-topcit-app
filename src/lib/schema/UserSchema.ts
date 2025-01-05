@@ -43,3 +43,36 @@ export const ProfileSchema = UserSchema.pick({
   userid: true,
   email: true,
 });
+
+export const ForgotPasswordSchema = z.object({
+  email: z
+    .string()
+    .min(1, { message: 'Email is required' })
+    .email({ message: 'Invalid email format' }),
+});
+
+export const OTPSchema = z.object({
+  otp: z
+    .string()
+    .min(6, { message: 'OTP must be 6 digits' })
+    .max(6, { message: 'OTP must be 6 digits' })
+    .regex(/^\d+$/, { message: 'OTP must contain only numbers' }),
+});
+
+export const NewPasswordSchema = z
+  .object({
+    password: z
+      .string()
+      .min(8, 'Password must be at least 8 characters long')
+      .regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/,
+        'Password must contain at least one uppercase letter, one lowercase letter, and one number',
+      ),
+    confirmPassword: z
+      .string()
+      .min(8, 'Password must be at least 8 characters long'),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ['confirmPassword'],
+  });

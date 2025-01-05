@@ -31,6 +31,7 @@ const Landing = () => {
       <div className={styles.logo}>
         <TOPCITLogo height="250" width="500" />
       </div>
+
       <Outlet />
     </Box>
   );

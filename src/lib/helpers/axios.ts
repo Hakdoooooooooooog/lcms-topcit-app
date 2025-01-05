@@ -14,6 +14,10 @@ export const userInstance = axios.create({
   withCredentials: true,
 });
 
+export const forgotPasswordInstance = axios.create({
+  baseURL: import.meta.env.VITE_APP_BASE_API_URL,
+});
+
 export const chapterInstance = axios.create({
   baseURL: import.meta.env.VITE_APP_BASE_API_URL,
   withCredentials: true,

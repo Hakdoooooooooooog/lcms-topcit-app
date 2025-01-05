@@ -1,23 +1,24 @@
 // Date: 07/08/2024
-import styles from "./login.module.css";
-import UserForm from "../../../../components/ui/Form/UserForm";
-import { LoginSchema } from "../../../../lib/schema/UserSchema";
-import { z } from "zod";
-import { setLoginFields } from "../../../../lib/constants";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import styles from './login.module.css';
+import UserForm from '../../../../components/ui/Form/UserForm';
+import { LoginSchema } from '../../../../lib/schema/UserSchema';
+import { z } from 'zod';
+import { setLoginFields } from '../../../../lib/constants';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import {
+  Box,
   Button,
   FormControl,
   IconButton,
   InputAdornment,
   InputLabel,
   OutlinedInput,
-} from "@mui/material";
-import { NavLink } from "react-router-dom";
-import { useInputPasswordStore } from "../../../../lib/store";
-import { EyeIcon, EyeSlashIcon } from "@heroicons/react/16/solid";
-import { LoadingButton } from "../../../../components/ui/LoadingScreen/LoadingScreen";
+} from '@mui/material';
+import { NavLink } from 'react-router-dom';
+import { useInputPasswordStore } from '../../../../lib/store';
+import { EyeIcon, EyeSlashIcon } from '@heroicons/react/16/solid';
+import { LoadingButton } from '../../../../components/ui/LoadingScreen/LoadingScreen';
 
 type LoginSchema = z.infer<typeof LoginSchema>;
 
@@ -37,26 +38,39 @@ const Login = () => {
 
   return (
     <div className={styles.form}>
-      <UserForm handleSubmit={handleSubmit} schema={LoginSchema} FormType="Login">
+      <UserForm
+        handleSubmit={handleSubmit}
+        schema={LoginSchema}
+        FormType="Login"
+      >
         {setLoginFields.map((field, index) => {
           return (
-            <FormControl key={index} error={errors[field.name as keyof LoginSchema] ? true : false}>
+            <FormControl
+              key={index}
+              error={errors[field.name as keyof LoginSchema] ? true : false}
+            >
               <InputLabel htmlFor={field.name}>{field.label}</InputLabel>
               <OutlinedInput
                 {...register(field.name as keyof LoginSchema)}
                 id={field.name}
                 autoComplete="on"
-                type={field.name === "password" ? passType : "text"}
+                type={field.name === 'password' ? passType : 'text'}
                 endAdornment={
-                  field.name === "password" ? (
+                  field.name === 'password' ? (
                     <InputAdornment position="end">
                       <IconButton
                         aria-label="toggle password visibility"
-                        onClick={() => setPassType(passType === "password" ? "text" : "password")}
-                        onMouseDown={(e: React.MouseEvent<HTMLButtonElement>) => e.preventDefault()}
+                        onClick={() =>
+                          setPassType(
+                            passType === 'password' ? 'text' : 'password',
+                          )
+                        }
+                        onMouseDown={(e: React.MouseEvent<HTMLButtonElement>) =>
+                          e.preventDefault()
+                        }
                         edge="end"
                       >
-                        {passType !== "text" ? (
+                        {passType !== 'text' ? (
                           <EyeSlashIcon height={25} width={25} />
                         ) : (
                           <EyeIcon height={25} width={25} />
@@ -68,7 +82,9 @@ const Login = () => {
                 label={field.label}
               />
               {errors && (
-                <p className="text-red-500">{errors[field.name as keyof LoginSchema]?.message}</p>
+                <p className="text-red-500">
+                  {errors[field.name as keyof LoginSchema]?.message}
+                </p>
               )}
             </FormControl>
           );
@@ -76,24 +92,28 @@ const Login = () => {
         <Button
           type="submit"
           style={{
-            width: "inherit",
-            color: "white",
+            width: 'inherit',
+            color: 'white',
           }}
           disabled={isSubmitting}
-          className={isSubmitting ? "cursor-not-allowed" : "!bg-green-700 hover:!bg-green-800"}
+          className={
+            isSubmitting
+              ? 'cursor-not-allowed'
+              : '!bg-green-700 hover:!bg-green-800'
+          }
           endIcon={isSubmitting ? <LoadingButton /> : null}
         >
           Login
         </Button>
         <NavLink
           style={{
-            width: "100%",
+            width: '100%',
           }}
           to="register"
         >
           <Button
             style={{
-              width: "inherit",
+              width: 'inherit',
             }}
             variant="outlined"
             className="!border-gray-700 !text-gray-700 hover:!bg-gray-700 hover:!text-white"
@@ -102,6 +122,31 @@ const Login = () => {
           </Button>
         </NavLink>
       </UserForm>
+
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          marginTop: '1rem',
+        }}
+      >
+        <Button
+          component={NavLink}
+          to="/landing/forgot-password"
+          variant="text"
+          sx={{
+            color: 'black',
+            '&:hover': {
+              backgroundColor: 'transparent',
+              color: 'black',
+              textDecoration: 'underline',
+            },
+          }}
+        >
+          Forgot Password ?
+        </Button>
+      </Box>
     </div>
   );
 };
