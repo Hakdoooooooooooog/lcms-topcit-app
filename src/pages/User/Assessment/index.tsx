@@ -8,6 +8,7 @@ import {
 import { useSearchParams, useBlocker } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
+  useAccordionStore,
   useAuthUserStore,
   useModalStore,
   useQuizStore,
@@ -17,9 +18,13 @@ import {
 import {
   objective_questions,
   QuizWithQuestions,
+  TopicWithQuizAndObjectiveQuestions,
 } from '../../../lib/Types/quiz';
 import { getQuizzesWithQuestions, startQuiz } from '../../../api/User/quizApi';
 import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
   Box,
   Button,
   Card,
@@ -39,11 +44,13 @@ import { showToast } from '../../../components/ui/Toasts';
 import { handlePaginatedItems } from '../../../lib/helpers/utils';
 import useSearchFilter from '../../../lib/hooks/useSearchFilter';
 import Carousel from 'react-material-ui-carousel';
-import { ArrowBack, ArrowForward } from '@mui/icons-material';
+import { Add, ArrowBack, ArrowForward } from '@mui/icons-material';
 
 const Assessment = () => {
   // Quizzes
-  const { data: quizzes, isLoading } = useQuery<QuizWithQuestions[]>({
+  const { data: quizzes, isLoading } = useQuery<
+    TopicWithQuizAndObjectiveQuestions[]
+  >({
     queryKey: ['AssessmentQuizzes'],
     queryFn: getQuizzesWithQuestions,
     refetchOnWindowFocus: false,
@@ -51,7 +58,7 @@ const Assessment = () => {
 
   // Pagination
   const { page, setPage, totalPages, currentItems } =
-    handlePaginatedItems<QuizWithQuestions>({
+    handlePaginatedItems<TopicWithQuizAndObjectiveQuestions>({
       items: quizzes,
       itemPerPage: 5,
     });
@@ -61,7 +68,7 @@ const Assessment = () => {
     search: state.search,
   }));
   const { isSearching, filteredItems: filteredQuizzes } =
-    useSearchFilter<QuizWithQuestions>(currentItems, search);
+    useSearchFilter<TopicWithQuizAndObjectiveQuestions>(currentItems, search);
 
   // User
   const { userId } = useAuthUserStore((state) => ({
@@ -100,6 +107,12 @@ const Assessment = () => {
     setOpenTutorialModal: state.setOpenTutorialModal,
   }));
 
+  // Accordion States
+  const { expanded, handleChanges } = useAccordionStore((state) => ({
+    expanded: state.expanded,
+    handleChanges: state.handleChanges,
+  }));
+
   // Transition
   const [isPending, startTransition] = useTransition();
 
@@ -128,10 +141,13 @@ const Assessment = () => {
 
     const quiz = quizzes
       .filter((value) => {
-        return value.topic_id === Number(topicId);
+        return value.id === parseInt(topicId || '');
       })
       .flatMap((quiz) => {
-        return quiz.objective_questions;
+        return quiz.quiz ? quiz.quiz.flatMap((q) => q.objective_questions) : [];
+      })
+      .filter((value) => {
+        return value !== undefined;
       });
 
     return quiz;
@@ -377,6 +393,152 @@ const Assessment = () => {
     [openTutorialModal, tutorialSteps, currentSliderSlide],
   );
 
+  const memoizedAccordionTopic = useMemo(() => {
+    return (
+      (!selectedQuiz || selectedQuiz.length <= 0) &&
+      filteredQuizzes &&
+      filteredQuizzes.map((topic) => {
+        return (
+          <Accordion
+            key={topic.id}
+            expanded={expanded === `panel1a-topicHeader-${topic.id}`}
+            onChange={handleChanges(`panel1a-topicHeader-${topic.id}`)}
+            sx={
+              expanded === `panel1a-topicHeader-${topic.id}`
+                ? {
+                    backgroundColor: 'rgba(0, 128, 0, 0.1)',
+                    marginTop: '1rem',
+                  }
+                : { marginTop: '1rem', transition: 'background-color 0.5s' }
+            }
+            slotProps={{ transition: { unmountOnExit: true } }}
+          >
+            <AccordionSummary
+              aria-controls={`panel1a-content-${topic.id}-${topic.topictitle}`}
+              id={`panel1a-header-${topic.id}-${topic.topictitle}`}
+              expandIcon={
+                <Add
+                  sx={{
+                    color: 'green',
+                  }}
+                />
+              }
+              className="!bg-[#0080001a] hover:bg-[#0080001a]"
+            >
+              Topic {topic.id}: {topic.topictitle}
+            </AccordionSummary>
+            <AccordionDetails
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                width: '100%',
+              }}
+            >
+              {topic.quiz && topic.quiz.length > 0 ? (
+                topic.quiz.map((quiz) => (
+                  <Box
+                    key={quiz.id}
+                    component={'section'}
+                    className="flex flex-col gap-y-3 mt-10"
+                  >
+                    <Card className="flex p-4">
+                      <Box className="flex flex-wrap w-full ml-2 gap-[1%]">
+                        <Box className="flex-[1_1_55%]">
+                          <CardHeader
+                            title={`Quiz ${quiz.topic_id}`}
+                            subheader={quiz.title}
+                          />
+
+                          <CardActions className="flex gap-1 w-full ml-5">
+                            <Typography variant="body1">Test Type:</Typography>
+                            <Button variant="contained" color="info">
+                              {quiz.quiz_type}
+                            </Button>
+                          </CardActions>
+                        </Box>
+
+                        <CardActions className="justify-end flex-[1_1_auto]">
+                          <Box className=" flex flex-col gap-3 w-full lg:w-[300px]">
+                            {quiz.max_attempts && (
+                              <Button
+                                sx={{
+                                  width: '100%',
+                                  '&:disabled': {
+                                    backgroundColor: 'gray',
+                                  },
+                                }}
+                                variant="contained"
+                                color="info"
+                                onClick={() => handleStartQuiz(quiz)}
+                                disabled={
+                                  (quiz.user_quiz_attempts?.attempt_count ??
+                                    0) >= (quiz.max_attempts ?? 0)
+                                }
+                              >
+                                Attempts:{' '}
+                                {quiz.user_quiz_attempts?.attempt_count || 0} /{' '}
+                                {quiz.max_attempts}
+                              </Button>
+                            )}
+                            <Tooltip title="Score" arrow>
+                              <Button
+                                disableRipple={true}
+                                disableTouchRipple={true}
+                                sx={{
+                                  width: '100%',
+                                  cursor: 'default',
+                                  ...(quiz.user_quiz_attempts?.score === null
+                                    ? {
+                                        backgroundColor: '#00800030',
+                                      }
+                                    : {
+                                        backgroundColor: 'rgba(0, 128, 0, 0.2)',
+
+                                        '&:hover': {
+                                          backgroundColor:
+                                            'rgba(0, 128, 0, 0.4)',
+                                        },
+                                      }),
+                                }}
+                                variant="contained"
+                                color="inherit"
+                              >
+                                Score: {quiz.user_quiz_attempts?.score ?? 'N/A'}
+                              </Button>
+                            </Tooltip>
+
+                            <Typography
+                              variant="caption"
+                              sx={{ fontSize: '0.75rem', color: 'red' }}
+                            >
+                              Caution: The score will be overwritten on retake,
+                              and the recent score will be considered.
+                            </Typography>
+                          </Box>
+                        </CardActions>
+                      </Box>
+                    </Card>
+                  </Box>
+                ))
+              ) : (
+                <Typography variant="body1">
+                  No quizzes available for this topic
+                </Typography>
+              )}
+            </AccordionDetails>
+          </Accordion>
+        );
+      })
+    );
+  }, [
+    currentItems,
+    page,
+    expanded,
+    handleChanges,
+    selectedQuiz,
+    filteredQuizzes,
+  ]);
+
   if (isLoading || !quizzes) {
     return <Typography variant="h5">Loading...</Typography>;
   }
@@ -389,7 +551,7 @@ const Assessment = () => {
         </Box>
       ) : (
         <>
-          {selectedQuiz && (
+          {selectedQuiz && selectedQuiz.length > 0 && (
             <Quiz
               selectedQuiz={selectedQuiz}
               startTransition={startTransition}
@@ -397,86 +559,7 @@ const Assessment = () => {
             />
           )}
 
-          {isSearching ? (
-            <LoadingContentScreen />
-          ) : (
-            !selectedQuiz &&
-            filteredQuizzes &&
-            filteredQuizzes.map((quiz) => (
-              <Box
-                key={quiz.id}
-                component={'section'}
-                className="flex flex-col gap-y-3 mt-10"
-              >
-                <Card className="flex p-4">
-                  <Box className="flex flex-wrap w-full ml-2 gap-[1%]">
-                    <Box className="flex-[1_1_55%]">
-                      <CardHeader
-                        title={`Topic ${quiz.topic_id}`}
-                        subheader={quiz.title}
-                      />
-
-                      <CardActions className="flex gap-1 w-full ml-5">
-                        <Typography variant="body1">Test Type:</Typography>
-                        <Button variant="contained" color="info">
-                          {quiz.quiz_type}
-                        </Button>
-                      </CardActions>
-                    </Box>
-
-                    <CardActions className="justify-end flex-[1_1_auto]">
-                      <Box className=" flex flex-col gap-3 w-full lg:w-[300px]">
-                        {quiz.max_attempts && (
-                          <Button
-                            sx={{
-                              width: '100%',
-                              '&:disabled': {
-                                backgroundColor: 'gray',
-                              },
-                            }}
-                            variant="contained"
-                            color="info"
-                            onClick={() => handleStartQuiz(quiz)}
-                            disabled={
-                              (quiz.user_quiz_attempts[0]?.attempt_count ??
-                                0) >= (quiz.max_attempts ?? 0)
-                            }
-                          >
-                            Attempts:{' '}
-                            {quiz.user_quiz_attempts[0]?.attempt_count || 0} /{' '}
-                            {quiz.max_attempts}
-                          </Button>
-                        )}
-                        <Button
-                          disableRipple={true}
-                          disableTouchRipple={true}
-                          sx={{
-                            width: '100%',
-                            cursor: 'default',
-                            ...(quiz.user_quiz_attempts[0]?.score === null
-                              ? {
-                                  backgroundColor: '#00800030',
-                                }
-                              : {
-                                  backgroundColor: 'rgba(0, 128, 0, 0.2)',
-
-                                  '&:hover': {
-                                    backgroundColor: 'rgba(0, 128, 0, 0.4)',
-                                  },
-                                }),
-                          }}
-                          variant="contained"
-                          color="inherit"
-                        >
-                          Score: {quiz.user_quiz_attempts[0]?.score ?? 'N/A'}
-                        </Button>
-                      </Box>
-                    </CardActions>
-                  </Box>
-                </Card>
-              </Box>
-            ))
-          )}
+          {isSearching ? <LoadingContentScreen /> : memoizedAccordionTopic}
 
           {!selectedQuiz && (
             <Stack spacing={2} sx={{ marginTop: '2rem' }}>
@@ -494,6 +577,12 @@ const Assessment = () => {
                 showLastButton
               />
             </Stack>
+          )}
+
+          {filteredQuizzes && filteredQuizzes.length <= 0 && (
+            <Typography variant="h5" className="mt-5">
+              No quizzes found
+            </Typography>
           )}
 
           {renderCancelModal()}

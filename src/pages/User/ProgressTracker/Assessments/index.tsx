@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { useTransition } from 'react';
+import { useMemo, useTransition } from 'react';
 
 import {
   Box,
@@ -14,7 +14,7 @@ import { getUserProgress } from '../../../../api/User/userApi';
 import { handlePaginatedItems } from '../../../../lib/helpers/utils';
 import { UserProgress } from '../../../../lib/Types/user';
 import { getQuizzesWithQuestions } from '../../../../api/User/quizApi';
-import { QuizWithQuestions } from '../../../../lib/Types/quiz';
+import { TopicWithQuizAndObjectiveQuestions } from '../../../../lib/Types/quiz';
 import {
   LoadingContentScreen,
   LoadingDataScreen,
@@ -28,7 +28,7 @@ const Assessments = () => {
     queryFn: getUserProgress,
   });
   const { data: totalQuiz, isLoading: isLoadingTotalQuiz } = useQuery<
-    QuizWithQuestions[]
+    TopicWithQuizAndObjectiveQuestions[]
   >({
     queryKey: ['totalChapters'],
     queryFn: getQuizzesWithQuestions,
@@ -37,14 +37,12 @@ const Assessments = () => {
   const [isPending, startTransition] = useTransition();
   const search = useSearchStore((state) => state.search);
 
-  const { isSearching, filteredItems } = useSearchFilter<QuizWithQuestions>(
-    totalQuiz,
-    search,
-  );
+  const { isSearching, filteredItems } =
+    useSearchFilter<TopicWithQuizAndObjectiveQuestions>(totalQuiz, search);
 
   const { page, setPage, totalPages, currentItems } = handlePaginatedItems({
     items: filteredItems,
-    itemPerPage: 1,
+    itemPerPage: 3,
   });
 
   if (!userProgress || isLoading || !totalQuiz || isLoadingTotalQuiz) {
@@ -70,17 +68,31 @@ const Assessments = () => {
           {isSearching ? (
             <LoadingDataScreen />
           ) : (
-            <>
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 1,
+              }}
+            >
               {currentItems &&
                 currentItems.map((item) => (
                   <Card
                     key={item.id}
                     sx={{
-                      padding: '15px',
-                      position: 'relative',
+                      padding: '5px',
+                      backgroundColor:
+                        item.id ===
+                        userProgress.user_completed_quizzes
+                          .map((quiz) => quiz?.topic_id)
+                          .find((topicId) => topicId === item.id)
+                          ? '#0080002a'
+                          : 'white',
                     }}
                   >
-                    <CardHeader title={`Topic ${item.id}: ${item.title}`} />
+                    <CardHeader
+                      title={`Topic ${item.id}: ${item.topictitle}`}
+                    />
                     <CardContent>
                       <Box
                         sx={{
@@ -91,9 +103,10 @@ const Assessments = () => {
                       >
                         <Typography variant="body1">
                           Status:{' '}
-                          {userProgress.user_completed_quizzes &&
-                          userProgress.user_completed_quizzes?.quiz_id ===
-                            item.user_quiz_attempts[0]?.quiz_id
+                          {item.id ===
+                          userProgress.user_completed_quizzes
+                            .map((quiz) => quiz?.topic_id)
+                            .find((topicId) => topicId === item.id)
                             ? 'Completed'
                             : 'Not Completed'}
                         </Typography>
@@ -101,7 +114,7 @@ const Assessments = () => {
                     </CardContent>
                   </Card>
                 ))}
-            </>
+            </Box>
           )}
         </>
       )}

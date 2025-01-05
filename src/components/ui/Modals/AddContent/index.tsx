@@ -90,9 +90,7 @@ const AddContentModal = ({
         }
         return createChapter(formData);
       } else {
-        // API Call for Add Sub-Chapter
-        // return createSubChapter(formData);
-        return Promise.resolve({});
+        return Promise.reject(new Error('Invalid Button Type'));
       }
     },
     QueryKey: 'AllTopicsWithChapters',
@@ -101,7 +99,6 @@ const AddContentModal = ({
 
   const onSubmit = async (data: z.infer<typeof schema>) => {
     if (buttonType === 'add-topic') {
-      // API Call for Add Topic
       try {
         await addMutation.mutateAsync({ ...data });
       } catch (error: any) {
@@ -110,7 +107,6 @@ const AddContentModal = ({
     }
 
     if (buttonType === 'add-chapter') {
-      // API Call for Add Chapter
       try {
         await addMutation.mutateAsync({ ...data });
       } catch (error: any) {

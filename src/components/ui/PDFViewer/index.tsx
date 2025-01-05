@@ -149,7 +149,7 @@ const PDFViewer = memo(
     const handleSuccessChapterModal = useCallback(
       (path: string) => {
         return (
-          path !== '/admin' &&
+          path !== '/admin/contents' &&
           numPages &&
           data &&
           numPages === pageNumber &&

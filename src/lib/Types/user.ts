@@ -51,12 +51,13 @@ export type UserCompletedQuizzes = {
   user_id: number;
   quiz_id: number;
   completed_at: Date | null;
+  topic_id: number;
 } | null;
 
 export type UserProgress = Pick<users, 'userid' | 'username'> & {
   user_progress: UsersProgress | null;
   user_completed_chapters: UserCompletedChapters[];
-  user_completed_quizzes: UserCompletedQuizzes;
+  user_completed_quizzes: UserCompletedQuizzes[];
 };
 
 type users_role = 'admin' | 'user';

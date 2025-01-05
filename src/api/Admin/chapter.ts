@@ -12,7 +12,7 @@ export const updateChapter = async (
     })
     .then((res) => res.data)
     .catch((error) => {
-      return error.response?.data;
+      throw error.response?.data;
     });
 };
 
@@ -25,7 +25,7 @@ export const createChapter = async (formData: FormData) => {
     })
     .then((res) => res.data)
     .catch((error) => {
-      return error.response?.data;
+      throw error.response?.data;
     });
 };
 
@@ -38,6 +38,6 @@ export const PDFChapterChunkUpload = async (formData: FormData) => {
     })
     .then((res) => res.data)
     .catch((error) => {
-      return error.response?.data;
+      throw error.response?.data;
     });
 };

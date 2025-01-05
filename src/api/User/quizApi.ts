@@ -1,8 +1,8 @@
 import { quizInstance } from '../../lib/helpers/axios';
-import { QuizWithQuestions } from '../../lib/Types/quiz';
+import { TopicWithQuizAndObjectiveQuestions } from '../../lib/Types/quiz';
 
 export const getQuizzesWithQuestions = async (): Promise<
-  QuizWithQuestions[]
+  TopicWithQuizAndObjectiveQuestions[]
 > => {
   return await quizInstance
     .get(`/quizzes/topic`)
