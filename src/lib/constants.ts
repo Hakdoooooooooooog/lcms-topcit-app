@@ -454,93 +454,112 @@ export const editChapterFormInputs = [
   },
 ];
 
-export const editTopicFormInputs = [
+export const editTopicFormInputs: InputProps[] = [
   {
     label: 'Topic Title',
     name: 'topicTitle',
     type: 'text',
-    id: 'topicTitle',
+    value: '',
+    placeholder: 'Enter the topic title',
   },
   {
     label: 'Topic Description',
     name: 'description',
     type: 'text',
-    id: 'description',
+    value: '',
+    placeholder: 'Enter the topic description',
   },
 ];
 
-export const addQuizFormInputs = [
+export const addQuizFormInputs: {
+  stage1: {
+    label: string;
+    name: string;
+    type: string;
+    placeholder: string;
+    value: string;
+    disabled?: boolean;
+  }[];
+  stage2: {
+    label: string;
+    name: string;
+    type: string;
+    placeholder: string;
+    value: string;
+    disabled?: boolean;
+  }[];
+} = {
+  stage1: [
+    {
+      label: 'Topic ID',
+      name: 'topicId',
+      type: 'text',
+      placeholder: 'Enter the topic ID',
+      value: '',
+      disabled: true,
+    },
+    {
+      label: 'Quiz Title',
+      name: 'quizTitle',
+      type: 'text',
+      placeholder: 'Enter the quiz title',
+      value: '',
+    },
+    {
+      label: 'Max Attempts',
+      name: 'maxAttempts',
+      type: 'text',
+      placeholder: 'Enter the maximum number of attempts',
+      value: '',
+    },
+    {
+      label: 'Number of Questions',
+      name: 'numofQuestions',
+      type: 'text',
+      placeholder: 'Enter the number of questions',
+      value: '',
+    },
+  ],
+  stage2: [
+    {
+      label: 'Quiz ID',
+      name: 'quizId',
+      type: 'text',
+      placeholder: 'Enter the quiz ID',
+      value: '',
+      disabled: true,
+    },
+    {
+      label: 'Question Description',
+      name: 'question',
+      type: 'text',
+      placeholder: 'Enter the question description',
+      value: '',
+    },
+    {
+      label: 'Question Type',
+      name: 'questionType',
+      type: 'questionTypeSelection',
+      placeholder: 'Enter the question type',
+      value: '',
+    },
+    {
+      label: 'Correct Answer',
+      name: 'correctAnswer',
+      type: 'correctAnswerSelection',
+      placeholder: 'Enter the correct answer',
+      value: '',
+    },
+  ],
+};
+
+export const multipleChoiceOptions = [
   {
-    quiz: [
-      {
-        label: 'Topic ID',
-        name: 'topicId',
-        type: 'text',
-        id: 'topicId',
-      },
-      {
-        label: 'Quiz Title',
-        name: 'quizTitle',
-        type: 'text',
-        id: 'quizTitle',
-      },
-      {
-        label: 'Quiz Type',
-        name: 'quizType',
-        type: 'text',
-        id: 'quizType',
-      },
-      {
-        label: 'Max Attempts',
-        name: 'maxAttempts',
-        type: 'text',
-        id: 'maxAttempts',
-      },
-    ],
-  },
-  {
-    quizQuestions: [
-      {
-        label: 'Quiz ID',
-        name: 'quizId',
-        type: 'text',
-        id: 'quizId',
-      },
-      {
-        label: 'Question ID',
-        name: 'questionId',
-        type: 'text',
-        id: 'questionId',
-      },
-      {
-        label: 'Question',
-        name: 'question',
-        type: 'text',
-        id: 'question',
-      },
-      {
-        label: 'Question Type',
-        name: 'questionType',
-        type: 'text',
-        id: 'questionType',
-      },
-    ],
-  },
-  {
-    multipleChoiceOptions: [
-      {
-        label: 'Objective Question ID',
-        name: 'objectiveQuestionId',
-        type: 'text',
-        id: 'objectiveQuestionId',
-      },
-      {
-        label: 'Option Text',
-        name: 'optionText',
-        type: 'text',
-        id: 'optionText',
-      },
-    ],
+    label: 'Option Text',
+    name: 'optionText',
+    type: 'text',
+    placeholder: 'Enter the option text',
+    value: '',
   },
 ];
 

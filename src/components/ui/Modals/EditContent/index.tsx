@@ -237,16 +237,16 @@ const EditContentModal = ({
                 encType="multipart/form-data"
               >
                 <Box component={'div'} className="flex flex-col gap-y-5">
-                  {editTopicFormInputs.map((input) => (
-                    <FormControl key={input.id}>
-                      <InputLabel htmlFor={input.name}>
+                  {editTopicFormInputs.map((input, editIndex) => (
+                    <FormControl key={editIndex}>
+                      <InputLabel htmlFor={`${input.name}-${editIndex}`}>
                         {input.label}
                       </InputLabel>
                       <OutlinedInput
                         {...register(
                           input.name as keyof z.infer<typeof schema>,
                         )}
-                        id={input.id}
+                        id={`${input.name}-${editIndex}`}
                         label={input.label}
                         type={input.type}
                       />
@@ -309,7 +309,7 @@ const EditContentModal = ({
           flexDirection: 'column',
           gap: '1rem',
         }}
-        className="sm:max-w-3xl"
+        className="sm:max-w-4xl"
       >
         {formInputs}
       </Box>

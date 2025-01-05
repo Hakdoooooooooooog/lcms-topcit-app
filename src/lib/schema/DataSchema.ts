@@ -26,16 +26,13 @@ export const addChapterSchema = z.object({
 export const EditChapterSchema = z.object({
   chapterFile: z
     .union([z.instanceof(FileList), z.string()])
-    .refine(
-      (file) => file instanceof FileList && file.length > 0,
-      'Please upload a file',
-    )
+    .optional()
     .refine((file) => {
+      if (!file) return true;
       if (file instanceof FileList) {
         return (
-          file.length !== 0 &&
-          file[0].type === 'application/pdf' &&
-          file[0].name.match(/\.(pdf)$/)
+          file.length === 0 ||
+          (file[0].type === 'application/pdf' && file[0].name.match(/\.(pdf)$/))
         );
       }
       return false;
@@ -45,7 +42,7 @@ export const EditChapterSchema = z.object({
       z
         .string()
         .min(4, 'Title must contains minimum of 4 characters.')
-        .max(100, 'Title only permits 100 characters'),
+        .max(300, 'Title only permits 300 characters'),
       z.string().length(0),
     ])
     .optional()
@@ -54,7 +51,7 @@ export const EditChapterSchema = z.object({
     z
       .string()
       .min(4, 'Subtitle must contains minimum of 4 characters.')
-      .max(100, 'Subtitle only permits 100 characters'),
+      .max(300, 'Subtitle only permits 300 characters'),
     z.string().length(0),
   ]),
 });
@@ -74,15 +71,15 @@ export const editTopicSchema = z.object({
 });
 
 export const addSubChapterSchema = z.object({
-  parentChapterNum: z.string().min(1, 'Please enter a parent chapter number'),
-  subChapterNum: z.string().min(1, 'Please enter a subchapter number'),
+  parentChapterNum: z.string().min(1, 'Please enter a parent chapter number.'),
+  subChapterNum: z.string().min(1, 'Please enter a subchapter number.'),
   subChapterTitle: z
     .string()
-    .min(1, 'Please enter a subchapter title')
+    .min(1, 'Please enter a subchapter title.')
     .optional(),
   subChapterDescription: z
     .string()
-    .min(1, 'Please enter a subchapter description')
+    .min(1, 'Please enter a subchapter description.')
     .optional(),
   chapterFile: z
     .union([z.instanceof(FileList), z.string()])
@@ -102,58 +99,35 @@ export const addSubChapterSchema = z.object({
     }, 'File must be a PDF'),
 });
 
-export const addQuizSchema = z.object({
-  topicId: z.string().min(1, 'Please enter a topic id'),
-  quizTitle: z.string().min(1, 'Please enter a quiz title'),
-  quizDescription: z.string().min(1, 'Please enter a quiz description'),
+export const addQuizSchemaStage1 = z.object({
+  topicId: z.string().min(1, 'Please enter a topic id.'),
+  quizTitle: z.string().min(1, 'Please enter a quiz title.'),
   maxAttempts: z
-    .number()
-    .min(1, 'Please enter a number of attempts')
-    .default(3),
-  numofQuestions: z.number().min(1, 'Please enter a number of questions'),
-  quizQuestions: z.array(
-    z.object({
-      quizId: z.string().min(1, 'Please enter a quiz id'),
-      questionId: z.string().min(1, 'Please enter a question id'),
-      question: z.string().min(1, 'Please enter a question'),
-      questionType: z
-        .string()
-        .min(1, 'Please enter a question type')
-        .default('objective'),
-      multipleChoiceOptions: z.array(
-        z.object({
-          objectiveQuestionId: z.string().min(1, 'Please enter a question id'),
-          optionText: z.string().min(1, 'Please enter an option'),
-        }),
-      ),
-    }),
-  ),
+    .string()
+    .min(1, 'Please enter a number of attempts.')
+    .default('1'),
+  numofQuestions: z
+    .string()
+    .min(1, 'Please enter a number of questions.')
+    .default('1'),
 });
 
-export const editQuizSchema = z.object({
-  quizTitle: z.string().min(1, 'Please enter a quiz title').optional(),
-  quizDescription: z
-    .string()
-    .min(1, 'Please enter a quiz description')
-    .optional(),
-  maxAttempts: z
-    .number()
-    .min(1, 'Please enter a number of attempts')
-    .optional(),
-  numofQuestions: z
-    .number()
-    .min(1, 'Please enter a number of questions')
-    .optional(),
+export const addQuizSchemaStage2 = z.object({
   quizQuestions: z.array(
     z.object({
-      question: z.string().min(1, 'Please enter a question').optional(),
-      questionType: z
-        .string()
-        .min(1, 'Please enter a question type')
-        .optional(),
+      quizId: z.string().min(1, 'Please enter a quiz id.'),
+      question: z.string().min(1, 'Please enter a question text.'),
+      questionType: z.string().min(1, 'Please select a question type.'),
+      correctAnswer: z.string().min(1, 'Please enter a correct answer.'),
       multipleChoiceOptions: z.array(
         z.object({
-          optionText: z.string().min(1, 'Please enter an option').optional(),
+          optionText: z
+            .string()
+            .min(1, 'Please enter an option.')
+            .refine(
+              (text) => /^[A-Z]\)\s/.test(text),
+              'Options must start with "X) e.g., "A) lorem ipsum".',
+            ),
         }),
       ),
     }),

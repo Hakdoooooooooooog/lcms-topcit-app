@@ -7,7 +7,7 @@ export const getAllTopics = async (): Promise<Topics[]> => {
     .get('/topics')
     .then((res) => res.data)
     .catch((error) => {
-      return error.response.data;
+      throw error.response.data;
     });
 };
 
@@ -18,6 +18,6 @@ export const getTopicsWithAllChapters = async (): Promise<
     .get('/topics/chapters')
     .then((res) => res.data)
     .catch((error) => {
-      return error.response.data;
+      throw error.response.data;
     });
 };

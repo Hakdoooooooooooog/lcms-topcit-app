@@ -192,75 +192,83 @@ const Quiz = ({ selectedQuiz, startTransition, topicId }: QuizProps) => {
 
       <form onSubmit={handleSubmit(onSubmit)}>
         <Carousel
-          children={selectedQuiz.map((questions, index) => (
-            <Card
-              key={index}
-              className="flex flex-col sm:flex-row justify-evenly gap-5 pb-8 h-[48rem] sm:h-full"
-            >
-              <Box className="flex flex-[1_1_100%] ml-2 gap-[1%] items-center">
-                <Box className="flex-[1_1_55%]">
-                  <CardHeader subheader={questions.question} />
-                </Box>
-              </Box>
-
-              <CardContent className="flex flex-col flex-[1_1_auto] gap-3 w-full max-h-fit">
-                <Card
-                  className="flex flex-col gap-3 p-4 h-full"
-                  sx={{
-                    border: '1px solid #e0e0e0',
-                    borderRadius: '5px',
-                  }}
-                >
-                  <CardHeader subheader="Choose the correct answer" />
-                  <Box className="flex flex-col flex-wrap w-full max-h-fit">
-                    <FormControl
-                      component="fieldset"
-                      error={errors[questions.id.toString()] ? true : false}
-                      sx={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '1rem',
-                      }}
-                    >
-                      {questions.multiple_choice_options.map((option) => (
-                        <RadioGroup
-                          key={option.id}
-                          {...register(questions.id.toString(), {
-                            onChange: (e) => {
-                              setIsBlocked(true);
-                              handleRadioChange(e);
-                            },
-                          })}
-                          sx={{
-                            padding: '5px',
-                            '&:hover': {
-                              backgroundColor: 'rgba(0, 0, 0, 0.1)',
-                              borderRadius: '10px',
-                            },
-                          }}
-                          value={value[questions.id.toString()] || ''}
-                        >
-                          <FormControlLabel
-                            value={option.option_text}
-                            control={<Radio disableTouchRipple disableRipple />}
-                            label={option.option_text}
-                          />
-                        </RadioGroup>
-                      ))}
-                    </FormControl>
-
-                    {errors && (
-                      <Typography variant="body2" className="text-red-500">
-                        {errors[
-                          `${questions.id.toString()}`
-                        ]?.message?.toString()}
-                      </Typography>
-                    )}
+          children={
+            selectedQuiz.length > 0 &&
+            selectedQuiz.map((questions, index) => (
+              <Card
+                key={index}
+                className="flex flex-col sm:flex-row justify-evenly gap-5 pb-8 h-[48rem] sm:h-full"
+              >
+                <Box className="flex flex-[1_1_100%] ml-2 gap-[1%] items-center">
+                  <Box className="flex-[1_1_55%]">
+                    <CardHeader subheader={questions.question} />
                   </Box>
-                </Card>
-              </CardContent>
-            </Card>
-          ))}
+                </Box>
+
+                <CardContent className="flex flex-col flex-[1_1_auto] gap-3 w-full max-h-fit">
+                  <Card
+                    className="flex flex-col gap-3 p-4 h-full"
+                    sx={{
+                      border: '1px solid #e0e0e0',
+                      borderRadius: '5px',
+                    }}
+                  >
+                    <CardHeader subheader="Choose the correct answer" />
+                    <Box className="flex flex-col flex-wrap w-full max-h-fit">
+                      <FormControl
+                        component="fieldset"
+                        error={errors[questions.id.toString()] ? true : false}
+                        sx={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '1rem',
+                        }}
+                      >
+                        {questions.multiple_choice_options &&
+                          questions.multiple_choice_options.map(
+                            (option, optionIndex) => (
+                              <RadioGroup
+                                key={`${questions.question}-${optionIndex}`}
+                                {...register(questions.id.toString(), {
+                                  onChange: (e) => {
+                                    setIsBlocked(true);
+                                    handleRadioChange(e);
+                                  },
+                                })}
+                                sx={{
+                                  padding: '5px',
+                                  '&:hover': {
+                                    backgroundColor: 'rgba(0, 0, 0, 0.1)',
+                                    borderRadius: '10px',
+                                  },
+                                }}
+                                value={value[questions.id.toString()] || ''}
+                              >
+                                <FormControlLabel
+                                  value={option.option_text}
+                                  control={
+                                    <Radio disableTouchRipple disableRipple />
+                                  }
+                                  label={option.option_text}
+                                />
+                              </RadioGroup>
+                            ),
+                          )}
+                      </FormControl>
+
+                      {errors && (
+                        <Typography variant="body2" className="text-red-500">
+                          {errors[
+                            `${questions.id.toString()}`
+                          ]?.message?.toString()}
+                        </Typography>
+                      )}
+                    </Box>
+                  </Card>
+                </CardContent>
+              </Card>
+            ))
+          }
           next={(next = 0) => setCurrentSlide(next)}
           prev={(prev = 0) => setCurrentSlide(prev)}
           animation="slide"

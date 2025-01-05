@@ -146,7 +146,13 @@ const Contents = () => {
           {isSearching ? (
             <LoadingDataScreen />
           ) : (
-            <>
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 1,
+              }}
+            >
               {currentItems &&
                 currentItems.map((item) => (
                   <Card
@@ -164,13 +170,12 @@ const Contents = () => {
                         sx={{
                           display: 'flex',
                           flexDirection: 'column',
-                          gap: 5,
                         }}
                       >
                         <LinearProgressWithLabel
                           value={item.progress}
                           sx={{
-                            height: 50,
+                            height: 30,
                             borderRadius: 10,
                           }}
                         />
@@ -194,7 +199,7 @@ const Contents = () => {
                           <>
                             {item.topicId <=
                             (userProgress.user_progress?.curr_topic_id || 0) ? (
-                              <Card sx={{ mt: 2 }}>
+                              <Card sx={{ mt: 4 }}>
                                 <CardContent>
                                   <Typography variant="h6" component="h2">
                                     Status :{' '}
@@ -260,7 +265,7 @@ const Contents = () => {
                     </CardContent>
                   </Card>
                 ))}
-            </>
+            </Box>
           )}
         </>
       )}

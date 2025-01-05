@@ -10,6 +10,7 @@ import {
   Button,
   Pagination,
   Stack,
+  Tooltip,
   Typography,
 } from '@mui/material';
 import { Add } from '@mui/icons-material';
@@ -101,23 +102,25 @@ const AdminContent = () => {
         </Stack>
 
         <Box component={'div'} className="flex items-end justify-between gap-3">
-          <Button
-            variant="contained"
-            sx={{
-              background: 'green',
-            }}
-            onClick={() => {
-              setAddData({
-                topicNum: (currentTopics.length + 1).toString(),
-              });
-              handleButtonType('add-topic');
-              handleAddContentModal();
-            }}
-            endIcon={<Add />}
-            aria-describedby="add-topic"
-          >
-            Add Topic
-          </Button>
+          <Tooltip title="Add Topic">
+            <Button
+              variant="contained"
+              sx={{
+                background: 'green',
+              }}
+              onClick={() => {
+                setAddData({
+                  topicNum: (currentTopics.length + 1).toString(),
+                });
+                handleButtonType('add-topic');
+                handleAddContentModal();
+              }}
+              endIcon={<Add />}
+              aria-describedby="add-topic"
+            >
+              Add Topic
+            </Button>
+          </Tooltip>
         </Box>
       </Box>
 
@@ -134,11 +137,13 @@ const AdminContent = () => {
                   aria-controls={`content-${topic.id.toString()}`}
                   id={`content-header-${topic.id.toString()}`}
                   expandIcon={
-                    <Add
-                      sx={{
-                        color: 'green',
-                      }}
-                    />
+                    <Tooltip title="Expand">
+                      <Add
+                        sx={{
+                          color: 'green',
+                        }}
+                      />
+                    </Tooltip>
                   }
                   sx={AccordionSummaryTheme}
                 >
@@ -146,20 +151,22 @@ const AdminContent = () => {
                     Topic {topic.id.toString()}: {topic.topictitle}
                   </Typography>
 
-                  <Button
-                    onClick={() => {
-                      setEditData({
-                        topicId: topic.id.toString(),
-                        title: topic.topictitle || '',
-                        subtitle: topic.description || '',
-                      });
-                      handleButtonType('edit-topic');
-                      handleEditContentModal();
-                    }}
-                    aria-describedby="edit-topic"
-                  >
-                    <PencilSquareIcon className="h-6 w-6 text-green-800" />
-                  </Button>
+                  <Tooltip title="Edit Topic">
+                    <Button
+                      onClick={() => {
+                        setEditData({
+                          topicId: topic.id.toString(),
+                          title: topic.topictitle || '',
+                          subtitle: topic.description || '',
+                        });
+                        handleButtonType('edit-topic');
+                        handleEditContentModal();
+                      }}
+                      aria-describedby="edit-topic"
+                    >
+                      <PencilSquareIcon className="h-6 w-6 text-green-800" />
+                    </Button>
+                  </Tooltip>
                 </AccordionSummary>
 
                 <SubChapters

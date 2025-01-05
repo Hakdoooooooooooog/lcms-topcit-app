@@ -16,6 +16,7 @@ import {
   Stack,
   Pagination,
   PaginationItem,
+  Tooltip,
 } from '@mui/material';
 import { ChapterWithSubChapter } from '../../../../../lib/Types/chapters';
 import { SetStateAction, useMemo } from 'react';
@@ -104,24 +105,26 @@ const SubChapters = ({
             </Stack>
           )}
 
-          <Button
-            variant="contained"
-            sx={{
-              background: 'green',
-            }}
-            onClick={() => {
-              setAddData({
-                topicId: topicId,
-                chapterNum: (Chapters.length + 1).toString(),
-              }); // Add topicId to addData
-              handleButtonType('add-chapter');
-              handleAddContentModal();
-            }}
-            aria-describedby="add-chapter"
-            endIcon={<Add />}
-          >
-            Add Chapter
-          </Button>
+          <Tooltip title="Add Chapter">
+            <Button
+              variant="contained"
+              sx={{
+                background: 'green',
+              }}
+              onClick={() => {
+                setAddData({
+                  topicId: topicId,
+                  chapterNum: (Chapters.length + 1).toString(),
+                }); // Add topicId to addData
+                handleButtonType('add-chapter');
+                handleAddContentModal();
+              }}
+              aria-describedby="add-chapter"
+              endIcon={<Add />}
+            >
+              Add Chapter
+            </Button>
+          </Tooltip>
         </Box>
       </AccordionDetails>
 
@@ -163,17 +166,6 @@ const SubChapters = ({
                               component={'section'}
                               className="grid grid-cols-2 items-center relative"
                             >
-                              {/* Bullet Design */}
-                              <Box
-                                component="span"
-                                className={styles['list__item--bullet']}
-                              >
-                                <Box
-                                  component={'span'}
-                                  className={styles['list__item--bullet-inner']}
-                                />
-                              </Box>
-
                               <Box
                                 component={'div'}
                                 className="col-span-1 ml-5"
@@ -187,25 +179,27 @@ const SubChapters = ({
                                 component={'div'}
                                 className="col-span-1 justify-self-end"
                               >
-                                <Button
-                                  onClick={() => {
-                                    setFileData({
-                                      chapterId: chapter.id.toString(),
-                                      topicId: topicId,
-                                      fileName: Array.isArray(
-                                        subChapter.FileChapter,
-                                      )
-                                        ? subChapter.FileChapter[0].file_name
-                                        : '',
-                                      title: chapter.title,
-                                      subtitle: chapter.sub_title,
-                                    });
-                                    handleButtonType('edit-chapter');
-                                    handleEditContentModal();
-                                  }}
-                                >
-                                  <PencilSquareIcon className="h-6 w-6 text-green-800" />
-                                </Button>
+                                <Tooltip title="Edit Sub Chapter">
+                                  <Button
+                                    onClick={() => {
+                                      setFileData({
+                                        chapterId: chapter.id.toString(),
+                                        topicId: topicId,
+                                        fileName: Array.isArray(
+                                          subChapter.FileChapter,
+                                        )
+                                          ? subChapter.FileChapter[0].file_name
+                                          : '',
+                                        title: chapter.title,
+                                        subtitle: chapter.sub_title,
+                                      });
+                                      handleButtonType('edit-chapter');
+                                      handleEditContentModal();
+                                    }}
+                                  >
+                                    <PencilSquareIcon className="h-6 w-6 text-green-800" />
+                                  </Button>
+                                </Tooltip>
                               </Box>
                             </Box>
                           </CardContent>
@@ -234,50 +228,54 @@ const SubChapters = ({
                         component={'div'}
                         className="col-span-1 justify-self-end"
                       >
-                        <Button
-                          onClick={() => {
-                            setFileData({
-                              chapterId: chapter.id.toString(),
-                              topicId: topicId,
-                              fileName: Array.isArray(chapter.FileChapter)
-                                ? chapter.FileChapter[0].file_name
-                                : '',
-                              title: chapter.title,
-                              subtitle: chapter.sub_title,
-                            });
-                            handleButtonType('edit-chapter');
-                            handleEditContentModal();
-                          }}
-                        >
-                          <PencilSquareIcon className="h-6 w-6 text-green-800" />
-                        </Button>
+                        <Tooltip title="Edit Chapter">
+                          <Button
+                            onClick={() => {
+                              setFileData({
+                                chapterId: chapter.id.toString(),
+                                topicId: topicId,
+                                fileName: Array.isArray(chapter.FileChapter)
+                                  ? chapter.FileChapter[0].file_name
+                                  : '',
+                                title: chapter.title,
+                                subtitle: chapter.sub_title,
+                              });
+                              handleButtonType('edit-chapter');
+                              handleEditContentModal();
+                            }}
+                          >
+                            <PencilSquareIcon className="h-6 w-6 text-green-800" />
+                          </Button>
+                        </Tooltip>
                       </Box>
                     </Box>
 
                     <Box component={'div'} className="flex justify-end mt-3">
-                      <Button
-                        variant="contained"
-                        sx={{
-                          background: 'green',
-                        }}
-                        onClick={() => {
-                          setAddData({
-                            topicId: topicId,
-                            chapterId: chapter.id.toString(),
-                            subChapterNum: (
-                              chapter.SubChapters.length + 1
-                            ).toString(),
-                            parentChapterNum: chapter.id.toString(),
-                          }); // Add topicId and chapterId to addData
-                          handleButtonType('add-sub-chapter');
-                          handleAddContentModal();
-                        }}
-                        endIcon={<Add />}
-                        disabled={true}
-                        aria-describedby="add-sub-chapter"
-                      >
-                        Add Sub Chapter
-                      </Button>
+                      <Tooltip title="Add Sub Chapter">
+                        <Button
+                          variant="contained"
+                          sx={{
+                            background: 'green',
+                          }}
+                          onClick={() => {
+                            setAddData({
+                              topicId: topicId,
+                              chapterId: chapter.id.toString(),
+                              subChapterNum: (
+                                chapter.SubChapters.length + 1
+                              ).toString(),
+                              parentChapterNum: chapter.id.toString(),
+                            }); // Add topicId and chapterId to addData
+                            handleButtonType('add-sub-chapter');
+                            handleAddContentModal();
+                          }}
+                          endIcon={<Add />}
+                          aria-describedby="add-sub-chapter"
+                          disabled={true}
+                        >
+                          Add Sub Chapter
+                        </Button>
+                      </Tooltip>
                     </Box>
                   </CardContent>
                 </Card>
