@@ -30,7 +30,7 @@ export type quiz_attempts = {
 } | null;
 
 export interface QuizWithQuestions extends quiz {
-  user_quiz_attempts: quiz_attempts;
+  user_quiz_attempts: quiz_attempts[];
   objective_questions: objective_questions[];
 }
 
