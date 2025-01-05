@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { useMemo, useTransition } from 'react';
+import { useTransition } from 'react';
 
 import {
   Box,
