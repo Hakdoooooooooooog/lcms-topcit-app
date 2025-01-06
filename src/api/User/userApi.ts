@@ -30,6 +30,19 @@ export const userRegister = async (register: UserRegister) => {
     });
 };
 
+export const verifyUserEmailRegistration = async (
+  email: string,
+): Promise<{ message: string }> => {
+  return await forgotPasswordInstance
+    .post('/auth/verifyEmail', {
+      email,
+    })
+    .then((res) => res.data)
+    .catch((error) => {
+      throw error.response.data;
+    });
+};
+
 export const verifyUserAccessToken = async (): Promise<{
   userData: {
     isAuth: boolean;
