@@ -354,6 +354,13 @@ export const setRegisterFields: Array<InputProps> = [
     name: 'confirmPassword',
     value: '',
   },
+  {
+    label: 'OTP',
+    type: 'text',
+    placeholder: 'Enter 6-digit OTP',
+    name: 'otp',
+    value: '',
+  },
 ];
 
 export const excludedSearchPaths = new Set([

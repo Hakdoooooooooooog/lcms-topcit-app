@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import UserForm from '../../../../components/ui/Form/UserForm';
 import styles from './register.module.css';
 import { setRegisterFields } from '../../../../lib/constants';
@@ -17,16 +18,53 @@ import {
 import { NavLink } from 'react-router-dom';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/16/solid';
 import { LoadingButton } from '../../../../components/ui/LoadingScreen/LoadingScreen';
+import { showToast } from '../../../../components/ui/Toasts';
+import { verifyUserEmailRegistration } from '../../../../api/User/userApi';
 
 type RegisterSchema = z.infer<typeof RegisterSchema>;
+
 const Register = () => {
+  const [isOtpLoading, setIsOtpLoading] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(0);
+
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<RegisterSchema>({
     resolver: zodResolver(RegisterSchema),
   });
+
+  const email = watch('email');
+
+  const handleSendOTP = async () => {
+    if (!email) {
+      showToast('Please enter an email first', 'error');
+      return;
+    }
+
+    try {
+      setIsOtpLoading(true);
+      await verifyUserEmailRegistration(email);
+      showToast('OTP sent successfully', 'success');
+      setTimeLeft(300); // 5 minutes
+    } catch (error: any) {
+      showToast('Error sending OTP: ' + error.message, 'error');
+    } finally {
+      setIsOtpLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (timeLeft <= 0) return;
+
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => prev - 1);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [timeLeft]);
 
   const { passType, setPassType, confirmPassType, setConfirmPassType } =
     useInputPasswordStore((state) => ({
@@ -48,6 +86,7 @@ const Register = () => {
             <FormControl
               key={index}
               error={errors[field.name as keyof RegisterSchema] ? true : false}
+              sx={{ width: '100%' }}
             >
               <InputLabel htmlFor={field.name}>{field.label}</InputLabel>
               <OutlinedInput
@@ -99,6 +138,24 @@ const Register = () => {
                           <EyeIcon height={25} width={25} />
                         )}
                       </IconButton>
+                    </InputAdornment>
+                  ) : field.name === 'otp' ? (
+                    <InputAdornment position="end">
+                      <Button
+                        onClick={handleSendOTP}
+                        disabled={isOtpLoading || timeLeft > 0}
+                        sx={{ whiteSpace: 'nowrap' }}
+                      >
+                        {timeLeft > 0
+                          ? `Resend in ${Math.floor(timeLeft / 60)}:${(
+                              timeLeft % 60
+                            )
+                              .toString()
+                              .padStart(2, '0')}`
+                          : isOtpLoading
+                          ? 'Sending...'
+                          : 'Send OTP'}
+                      </Button>
                     </InputAdornment>
                   ) : null
                 }
