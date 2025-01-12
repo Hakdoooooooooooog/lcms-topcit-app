@@ -38,7 +38,7 @@ export const useAuthUserStore = create<UserAuthState & UserAuthActions>()(
     (set) => ({
       user: {
         isAuth: false,
-        userId: '',
+        studentId: '',
         userRole: '',
       },
       setUserAuth: (user) =>
@@ -61,7 +61,7 @@ export const usePaginationStore = create<PaginationState & PaginationActions>(
 export const useUserStore = create<UserState & UserActions>((set) => ({
   user: {
     email: '',
-    userid: 0,
+    studentId: 0,
     username: '',
   },
   isLoaded: false,

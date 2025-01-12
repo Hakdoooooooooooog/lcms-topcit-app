@@ -1,9 +1,9 @@
-import { forwardRef } from "react";
-import { UserProfile } from "../../../lib/Types/user";
-import { FormControl, InputLabel, OutlinedInput } from "@mui/material";
-import { FieldErrors, UseFormRegister } from "react-hook-form";
-import { ProfileSchema } from "../../../lib/schema/UserSchema";
-import { z } from "zod";
+import { forwardRef } from 'react';
+import { UserProfile } from '../../../lib/Types/user';
+import { FormControl, InputLabel, OutlinedInput } from '@mui/material';
+import { FieldErrors, UseFormRegister } from 'react-hook-form';
+import { ProfileSchema } from '../../../lib/schema/UserSchema';
+import { z } from 'zod';
 
 type ProfileFormProps<T> = {
   userData: T;
@@ -20,21 +20,23 @@ export const ProfileForm = forwardRef(
           <InputLabel htmlFor="Username">Username</InputLabel>
           <OutlinedInput
             autoComplete="on"
-            {...register("username")}
+            {...register('username')}
             id="Username"
             type="text"
             inputRef={ref}
             disabled={!isEditing}
             label="Username"
           />
-          {errors.username && <p className="text-red-500">{errors.username.message}</p>}
+          {errors.username && (
+            <p className="text-red-500">{errors.username.message}</p>
+          )}
         </FormControl>
         <FormControl variant="outlined">
-          <InputLabel htmlFor="userID">User ID</InputLabel>
+          <InputLabel htmlFor="studentId">User ID</InputLabel>
           <OutlinedInput
-            id="userID"
+            id="studentId"
             autoComplete="on"
-            {...register("userid")}
+            {...register('studentId')}
             type="text"
             disabled={true}
             label="User ID"
@@ -45,7 +47,7 @@ export const ProfileForm = forwardRef(
           <InputLabel htmlFor="email">Email</InputLabel>
           <OutlinedInput
             id="email"
-            {...register("email")}
+            {...register('email')}
             autoComplete="on"
             type="email"
             disabled={true}
@@ -54,5 +56,5 @@ export const ProfileForm = forwardRef(
         </FormControl>
       </>
     );
-  }
+  },
 );

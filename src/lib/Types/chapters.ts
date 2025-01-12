@@ -18,7 +18,7 @@ export type FileChapter = {
 export type UserCompletedChapters = {
   id: number;
   chapter_id: number;
-  user_id: number;
+  student_id: number;
   topic_id: number;
   completion_status: string | null;
   completed_at: Date | null;

@@ -71,8 +71,8 @@ const Assessment = () => {
     useSearchFilter<TopicWithQuizAndObjectiveQuestions>(currentItems, search);
 
   // User
-  const { userId } = useAuthUserStore((state) => ({
-    userId: state.user?.userId,
+  const { studentId } = useAuthUserStore((state) => ({
+    studentId: state.user?.studentId,
   }));
 
   // Slider States
@@ -226,7 +226,7 @@ const Assessment = () => {
           setSearchParams({
             topicId: quiz.topic_id.toString(),
             quizId: quiz.id.toString(),
-            userId: userId?.toString() || '',
+            studentId: studentId?.toString() || '',
           }),
         );
 
@@ -235,7 +235,7 @@ const Assessment = () => {
         showToast('Error starting quiz: ' + error.error, 'error');
       }
     },
-    [userId, topicId],
+    [studentId, topicId],
   );
 
   const renderCancelModal = useCallback(() => {

@@ -42,7 +42,11 @@ const UserForm = (props: IUserFormProps) => {
         const res = await userLogin(data);
 
         showToast(res.message, 'success');
-        setUserAuth({ isAuth: true, userId: res.userId, userRole: res.role });
+        setUserAuth({
+          isAuth: true,
+          studentId: res.studentId,
+          userRole: res.role,
+        });
       } catch (error: any) {
         showToast(error.message, 'error');
       }

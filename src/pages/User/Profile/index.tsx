@@ -29,7 +29,7 @@ const Profile = () => {
     clearErrors,
   } = useForm<ProfileSchema>({
     resolver: zodResolver(ProfileSchema),
-    values: { ...user, userid: user.userid.toString() },
+    values: { ...user, studentId: user.studentId.toString() },
   });
 
   const handleIsEditing = () => {

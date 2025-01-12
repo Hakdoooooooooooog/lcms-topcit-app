@@ -56,10 +56,10 @@ const Header = ({ links }: { links: LinkProps[] }) => {
   const handleLogout = async () => {
     const res = await userLogout();
 
-    if (res.message === 'Logged out') {
-      setUserAuth({ isAuth: false, userId: '', userRole: '' });
+    if (res.message === 'Logged out successfully') {
+      setUserAuth({ isAuth: false, studentId: '', userRole: '' });
       sessionStorage.removeItem('session');
-      showToast('Logged out successfully', 'success');
+      showToast(res.message, 'success');
     }
   };
 

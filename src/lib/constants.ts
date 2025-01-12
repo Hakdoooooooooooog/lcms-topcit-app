@@ -262,6 +262,11 @@ export const rootRoutes: LinkProps[] = [
               () => import('../pages/Others/Landing/New-Password'),
             ),
           },
+          {
+            name: 'Success',
+            href: 'success',
+            component: lazy(() => import('../pages/Others/Landing/Success')),
+          },
         ],
       },
       {
@@ -298,6 +303,7 @@ export const landingPaths = [
   '/landing/forgot-password',
   '/landing/otp-verification',
   '/landing/new-password',
+  '/landing/success',
 ];
 
 // Fields for the user form
@@ -320,10 +326,10 @@ export const setLoginFields: Array<InputProps> = [
 
 export const setRegisterFields: Array<InputProps> = [
   {
-    label: 'User ID',
+    label: 'Student ID',
     type: 'text',
-    placeholder: 'Enter your user ID',
-    name: 'userid',
+    placeholder: 'Enter your student ID',
+    name: 'studentId',
     value: '',
   },
   {

@@ -16,7 +16,7 @@ import {
 } from '@mui/material';
 import { styledModal } from '../../../../lib/constants';
 import { objective_questions } from '../../../../lib/Types/quiz';
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -30,6 +30,7 @@ import useAssessmentMutation from '../../../../lib/hooks/useAssessmentMutation';
 import { LoadingButton } from '../../../../components/ui/LoadingScreen/LoadingScreen';
 import { showToast } from '../../../../components/ui/Toasts';
 import Carousel from 'react-material-ui-carousel';
+import { shuffleArray } from '../../../../lib/helpers/utils';
 
 type QuizProps = {
   selectedQuiz: objective_questions[];
@@ -38,13 +39,22 @@ type QuizProps = {
 };
 
 const Quiz = ({ selectedQuiz, startTransition, topicId }: QuizProps) => {
+  const [shuffleQuiz, setShuffleQuiz] = useState<objective_questions[]>([]);
+
   const [searchParams, setSearchParams] = useSearchParams();
   const assessmentMutation = useAssessmentMutation();
+
+  useEffect(() => {
+    if (selectedQuiz.length > 0) {
+      let shuffledQuiz = shuffleArray(selectedQuiz);
+      setShuffleQuiz(shuffledQuiz);
+    }
+  }, [selectedQuiz]);
 
   // Form Validation
   const schema = useMemo(() => {
     return z.object(
-      selectedQuiz.reduce((values, quiz) => {
+      shuffleQuiz.reduce((values, quiz) => {
         values[quiz.id.toString()] = z
           .union([z.string(), z.null()])
           .refine((val): val is string => val !== null && val.trim() !== '', {
@@ -54,7 +64,7 @@ const Quiz = ({ selectedQuiz, startTransition, topicId }: QuizProps) => {
         return values;
       }, {} as { [key: string]: z.ZodType<string | null> }),
     );
-  }, [selectedQuiz]);
+  }, [shuffleQuiz]);
 
   // State Managements
   const { currentSliderSlide, totalSlides, setTotalSlides, setCurrentSlide } =
@@ -88,11 +98,11 @@ const Quiz = ({ selectedQuiz, startTransition, topicId }: QuizProps) => {
   });
 
   useEffect(() => {
-    if (selectedQuiz.length > 0) {
+    if (shuffleQuiz.length > 0) {
       setCurrentSlide(0);
-      setTotalSlides(selectedQuiz.length - 1);
+      setTotalSlides(shuffleQuiz.length - 1);
     }
-  }, [selectedQuiz]);
+  }, [shuffleQuiz]);
 
   useEffect(() => {
     if (isSubmitSuccessful || !topicId) {
@@ -119,7 +129,7 @@ const Quiz = ({ selectedQuiz, startTransition, topicId }: QuizProps) => {
   const onSubmit = async (data: z.infer<typeof schema>) => {
     if (
       !searchParams.get('topicId') ||
-      !searchParams.get('userId') ||
+      !searchParams.get('studentId') ||
       !searchParams.get('quizId')
     ) {
       return;
@@ -193,8 +203,8 @@ const Quiz = ({ selectedQuiz, startTransition, topicId }: QuizProps) => {
       <form onSubmit={handleSubmit(onSubmit)}>
         <Carousel
           children={
-            selectedQuiz.length > 0 &&
-            selectedQuiz.map((questions, index) => (
+            shuffleQuiz.length > 0 &&
+            shuffleQuiz.map((questions, index) => (
               <Card
                 key={index}
                 className="flex flex-col sm:flex-row justify-evenly gap-5 pb-8 h-[48rem] sm:h-full"

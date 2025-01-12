@@ -46,7 +46,7 @@ export const verifyUserEmailRegistration = async (
 export const verifyUserAccessToken = async (): Promise<{
   userData: {
     isAuth: boolean;
-    userId: string;
+    studentId: string;
     role: string;
   };
 }> => {
@@ -60,7 +60,7 @@ export const verifyUserAccessToken = async (): Promise<{
 
 export const userLogout = async () => {
   return await axiosRootApiUrl
-    .post('/user/logout')
+    .post('/auth/logout')
     .then((res) => res.data)
     .catch((error) => {
       throw error.response.data;

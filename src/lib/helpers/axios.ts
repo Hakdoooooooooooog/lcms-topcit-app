@@ -45,12 +45,12 @@ export const uploadInstance = axios.create({
 
 userInstance.interceptors.request.use((config) => {
   const userData = JSON.parse(sessionStorage.getItem('session') || '{}');
-  const userId = userData.state.user.userId;
+  const studentId = userData.state.user.studentId;
   const isAuth = userData.state.user.isAuth;
 
   config.params = {
     isAuth: isAuth,
-    userId: userId,
+    studentId: studentId,
   };
 
   return config;
@@ -61,12 +61,12 @@ quizInstance.interceptors.request.use((config) => {
   const topicId = urlParams.get('topicId');
   const quizId = urlParams.get('quizId');
   const userData = JSON.parse(sessionStorage.getItem('session') || '{}');
-  const userId = userData.state.user.userId;
+  const studentId = userData.state.user.studentId;
   const isAuth = userData.state.user.isAuth;
 
   config.params = {
     isAuth: isAuth,
-    userId: userId,
+    studentId: studentId,
     topicId: topicId,
     quizId: quizId,
   };
@@ -76,12 +76,12 @@ quizInstance.interceptors.request.use((config) => {
 
 accessTokenInstance.interceptors.request.use((config) => {
   const userData = JSON.parse(sessionStorage.getItem('session') || '{}');
-  const userId = userData.state.user.userId;
+  const studentId = userData.state.user.studentId;
   const isAuth = userData.state.user.isAuth;
 
   config.data = {
     isAuth: isAuth,
-    userId: userId,
+    studentId: studentId,
   };
 
   return config;
@@ -89,12 +89,12 @@ accessTokenInstance.interceptors.request.use((config) => {
 
 chapterInstance.interceptors.request.use((config) => {
   const userData = JSON.parse(sessionStorage.getItem('session') || '{}');
-  const userId = userData.state.user.userId;
+  const studentId = userData.state.user.studentId;
   const isAuth = userData.state.user.isAuth;
 
   config.params = {
     isAuth: isAuth,
-    userId: userId,
+    studentId: studentId,
   };
 
   return config;
@@ -102,12 +102,12 @@ chapterInstance.interceptors.request.use((config) => {
 
 topicInstance.interceptors.request.use((config) => {
   const userData = JSON.parse(sessionStorage.getItem('session') || '{}');
-  const userId = userData.state.user.userId;
+  const studentId = userData.state.user.studentId;
   const isAuth = userData.state.user.isAuth;
 
   config.params = {
     isAuth: isAuth,
-    userId: userId,
+    studentId: studentId,
   };
 
   return config;
@@ -118,14 +118,14 @@ const pendingRequests = new Map();
 chapterPDFInstance.interceptors.request.use(
   (config) => {
     const userData = JSON.parse(sessionStorage.getItem('session') || '{}');
-    const userId = userData.state.user.userId;
+    const studentId = userData.state.user.studentId;
     const isAuth = userData.state.user.isAuth;
     const userRole = userData.state.user.userRole;
     const requestKey = `${config.method}_${config.url}`;
 
     config.params = {
       isAuth: isAuth,
-      userId: userId,
+      studentId: studentId,
       userRole: userRole,
     };
 

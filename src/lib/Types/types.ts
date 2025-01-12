@@ -29,7 +29,7 @@ export type InputProps = {
 export type UserAuthState = {
   user: {
     isAuth: boolean;
-    userId?: string;
+    studentId?: string;
     userRole?: string;
   };
 };

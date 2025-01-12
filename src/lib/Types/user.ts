@@ -2,7 +2,7 @@ import { LoginSchema, RegisterSchema } from '../schema/UserSchema';
 
 type users = {
   id: number;
-  userid: number;
+  studentId: number;
   username: string;
   email: string;
   password: string;
@@ -20,7 +20,7 @@ export type UsersProgress = {
 
 export type UserCompletedChapters = {
   id: number;
-  user_id: number;
+  student_id: number;
   chapter_id: number;
   topic_id: number;
   completion_status: string | null;
@@ -39,7 +39,7 @@ export type UserProgressData = {
     }[];
   }[];
   userProgress:
-    | (Pick<users, 'userid' | 'username'> & {
+    | (Pick<users, 'studentId' | 'username'> & {
         user_progress: UsersProgress | null;
         user_completed_chapters: UserCompletedChapters[];
       })
@@ -48,13 +48,13 @@ export type UserProgressData = {
 
 export type UserCompletedQuizzes = {
   id: number;
-  user_id: number;
+  student_id: number;
   quiz_id: number;
   completed_at: Date | null;
   topic_id: number;
 } | null;
 
-export type UserProgress = Pick<users, 'userid' | 'username'> & {
+export type UserProgress = Pick<users, 'studentId' | 'username'> & {
   user_progress: UsersProgress | null;
   user_completed_chapters: UserCompletedChapters[];
   user_completed_quizzes: UserCompletedQuizzes[];
@@ -62,7 +62,7 @@ export type UserProgress = Pick<users, 'userid' | 'username'> & {
 
 type users_role = 'admin' | 'user';
 
-export type UserProfile = Pick<users, 'email' | 'userid' | 'username'>;
+export type UserProfile = Pick<users, 'email' | 'studentId' | 'username'>;
 export type UpdateProfile = Pick<users, 'username'>;
 export type UserLogin = (typeof LoginSchema)['_input'];
 export type UserRegister = (typeof RegisterSchema)['_input'];

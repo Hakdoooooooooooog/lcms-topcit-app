@@ -1,7 +1,9 @@
 import { z } from 'zod';
 
 const UserSchema = z.object({
-  userid: z.string().regex(/^202\d{6}$/, 'Invalid user ID'),
+  studentId: z
+    .string()
+    .regex(/^202\d{6}$/, 'Invalid student ID. Example: 202100001'),
   username: z
     .string()
     .min(3, 'First name must be at least 3 characters long')
@@ -32,7 +34,7 @@ export const LoginSchema = z.object({
 
 export const RegisterSchema = z
   .object({
-    userid: z.string().regex(/^202\d{6}$/, 'Invalid user ID'),
+    studentId: UserSchema.shape.studentId,
     username: z
       .string()
       .min(3, 'First name must be at least 3 characters long')
@@ -57,7 +59,7 @@ export const RegisterSchema = z
 
 export const ProfileSchema = UserSchema.pick({
   username: true,
-  userid: true,
+  studentId: true,
   email: true,
 });
 

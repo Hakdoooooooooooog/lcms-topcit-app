@@ -36,8 +36,57 @@ const Login = () => {
     setPassType: state.setPassType,
   }));
 
+  const handleGoogleSignIn = () => {
+    const googleAuthUrl = `${
+      import.meta.env.VITE_APP_BASE_API_URL
+    }/auth/google`;
+    const successUrl = `${window.location.origin}/landing/success`;
+
+    window.open(
+      `${googleAuthUrl}?success_redirect=${encodeURIComponent(successUrl)}`,
+      '_self',
+    );
+  };
+
   return (
     <div className={styles.form}>
+      <Button
+        fullWidth
+        variant="outlined"
+        onClick={handleGoogleSignIn}
+        sx={{
+          marginBottom: 2,
+          borderColor: '#4285f4',
+          color: '#4285f4',
+          '&:hover': {
+            borderColor: '#4285f4',
+            backgroundColor: 'rgba(66, 133, 244, 0.04)',
+          },
+        }}
+        startIcon={
+          <img
+            src="https://www.google.com/favicon.ico"
+            alt="Google"
+            style={{ width: 20, height: 20 }}
+          />
+        }
+        disabled={true}
+      >
+        Continue with Google
+      </Button>
+
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          margin: '1rem 0',
+        }}
+      >
+        <Box sx={{ flex: 1, borderBottom: '1px solid #e0e0e0' }} />
+        <Box sx={{ margin: '0 1rem', color: '#666' }}>or</Box>
+        <Box sx={{ flex: 1, borderBottom: '1px solid #e0e0e0' }} />
+      </Box>
+
       <UserForm
         handleSubmit={handleSubmit}
         schema={LoginSchema}
