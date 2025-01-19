@@ -510,13 +510,23 @@ export const addQuizFormInputs: {
     disabled?: boolean;
   }[];
   stage2: {
-    label: string;
-    name: string;
-    type: string;
-    placeholder: string;
-    value: string;
-    disabled?: boolean;
-  }[];
+    multipleChoiceOptions?: {
+      label: string;
+      name: string;
+      type: string;
+      placeholder: string;
+      value: string;
+      disabled?: boolean;
+    }[];
+    identificationOptions?: {
+      label: string;
+      name: string;
+      type: string;
+      placeholder: string;
+      value: string;
+      disabled?: boolean;
+    }[];
+  };
 } = {
   stage1: [
     {
@@ -549,37 +559,70 @@ export const addQuizFormInputs: {
       value: '',
     },
   ],
-  stage2: [
-    {
-      label: 'Quiz ID',
-      name: 'quizId',
-      type: 'text',
-      placeholder: 'Enter the quiz ID',
-      value: '',
-      disabled: true,
-    },
-    {
-      label: 'Question Description',
-      name: 'question',
-      type: 'text',
-      placeholder: 'Enter the question description',
-      value: '',
-    },
-    {
-      label: 'Question Type',
-      name: 'questionType',
-      type: 'questionTypeSelection',
-      placeholder: 'Enter the question type',
-      value: '',
-    },
-    {
-      label: 'Correct Answer',
-      name: 'correctAnswer',
-      type: 'correctAnswerSelection',
-      placeholder: 'Enter the correct answer',
-      value: '',
-    },
-  ],
+  stage2: {
+    multipleChoiceOptions: [
+      {
+        label: 'Quiz ID',
+        name: 'quizId',
+        type: 'text',
+        placeholder: 'Enter the quiz ID',
+        value: '',
+        disabled: true,
+      },
+      {
+        label: 'Question Description',
+        name: 'question',
+        type: 'text',
+        placeholder: 'Enter the question description',
+        value: '',
+      },
+      {
+        label: 'Question Type',
+        name: 'questionType',
+        type: 'questionTypeSelection',
+        placeholder: 'Enter the question type',
+        value: '',
+      },
+      {
+        label: 'Correct Answer',
+        name: 'correctAnswer',
+        type: 'correctAnswerSelection',
+        placeholder: 'Enter the correct answer',
+        value: '',
+      },
+    ],
+    identificationOptions: [
+      {
+        label: 'Quiz ID',
+        name: 'quizId',
+        type: 'text',
+        placeholder: 'Enter the quiz ID',
+        value: '',
+        disabled: true,
+      },
+      {
+        label: 'Question Description',
+        name: 'question',
+        type: 'text',
+        placeholder: 'Enter the question description',
+        value: '',
+      },
+      {
+        label: 'Question Type',
+        name: 'questionType',
+        type: 'questionTypeSelection',
+        placeholder: 'Enter the question type',
+        value: '',
+      },
+      {
+        label: 'Correct Answer',
+        name: 'correctAnswer',
+        type: 'text',
+        placeholder: 'Enter the correct answer',
+        value: '',
+      },
+    ],
+  },
 };
 
 export const multipleChoiceOptions = [

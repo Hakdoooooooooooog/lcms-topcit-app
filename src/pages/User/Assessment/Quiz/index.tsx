@@ -211,7 +211,9 @@ const Quiz = ({ selectedQuiz, startTransition, topicId }: QuizProps) => {
               >
                 <Box className="flex flex-[1_1_100%] ml-2 gap-[1%] items-center">
                   <Box className="flex-[1_1_55%]">
-                    <CardHeader subheader={questions.question} />
+                    <CardHeader
+                      subheader={`Q${index + 1}) ${questions.question}`}
+                    />
                   </Box>
                 </Box>
 

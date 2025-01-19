@@ -36,21 +36,13 @@ const Login = () => {
     setPassType: state.setPassType,
   }));
 
-  const handleGoogleSignIn = () => {
-    const googleAuthUrl = `${
-      import.meta.env.VITE_APP_BASE_API_URL
-    }/auth/google`;
-    const successUrl = `${window.location.origin}/landing/success`;
-
-    window.open(
-      `${googleAuthUrl}?success_redirect=${encodeURIComponent(successUrl)}`,
-      '_self',
-    );
-  };
+  // const handleGoogleSignIn = () => {
+  //   console.log('Google Sign In');
+  // };
 
   return (
     <div className={styles.form}>
-      <Button
+      {/* <Button
         fullWidth
         variant="outlined"
         onClick={handleGoogleSignIn}
@@ -85,7 +77,7 @@ const Login = () => {
         <Box sx={{ flex: 1, borderBottom: '1px solid #e0e0e0' }} />
         <Box sx={{ margin: '0 1rem', color: '#666' }}>or</Box>
         <Box sx={{ flex: 1, borderBottom: '1px solid #e0e0e0' }} />
-      </Box>
+      </Box> */}
 
       <UserForm
         handleSubmit={handleSubmit}

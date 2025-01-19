@@ -14,7 +14,10 @@ import { getUserProgress } from '../../../../api/User/userApi';
 import { handlePaginatedItems } from '../../../../lib/helpers/utils';
 import { UserProgress } from '../../../../lib/Types/user';
 import { getQuizzesWithQuestions } from '../../../../api/User/quizApi';
-import { TopicWithQuizAndObjectiveQuestions } from '../../../../lib/Types/quiz';
+import {
+  QuizWithQuestions,
+  TopicWithQuizAndObjectiveQuestions,
+} from '../../../../lib/Types/quiz';
 import {
   LoadingContentScreen,
   LoadingDataScreen,
@@ -48,6 +51,12 @@ const Assessments = () => {
   if (!userProgress || isLoading || !totalQuiz || isLoadingTotalQuiz) {
     return <div>Loading...</div>;
   }
+
+  const handleAttemptQuizScore = (quiz: QuizWithQuestions) => {
+    return quiz.user_quiz_attempts
+      ?.filter((attempt) => attempt?.quiz_id === quiz.id)
+      .flatMap((attempt) => attempt?.score);
+  };
 
   return (
     <>
@@ -98,10 +107,10 @@ const Assessments = () => {
                         sx={{
                           display: 'flex',
                           flexDirection: 'column',
-                          gap: 5,
+                          gap: 1,
                         }}
                       >
-                        <Typography variant="body1">
+                        <Typography variant="h6" fontWeight={600}>
                           Status:{' '}
                           {item.id ===
                           userProgress.user_completed_quizzes
@@ -110,6 +119,48 @@ const Assessments = () => {
                             ? 'Completed'
                             : 'Not Completed'}
                         </Typography>
+
+                        <Typography variant="body2">
+                          Total Quiz: {item.quiz?.length}
+                        </Typography>
+
+                        {item.quiz?.map((quiz) => {
+                          return (
+                            quiz.max_attempts && (
+                              <Typography key={quiz.id} variant="body2">
+                                Max Attempts: {quiz.max_attempts}
+                              </Typography>
+                            )
+                          );
+                        })}
+
+                        {item.quiz?.map((quiz) => {
+                          return (
+                            <Box
+                              key={quiz.id}
+                              sx={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: 1,
+                              }}
+                            >
+                              <Typography variant="h6"> Score:</Typography>
+                              {handleAttemptQuizScore(quiz)?.map(
+                                (score, index) => (
+                                  <>
+                                    <Typography key={index} variant="body2">
+                                      Attempt {index + 1}: {score} /{' '}
+                                      {item.quiz?.map(
+                                        (quiz) =>
+                                          quiz.objective_questions.length,
+                                      )}
+                                    </Typography>
+                                  </>
+                                ),
+                              )}
+                            </Box>
+                          );
+                        })}
                       </Box>
                     </CardContent>
                   </Card>

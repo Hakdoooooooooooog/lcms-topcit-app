@@ -112,10 +112,9 @@ export const addQuizSchemaStage1 = z.object({
     .default('1'),
 });
 
-export const addQuizSchemaStage2 = z.object({
+export const MultipleChoiceSchema = z.object({
   quizQuestions: z.array(
     z.object({
-      quizId: z.string().min(1, 'Please enter a quiz id.'),
       question: z.string().min(1, 'Please enter a question text.'),
       questionType: z.string().min(1, 'Please select a question type.'),
       correctAnswer: z.string().min(1, 'Please enter a correct answer.'),
@@ -130,6 +129,39 @@ export const addQuizSchemaStage2 = z.object({
             ),
         }),
       ),
+    }),
+  ),
+});
+
+export const IdentificationSchema = z.object({
+  quizQuestions: z.array(
+    z.object({
+      question: z.string().min(1, 'Please enter a question text.'),
+      questionType: z.string().min(1, 'Please select a question type.'),
+      correctAnswer: z.string().min(1, 'Please enter a correct answer.'),
+    }),
+  ),
+});
+
+export const addQuizSchemaStage2 = z.object({
+  quizQuestions: z.array(
+    z.object({
+      question: z.string().min(1, 'Please enter a question text.'),
+      questionType: z.string().min(1, 'Please select a question type.'),
+      correctAnswer: z.string().min(1, 'Please enter a correct answer.'),
+      multipleChoiceOptions: z
+        .array(
+          z.object({
+            optionText: z
+              .string()
+              .min(1, 'Please enter an option.')
+              .refine(
+                (text) => /^[A-Z]\)\s/.test(text),
+                'Options must start with "X) e.g., "A) lorem ipsum".',
+              ),
+          }),
+        )
+        .optional(),
     }),
   ),
 });

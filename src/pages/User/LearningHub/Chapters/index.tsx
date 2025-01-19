@@ -16,7 +16,14 @@ import { handlePaginatedItems } from '../../../../lib/helpers/utils';
 import { Topics } from '../../../../lib/Types/topics';
 import { getTopicsWithAllChapters } from '../../../../api/User/topicsApi';
 import { EyeIcon, LockClosedIcon } from '@heroicons/react/16/solid';
-import { Card, CardHeader, Button, Stack, Pagination } from '@mui/material';
+import {
+  Card,
+  CardHeader,
+  Button,
+  Stack,
+  Pagination,
+  Tooltip,
+} from '@mui/material';
 import {
   ChaptersWithSubChaptersWithinTopic,
   ChapterWithSubChapter,
@@ -148,9 +155,15 @@ const TopcitContents = () => {
                     }}
                     title={`Topic ${topic.id}: ${topic.topictitle}`}
                     action={
-                      <Button variant="outlined" color="primary" disabled>
-                        <LockClosedIcon className="h-5 w-5" />
-                      </Button>
+                      <Tooltip
+                        title="You need to complete all chapters and have 70% passing score in the quiz on the previous topic to unlock this topic"
+                        arrow
+                      >
+                        <LockClosedIcon
+                          className="h-5 w-5 mr-5
+                          text-red-500"
+                        />
+                      </Tooltip>
                     }
                   />
                 </Card>
