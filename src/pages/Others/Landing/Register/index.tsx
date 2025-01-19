@@ -14,7 +14,7 @@ import {
   InputAdornment,
   InputLabel,
   OutlinedInput,
-  Box,
+  // Box,
 } from '@mui/material';
 import { NavLink } from 'react-router-dom';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/16/solid';
@@ -81,14 +81,14 @@ const Register = () => {
       setConfirmPassType: state.setConfirmPassType,
     }));
 
-  const handleGoogleSignIn = () => {
-    // TODO: Implement Google sign-in logic
-    console.log('Google sign-in clicked');
-  };
+  // const handleGoogleSignIn = () => {
+  //   // TODO: Implement Google sign-in logic
+  //   console.log('Google sign-in clicked');
+  // };
 
   return (
     <div className={styles.form}>
-      <Button
+      {/* <Button
         fullWidth
         variant="outlined"
         onClick={handleGoogleSignIn}
@@ -123,7 +123,7 @@ const Register = () => {
         <Box sx={{ flex: 1, borderBottom: '1px solid #e0e0e0' }} />
         <Box sx={{ margin: '0 1rem', color: '#666' }}>or</Box>
         <Box sx={{ flex: 1, borderBottom: '1px solid #e0e0e0' }} />
-      </Box>
+      </Box> */}
 
       <UserForm
         handleSubmit={handleSubmit}

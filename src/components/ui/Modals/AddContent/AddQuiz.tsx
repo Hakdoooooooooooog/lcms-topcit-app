@@ -3,6 +3,8 @@ import { FieldErrors, useForm } from 'react-hook-form';
 import {
   addQuizSchemaStage1,
   addQuizSchemaStage2,
+  IdentificationSchema,
+  MultipleChoiceSchema,
 } from '../../../../lib/schema/DataSchema';
 import useAddContentMutation from '../../../../lib/hooks/useAddContentMutation';
 import { useEffect, useMemo, useState, useTransition } from 'react';
@@ -30,11 +32,22 @@ import Carousel from 'react-material-ui-carousel';
 import LoadingScreen, {
   LoadingButton,
 } from '../../LoadingScreen/LoadingScreen';
-import { showToast } from '../../Toasts';
 import { manageQuiz } from '../../../../api/Admin/quiz';
+import { showToast } from '../../Toasts';
+
+type QuizQuestion = {
+  quizId: string;
+  question: string;
+  questionType: string;
+  correctAnswer: string;
+  multipleChoiceOptions?: Array<{
+    optionText: string;
+  }>;
+};
 
 type FormValues = {
   numofQuestions?: number;
+  quizQuestions?: QuizQuestion[];
   [key: string]: any;
 };
 
@@ -69,22 +82,27 @@ const AddQuizModal = (props: {
     register,
     trigger,
     getValues,
-  } = useForm<z.infer<ReturnType<typeof stagedSchema>>>({
+    watch,
+  } = useForm({
     resolver: zodResolver(stagedSchema()),
     values: formValues,
+    mode: 'onChange',
   });
+
+  const quizQuestions = watch('quizQuestions');
 
   // Set quizId for each question
   useEffect(() => {
+    const currentValues = getValues();
+
     if (currentStage === 2 && props.data.quiz.quizId) {
-      const currentValues = getValues();
       setFormValues((prev) => ({
         ...prev,
         ...currentValues,
+        quizId: props.data.quiz.quizId,
         quizQuestions: Array.from({
           length: (prev.numofQuestions as number) || 1,
-        }).map((_, index) => ({
-          ...prev.quizQuestions[index],
+        }).map((_, _index) => ({
           quizId: props.data.quiz.quizId,
         })),
       }));
@@ -136,197 +154,6 @@ const AddQuizModal = (props: {
     });
   };
 
-  const questionsForm = useMemo(() => {
-    return Array.from({
-      length: (formValues.numofQuestions as number) || 1,
-    }).map((_, index) => (
-      <Box key={index} component="div" className="flex flex-col gap-3 px-14">
-        <Typography variant="h6" component="h2">
-          Quiz Question {index + 1}:
-        </Typography>
-
-        {addQuizFormInputs.stage2.map((input, innerIndex) => (
-          <FormControl key={`question-${index}-${innerIndex}-${input.name}`}>
-            {input.name !== 'question' && (
-              <InputLabel
-                htmlFor={
-                  `quizQuestions.${index}.${input.name}-input` as keyof z.infer<
-                    ReturnType<typeof stagedSchema>
-                  >
-                }
-              >
-                {input.label}
-              </InputLabel>
-            )}
-
-            {input.name === 'question' ? (
-              <Tooltip title="Enter the question here">
-                <TextareaAutosize
-                  id={
-                    `quizQuestions.${index}.${input.name}-input` as keyof z.infer<
-                      ReturnType<typeof stagedSchema>
-                    >
-                  }
-                  {...register(
-                    `quizQuestions.${index}.${input.name}` as keyof z.infer<
-                      ReturnType<typeof stagedSchema>
-                    >,
-                  )}
-                  placeholder={input.placeholder}
-                  className="w-full p-2"
-                  style={{ resize: 'none' }}
-                />
-              </Tooltip>
-            ) : input.type === 'correctAnswerSelection' ? (
-              <Select
-                id={
-                  `quizQuestions.${index}.${input.name}-input` as keyof z.infer<
-                    ReturnType<typeof stagedSchema>
-                  >
-                }
-                {...register(
-                  `quizQuestions.${index}.${input.name}` as keyof z.infer<
-                    ReturnType<typeof stagedSchema>
-                  >,
-                )}
-                defaultValue={'1'}
-                label="Correct Answer"
-              >
-                {Array.from({
-                  length: numofMultipleChoiceOptions,
-                }).map((_, innerIndex) => (
-                  <MenuItem
-                    key={
-                      `quizQuestions.${index}.${input.name}-input-${innerIndex}` as keyof z.infer<
-                        ReturnType<typeof stagedSchema>
-                      >
-                    }
-                    value={`${innerIndex + 1}`}
-                  >
-                    Option {innerIndex + 1}
-                  </MenuItem>
-                ))}
-              </Select>
-            ) : input.type === 'questionTypeSelection' ? (
-              <Select
-                id={
-                  `quizQuestions.${index}.${input.name}-input` as keyof z.infer<
-                    ReturnType<typeof stagedSchema>
-                  >
-                }
-                {...register(
-                  `quizQuestions.${index}.${input.name}` as keyof z.infer<
-                    ReturnType<typeof stagedSchema>
-                  >,
-                )}
-                defaultValue="Multiple Choice"
-                label="Question Type"
-              >
-                <MenuItem value="Multiple Choice">Multiple Choice</MenuItem>
-              </Select>
-            ) : (
-              <Input
-                id={
-                  `quizQuestions.${index}.${input.name}-input` as keyof z.infer<
-                    ReturnType<typeof stagedSchema>
-                  >
-                }
-                {...register(
-                  `quizQuestions.${index}.${input.name}` as keyof z.infer<
-                    ReturnType<typeof stagedSchema>
-                  >,
-                )}
-                type={input.type}
-                placeholder={input.placeholder}
-                disabled={input.disabled}
-              />
-            )}
-
-            {(errors as FieldErrors<z.infer<typeof addQuizSchemaStage2>>)
-              .quizQuestions?.[index]?.[
-              input.name as keyof z.infer<
-                typeof addQuizSchemaStage2
-              >['quizQuestions'][0]
-            ] && (
-              <span className="text-red-500">
-                {
-                  (errors as FieldErrors<z.infer<typeof addQuizSchemaStage2>>)
-                    .quizQuestions?.[index]?.[
-                    input.name as keyof z.infer<
-                      typeof addQuizSchemaStage2
-                    >['quizQuestions'][0]
-                  ]?.message
-                }
-              </span>
-            )}
-          </FormControl>
-        ))}
-
-        <Typography variant="h6" component="h2">
-          Options:
-        </Typography>
-
-        {Array.from({ length: numofMultipleChoiceOptions }).map(
-          (_, outerIndex) =>
-            multipleChoiceOptions.map((option, innerIndex) => (
-              <FormControl
-                key={`optionQuestion-${index}-${innerIndex}-${outerIndex}`}
-              >
-                <InputLabel
-                  htmlFor={
-                    `quizQuestions.${index}.multipleChoiceOptions.${outerIndex}.${option.name}-option` as keyof z.infer<
-                      ReturnType<typeof stagedSchema>
-                    >
-                  }
-                >
-                  Option {outerIndex + 1}
-                </InputLabel>
-                <Input
-                  id={
-                    `quizQuestions.${index}.multipleChoiceOptions.${outerIndex}.${option.name}-option` as keyof z.infer<
-                      ReturnType<typeof stagedSchema>
-                    >
-                  }
-                  {...register(
-                    `quizQuestions.${index}.multipleChoiceOptions.${outerIndex}.${option.name}` as keyof z.infer<
-                      ReturnType<typeof stagedSchema>
-                    >,
-                  )}
-                  type={option.type}
-                  placeholder={option.placeholder}
-                />
-
-                {(errors as FieldErrors<z.infer<typeof addQuizSchemaStage2>>)
-                  .quizQuestions?.[index]?.multipleChoiceOptions?.[
-                  outerIndex
-                ]?.[
-                  option.name as keyof z.infer<
-                    typeof addQuizSchemaStage2
-                  >['quizQuestions'][0]['multipleChoiceOptions'][0]
-                ] && (
-                  <span className="text-red-500">
-                    {
-                      (
-                        errors as FieldErrors<
-                          z.infer<typeof addQuizSchemaStage2>
-                        >
-                      ).quizQuestions?.[index]?.multipleChoiceOptions?.[
-                        outerIndex
-                      ]?.[
-                        option.name as keyof z.infer<
-                          typeof addQuizSchemaStage2
-                        >['quizQuestions'][0]['multipleChoiceOptions'][0]
-                      ]?.message
-                    }
-                  </span>
-                )}
-              </FormControl>
-            )),
-        )}
-      </Box>
-    ));
-  }, [errors, register, formValues]);
-
   const addQuizMutation = useAddContentMutation({
     fn: async (formValues: FormValues) => manageQuiz(formValues),
     QueryKey: 'TOPCITQuizzes',
@@ -334,10 +161,21 @@ const AddQuizModal = (props: {
 
   const onSubmit = async (data: any) => {
     Object.assign(formValues, data);
+
     if (props.data.state === 'add') {
-      // Append formValues with data
       try {
-        await addQuizMutation.mutateAsync(formValues);
+        const formattedData = {
+          ...formValues,
+          quizQuestions: formValues.quizQuestions?.map((q) => ({
+            ...q,
+            multipleChoiceOptions:
+              q.questionType === 'Multiple Choice'
+                ? q.multipleChoiceOptions
+                : undefined,
+          })),
+        };
+
+        await addQuizMutation.mutateAsync(formattedData);
         props.handleClose();
       } catch (error: any) {
         showToast('Failed to add quiz' + error.message, 'error');
@@ -426,11 +264,329 @@ const AddQuizModal = (props: {
             justifyContent: 'center',
           }}
         >
-          {questionsForm}
+          {Array.from({
+            length: (formValues.numofQuestions as number) || 1,
+          }).map((_, index) => (
+            <Box
+              key={index}
+              component="div"
+              className="flex flex-col gap-3 px-14"
+            >
+              <Typography variant="h6" component="h2">
+                Quiz Question {index + 1}:
+              </Typography>
+
+              {quizQuestions &&
+              quizQuestions[index] &&
+              quizQuestions[index].questionType === 'Multiple Choice' ? (
+                <>
+                  {addQuizFormInputs.stage2.multipleChoiceOptions?.map(
+                    (input, innerIndex) => (
+                      <FormControl
+                        key={`question-${index}-${innerIndex}-${input.name}`}
+                      >
+                        {input.name !== 'question' && (
+                          <InputLabel
+                            htmlFor={
+                              `quizQuestions.${index}.${input.name}-input` as keyof z.infer<
+                                ReturnType<typeof stagedSchema>
+                              >
+                            }
+                          >
+                            {input.label}
+                          </InputLabel>
+                        )}
+
+                        {input.name === 'question' ? (
+                          <Tooltip title="Enter the question here">
+                            <TextareaAutosize
+                              id={
+                                `quizQuestions.${index}.${input.name}-input` as keyof z.infer<
+                                  ReturnType<typeof stagedSchema>
+                                >
+                              }
+                              {...register(
+                                `quizQuestions.${index}.${input.name}` as keyof z.infer<
+                                  ReturnType<typeof stagedSchema>
+                                >,
+                              )}
+                              placeholder={input.placeholder}
+                              className="w-full p-2"
+                              style={{ resize: 'none' }}
+                            />
+                          </Tooltip>
+                        ) : input.type === 'correctAnswerSelection' ? (
+                          <Select
+                            id={
+                              `quizQuestions.${index}.${input.name}-input` as keyof z.infer<
+                                ReturnType<typeof stagedSchema>
+                              >
+                            }
+                            {...register(
+                              `quizQuestions.${index}.${input.name}` as keyof z.infer<
+                                ReturnType<typeof stagedSchema>
+                              >,
+                            )}
+                            defaultValue="1"
+                            label="Correct Answer"
+                          >
+                            {Array.from({
+                              length: numofMultipleChoiceOptions,
+                            }).map((_, innerIndex) => (
+                              <MenuItem
+                                key={
+                                  `quizQuestions.${index}.${input.name}-input-${innerIndex}` as keyof z.infer<
+                                    ReturnType<typeof stagedSchema>
+                                  >
+                                }
+                                value={`${innerIndex + 1}`}
+                              >
+                                Option {innerIndex + 1}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        ) : input.type === 'questionTypeSelection' ? (
+                          <Select
+                            id={
+                              `quizQuestions.${index}.${input.name}-input` as keyof z.infer<
+                                ReturnType<typeof stagedSchema>
+                              >
+                            }
+                            {...register(
+                              `quizQuestions.${index}.${input.name}` as keyof z.infer<
+                                ReturnType<typeof stagedSchema>
+                              >,
+                            )}
+                            defaultValue="Multiple Choice"
+                            label="Question Type"
+                          >
+                            <MenuItem value="Multiple Choice">
+                              Multiple Choice
+                            </MenuItem>
+                            <MenuItem value="Identification">
+                              Identification
+                            </MenuItem>
+                          </Select>
+                        ) : (
+                          <Input
+                            id={
+                              `quizQuestions.${index}.${input.name}-input` as keyof z.infer<
+                                ReturnType<typeof stagedSchema>
+                              >
+                            }
+                            {...register(
+                              `quizQuestions.${index}.${input.name}` as keyof z.infer<
+                                ReturnType<typeof stagedSchema>
+                              >,
+                            )}
+                            type={input.type}
+                            placeholder={input.placeholder}
+                            disabled={input.disabled}
+                          />
+                        )}
+
+                        {(
+                          errors as FieldErrors<
+                            z.infer<typeof addQuizSchemaStage2>
+                          >
+                        ).quizQuestions?.[index]?.[
+                          input.name as keyof z.infer<
+                            typeof addQuizSchemaStage2
+                          >['quizQuestions'][0]
+                        ] && (
+                          <span className="text-red-500">
+                            {
+                              (
+                                errors as FieldErrors<
+                                  z.infer<typeof addQuizSchemaStage2>
+                                >
+                              ).quizQuestions?.[index]?.[
+                                input.name as keyof z.infer<
+                                  typeof addQuizSchemaStage2
+                                >['quizQuestions'][0]
+                              ]?.message
+                            }
+                          </span>
+                        )}
+                      </FormControl>
+                    ),
+                  )}
+
+                  <Typography variant="h6" component="h2">
+                    Options:
+                  </Typography>
+
+                  {Array.from({ length: numofMultipleChoiceOptions }).map(
+                    (_, outerIndex) =>
+                      multipleChoiceOptions.map((option, innerIndex) => (
+                        <FormControl
+                          key={`optionQuestion-${index}-${innerIndex}-${outerIndex}`}
+                        >
+                          <InputLabel
+                            htmlFor={
+                              `quizQuestions.${index}.multipleChoiceOptions.${outerIndex}.${option.name}-option` as keyof z.infer<
+                                ReturnType<typeof stagedSchema>
+                              >
+                            }
+                          >
+                            Option {outerIndex + 1}
+                          </InputLabel>
+                          <Input
+                            id={
+                              `quizQuestions.${index}.multipleChoiceOptions.${outerIndex}.${option.name}-option` as keyof z.infer<
+                                ReturnType<typeof stagedSchema>
+                              >
+                            }
+                            {...register(
+                              `quizQuestions.${index}.multipleChoiceOptions.${outerIndex}.${option.name}` as keyof z.infer<
+                                ReturnType<typeof stagedSchema>
+                              >,
+                            )}
+                            type={option.type}
+                            placeholder={option.placeholder}
+                          />
+
+                          {(
+                            errors as FieldErrors<
+                              z.infer<typeof MultipleChoiceSchema>
+                            >
+                          ).quizQuestions?.[index]?.multipleChoiceOptions?.[
+                            outerIndex
+                          ]?.[
+                            option.name as keyof z.infer<
+                              typeof MultipleChoiceSchema
+                            >['quizQuestions'][0]['multipleChoiceOptions'][0]
+                          ] && (
+                            <span className="text-red-500">
+                              {
+                                (
+                                  errors as FieldErrors<
+                                    z.infer<typeof MultipleChoiceSchema>
+                                  >
+                                ).quizQuestions?.[index]
+                                  ?.multipleChoiceOptions?.[outerIndex]?.[
+                                  option.name as keyof z.infer<
+                                    typeof MultipleChoiceSchema
+                                  >['quizQuestions'][0]['multipleChoiceOptions'][0]
+                                ]?.message
+                              }
+                            </span>
+                          )}
+                        </FormControl>
+                      )),
+                  )}
+                </>
+              ) : (
+                <>
+                  {addQuizFormInputs.stage2.identificationOptions?.map(
+                    (input, innerIndex) => (
+                      <FormControl
+                        key={`question-${index}-${innerIndex}-${input.name}`}
+                      >
+                        {input.name !== 'question' && (
+                          <InputLabel
+                            htmlFor={
+                              `quizQuestions.${index}.${input.name}-input` as keyof z.infer<
+                                ReturnType<typeof stagedSchema>
+                              >
+                            }
+                          >
+                            {input.label}
+                          </InputLabel>
+                        )}
+
+                        {input.name === 'question' ? (
+                          <Tooltip title="Enter the question here">
+                            <TextareaAutosize
+                              id={
+                                `quizQuestions.${index}.${input.name}-input` as keyof z.infer<
+                                  ReturnType<typeof stagedSchema>
+                                >
+                              }
+                              {...register(
+                                `quizQuestions.${index}.${input.name}` as keyof z.infer<
+                                  ReturnType<typeof stagedSchema>
+                                >,
+                              )}
+                              placeholder={input.placeholder}
+                              className="w-full p-2"
+                              style={{ resize: 'none' }}
+                            />
+                          </Tooltip>
+                        ) : input.type === 'questionTypeSelection' ? (
+                          <Select
+                            id={
+                              `quizQuestions.${index}.${input.name}-input` as keyof z.infer<
+                                ReturnType<typeof stagedSchema>
+                              >
+                            }
+                            {...register(
+                              `quizQuestions.${index}.${input.name}` as keyof z.infer<
+                                ReturnType<typeof stagedSchema>
+                              >,
+                            )}
+                            defaultValue="Identification"
+                            label="Question Type"
+                          >
+                            <MenuItem value="Multiple Choice">
+                              Multiple Choice
+                            </MenuItem>
+                            <MenuItem value="Identification">
+                              Identification
+                            </MenuItem>
+                          </Select>
+                        ) : (
+                          <Input
+                            id={
+                              `quizQuestions.${index}.${input.name}-input` as keyof z.infer<
+                                ReturnType<typeof stagedSchema>
+                              >
+                            }
+                            {...register(
+                              `quizQuestions.${index}.${input.name}` as keyof z.infer<
+                                ReturnType<typeof stagedSchema>
+                              >,
+                            )}
+                            type={input.type}
+                            placeholder={input.placeholder}
+                            disabled={input.disabled}
+                          />
+                        )}
+
+                        {(
+                          errors as FieldErrors<
+                            z.infer<typeof IdentificationSchema>
+                          >
+                        ).quizQuestions?.[index]?.[
+                          input.name as keyof z.infer<
+                            typeof IdentificationSchema
+                          >['quizQuestions'][0]
+                        ] && (
+                          <span className="text-red-500">
+                            {
+                              (
+                                errors as FieldErrors<
+                                  z.infer<typeof IdentificationSchema>
+                                >
+                              ).quizQuestions?.[index]?.[
+                                input.name as keyof z.infer<
+                                  typeof IdentificationSchema
+                                >['quizQuestions'][0]
+                              ]?.message
+                            }
+                          </span>
+                        )}
+                      </FormControl>
+                    ),
+                  )}
+                </>
+              )}
+            </Box>
+          ))}
         </Carousel>
       );
     }
-  }, [currentStage, errors, register, stagedSchema]);
+  }, [currentStage, errors, register, stagedSchema, quizQuestions]);
 
   const handleFormInputs = useMemo(() => {
     return (

@@ -3,6 +3,8 @@ import { FieldErrors, useForm } from 'react-hook-form';
 import {
   addQuizSchemaStage1,
   addQuizSchemaStage2,
+  IdentificationSchema,
+  MultipleChoiceSchema,
 } from '../../../../lib/schema/DataSchema';
 import { useEffect, useMemo, useState, useTransition } from 'react';
 import {
@@ -65,64 +67,6 @@ const EditQuizModal = (props: {
     return z.object({});
   };
 
-  const handleDefaultCorrectAnswer = useMemo(() => {
-    return (questionIndex: number) => {
-      const correctAnswer =
-        props.selectedQuiz?.[0].objective_questions[questionIndex]
-          .correct_answer;
-
-      const correctAnswerIndex = props.selectedQuiz?.[0].objective_questions[
-        questionIndex
-      ].multiple_choice_options.findIndex(
-        (option) => option.option_text === correctAnswer,
-      );
-
-      return correctAnswerIndex !== undefined
-        ? (correctAnswerIndex + 1).toString()
-        : '';
-    };
-  }, [props.selectedQuiz]);
-
-  const handleQuestionType = useMemo(() => {
-    return (questionIndex: number) => {
-      const questionType =
-        props.selectedQuiz?.[0].objective_questions[questionIndex]
-          .question_type;
-
-      return questionType !== undefined ? questionType : 'Multiple Choice';
-    };
-  }, [props.selectedQuiz]);
-
-  useEffect(() => {
-    if (props.data.state === 'edit' && props.selectedQuiz) {
-      const selectedQuiz = props.selectedQuiz[0];
-      startTransition(() => {
-        setFormValues((prev) => ({
-          ...prev,
-          topicId: props.data.topicId,
-          quizTitle: selectedQuiz.title,
-          maxAttempts: selectedQuiz.max_attempts?.toString() || '3',
-          numofQuestions: selectedQuiz.objective_questions.length.toString(),
-          quizQuestions: selectedQuiz.objective_questions.map((question) => ({
-            quizId: selectedQuiz.id.toString(),
-            question: question.question,
-            questionType: handleQuestionType(
-              selectedQuiz.objective_questions.indexOf(question),
-            ),
-            multipleChoiceOptions: question.multiple_choice_options.map(
-              (option) => ({
-                optionText: option.option_text,
-              }),
-            ),
-            correctAnswer: handleDefaultCorrectAnswer(
-              selectedQuiz.objective_questions.indexOf(question),
-            ),
-          })),
-        }));
-      });
-    }
-  }, [props.data.state, props.selectedQuiz]);
-
   useEffect(() => {
     if (!props.modalOpen) {
       startTransition(() => {
@@ -138,10 +82,110 @@ const EditQuizModal = (props: {
     register,
     trigger,
     getValues,
-  } = useForm<z.infer<ReturnType<typeof stagedSchema>>>({
+    watch,
+  } = useForm({
     resolver: zodResolver(stagedSchema()),
     values: formValues,
+    mode: 'onBlur',
   });
+
+  // Watch changes in quiz questions
+  const watchQuizQuestions = watch('quizQuestions');
+  const numOfQuestions = watch('numofQuestions');
+
+  const handleDefaultCorrectAnswer = useMemo(() => {
+    return (questionIndex: number) => {
+      if (!props.selectedQuiz?.[0]?.objective_questions[questionIndex]) {
+        return '1';
+      }
+
+      const correctAnswer =
+        props.selectedQuiz[0].objective_questions[questionIndex].correct_answer;
+
+      const correctAnswerIndex = props.selectedQuiz[0].objective_questions[
+        questionIndex
+      ].multiple_choice_options.findIndex(
+        (option) => option.option_text === correctAnswer,
+      );
+
+      return correctAnswerIndex !== undefined
+        ? (correctAnswerIndex + 1).toString()
+        : '';
+    };
+  }, [props.selectedQuiz]);
+
+  const handleQuestionType = useMemo(() => {
+    return (questionIndex: number) => {
+      if (!props.selectedQuiz?.[0]?.objective_questions[questionIndex]) {
+        return 'Multiple Choice';
+      }
+
+      const questionType =
+        props.selectedQuiz[0].objective_questions[questionIndex].question_type;
+
+      return questionType !== undefined ? questionType : 'Multiple Choice';
+    };
+  }, [props.selectedQuiz]);
+
+  useEffect(() => {
+    if (props.data.state === 'edit' && props.selectedQuiz) {
+      const selectedQuiz = props.selectedQuiz[0];
+      setFormValues((prev) => {
+        const existingQuestions = selectedQuiz.objective_questions.map(
+          (question, index) => {
+            const questionType = handleQuestionType(index);
+            const baseQuestion = {
+              quizId: selectedQuiz.id.toString(),
+              question: question.question,
+              questionType,
+            };
+
+            if (questionType === 'Multiple Choice') {
+              return {
+                ...baseQuestion,
+                multipleChoiceOptions: question.multiple_choice_options.map(
+                  (option) => ({
+                    optionText: option.option_text,
+                  }),
+                ),
+                correctAnswer: handleDefaultCorrectAnswer(index),
+              };
+            } else {
+              return {
+                ...baseQuestion,
+                correctAnswer: question.correct_answer,
+              };
+            }
+          },
+        );
+
+        const defaultQuestion = {
+          quizId: selectedQuiz.id.toString(),
+          question: '',
+          correctAnswer: '1',
+        };
+
+        const currentNumOfQuestions =
+          numOfQuestions || selectedQuiz.objective_questions.length;
+        const additionalQuestionsNeeded = Math.max(
+          0,
+          currentNumOfQuestions - existingQuestions.length,
+        );
+        const additionalQuestions = Array(additionalQuestionsNeeded)
+          .fill(null)
+          .map(() => ({ ...defaultQuestion }));
+
+        return {
+          ...prev,
+          topicId: props.data.topicId,
+          quizTitle: selectedQuiz.title,
+          maxAttempts: selectedQuiz.max_attempts?.toString() || '3',
+          numofQuestions: currentNumOfQuestions.toString(),
+          quizQuestions: [...existingQuestions, ...additionalQuestions],
+        };
+      });
+    }
+  }, [props.data.state, props.selectedQuiz, numOfQuestions]);
 
   const handleNextStage = async () => {
     const isValid = await trigger();
@@ -169,197 +213,6 @@ const EditQuizModal = (props: {
     });
   };
 
-  const questionsForm = useMemo(() => {
-    return Array.from({
-      length: (formValues.numofQuestions as number) || 1,
-    }).map((_, index) => (
-      <Box key={index} component="div" className="flex flex-col gap-3 px-14">
-        <Typography variant="h6" component="h2">
-          Quiz Question {index + 1}:
-        </Typography>
-
-        {addQuizFormInputs.stage2.map((input, innerIndex) => (
-          <FormControl key={`question-${index}-${innerIndex}-${input.name}`}>
-            {input.name !== 'question' && (
-              <InputLabel
-                htmlFor={
-                  `quizQuestions.${index}.${input.name}-input` as keyof z.infer<
-                    ReturnType<typeof stagedSchema>
-                  >
-                }
-              >
-                {input.label}
-              </InputLabel>
-            )}
-
-            {input.name === 'question' ? (
-              <Tooltip title="Enter the question here">
-                <TextareaAutosize
-                  id={
-                    `quizQuestions.${index}.${input.name}-input` as keyof z.infer<
-                      ReturnType<typeof stagedSchema>
-                    >
-                  }
-                  {...register(
-                    `quizQuestions.${index}.${input.name}` as keyof z.infer<
-                      ReturnType<typeof stagedSchema>
-                    >,
-                  )}
-                  placeholder={input.placeholder}
-                  className="w-full p-2"
-                  style={{ resize: 'none' }}
-                />
-              </Tooltip>
-            ) : input.type === 'correctAnswerSelection' ? (
-              <Select
-                id={
-                  `quizQuestions.${index}.${input.name}-input` as keyof z.infer<
-                    ReturnType<typeof stagedSchema>
-                  >
-                }
-                {...register(
-                  `quizQuestions.${index}.${input.name}` as keyof z.infer<
-                    ReturnType<typeof stagedSchema>
-                  >,
-                )}
-                defaultValue={handleDefaultCorrectAnswer(index)}
-                label="Correct Answer"
-              >
-                {Array.from({
-                  length: numofMultipleChoiceOptions,
-                }).map((_, innerIndex) => (
-                  <MenuItem
-                    key={
-                      `quizQuestions.${index}.${input.name}-input-${innerIndex}` as keyof z.infer<
-                        ReturnType<typeof stagedSchema>
-                      >
-                    }
-                    value={`${innerIndex + 1}`}
-                  >
-                    Option {innerIndex + 1}
-                  </MenuItem>
-                ))}
-              </Select>
-            ) : input.type === 'questionTypeSelection' ? (
-              <Select
-                id={
-                  `quizQuestions.${index}.${input.name}-input` as keyof z.infer<
-                    ReturnType<typeof stagedSchema>
-                  >
-                }
-                {...register(
-                  `quizQuestions.${index}.${input.name}` as keyof z.infer<
-                    ReturnType<typeof stagedSchema>
-                  >,
-                )}
-                defaultValue={handleQuestionType(index)}
-                label="Question Type"
-              >
-                <MenuItem value="Multiple Choice">Multiple Choice</MenuItem>
-              </Select>
-            ) : (
-              <Input
-                id={
-                  `quizQuestions.${index}.${input.name}-input` as keyof z.infer<
-                    ReturnType<typeof stagedSchema>
-                  >
-                }
-                {...register(
-                  `quizQuestions.${index}.${input.name}` as keyof z.infer<
-                    ReturnType<typeof stagedSchema>
-                  >,
-                )}
-                type={input.type}
-                placeholder={input.placeholder}
-                disabled={input.disabled}
-              />
-            )}
-
-            {(errors as FieldErrors<z.infer<typeof addQuizSchemaStage2>>)
-              .quizQuestions?.[index]?.[
-              input.name as keyof z.infer<
-                typeof addQuizSchemaStage2
-              >['quizQuestions'][0]
-            ] && (
-              <span className="text-red-500">
-                {
-                  (errors as FieldErrors<z.infer<typeof addQuizSchemaStage2>>)
-                    .quizQuestions?.[index]?.[
-                    input.name as keyof z.infer<
-                      typeof addQuizSchemaStage2
-                    >['quizQuestions'][0]
-                  ]?.message
-                }
-              </span>
-            )}
-          </FormControl>
-        ))}
-
-        <Typography variant="h6" component="h2">
-          Options:
-        </Typography>
-
-        {Array.from({ length: numofMultipleChoiceOptions }).map(
-          (_, outerIndex) =>
-            multipleChoiceOptions.map((option, innerIndex) => (
-              <FormControl
-                key={`optionQuestion-${index}-${innerIndex}-${outerIndex}`}
-              >
-                <InputLabel
-                  htmlFor={
-                    `quizQuestions.${index}.multipleChoiceOptions.${outerIndex}.${option.name}-option` as keyof z.infer<
-                      ReturnType<typeof stagedSchema>
-                    >
-                  }
-                >
-                  Option {outerIndex + 1}
-                </InputLabel>
-                <Input
-                  id={
-                    `quizQuestions.${index}.multipleChoiceOptions.${outerIndex}.${option.name}-option` as keyof z.infer<
-                      ReturnType<typeof stagedSchema>
-                    >
-                  }
-                  {...register(
-                    `quizQuestions.${index}.multipleChoiceOptions.${outerIndex}.${option.name}` as keyof z.infer<
-                      ReturnType<typeof stagedSchema>
-                    >,
-                  )}
-                  type={option.type}
-                  placeholder={option.placeholder}
-                />
-
-                {(errors as FieldErrors<z.infer<typeof addQuizSchemaStage2>>)
-                  .quizQuestions?.[index]?.multipleChoiceOptions?.[
-                  outerIndex
-                ]?.[
-                  option.name as keyof z.infer<
-                    typeof addQuizSchemaStage2
-                  >['quizQuestions'][0]['multipleChoiceOptions'][0]
-                ] && (
-                  <span className="text-red-500">
-                    {
-                      (
-                        errors as FieldErrors<
-                          z.infer<typeof addQuizSchemaStage2>
-                        >
-                      ).quizQuestions?.[index]?.multipleChoiceOptions?.[
-                        outerIndex
-                      ]?.[
-                        option.name as keyof z.infer<
-                          typeof addQuizSchemaStage2
-                        >['quizQuestions'][0]['multipleChoiceOptions'][0]
-                      ]?.message
-                    }
-                  </span>
-                )}
-              </FormControl>
-            )),
-        )}
-      </Box>
-    ));
-  }, [errors, register]);
-
   const editQuizMutation = useEditContentMutation({
     fn: async (formValues: FormValues) => updateQuiz(formValues),
     QueryKey: 'TOPCITQuizzes',
@@ -370,7 +223,20 @@ const EditQuizModal = (props: {
 
     if (props.data.state === 'edit') {
       try {
-        await editQuizMutation.mutateAsync(formValues);
+        const formattedData = {
+          ...formValues,
+          quizQuestions: formValues.quizQuestions?.map(
+            (q: { questionType: string; multipleChoiceOptions: any }) => ({
+              ...q,
+              multipleChoiceOptions:
+                q.questionType === 'Multiple Choice'
+                  ? q.multipleChoiceOptions
+                  : undefined,
+            }),
+          ),
+        };
+
+        await editQuizMutation.mutateAsync(formattedData);
         props.handleClose();
       } catch (error: any) {
         showToast(
@@ -464,11 +330,338 @@ const EditQuizModal = (props: {
             justifyContent: 'center',
           }}
         >
-          {questionsForm}
+          {Array.from({
+            length: (formValues.numofQuestions as number) || 1,
+          }).map((_, index) => (
+            <Box
+              key={index}
+              component="div"
+              className="flex flex-col gap-3 px-14"
+            >
+              <Typography variant="h6" component="h2">
+                Quiz Question {index + 1}:
+              </Typography>
+
+              {(formValues &&
+                formValues.quizQuestions &&
+                formValues.quizQuestions[index].questionType ===
+                  'Multiple Choice') ||
+              watchQuizQuestions[index].questionType === 'Multiple Choice' ? (
+                <>
+                  {addQuizFormInputs.stage2.multipleChoiceOptions?.map(
+                    (input, innerIndex) => (
+                      <FormControl
+                        key={`question-${index}-${innerIndex}-${input.name}`}
+                      >
+                        {input.name !== 'question' && (
+                          <InputLabel
+                            htmlFor={
+                              `quizQuestions.${index}.${input.name}-input` as keyof z.infer<
+                                ReturnType<typeof stagedSchema>
+                              >
+                            }
+                          >
+                            {input.label}
+                          </InputLabel>
+                        )}
+
+                        {input.name === 'question' ? (
+                          <Tooltip title="Enter the question here">
+                            <TextareaAutosize
+                              id={
+                                `quizQuestions.${index}.${input.name}-input` as keyof z.infer<
+                                  ReturnType<typeof stagedSchema>
+                                >
+                              }
+                              {...register(
+                                `quizQuestions.${index}.${input.name}` as keyof z.infer<
+                                  ReturnType<typeof stagedSchema>
+                                >,
+                              )}
+                              placeholder={input.placeholder}
+                              className="w-full p-2"
+                              style={{ resize: 'none' }}
+                            />
+                          </Tooltip>
+                        ) : input.type === 'correctAnswerSelection' ? (
+                          <Select
+                            id={
+                              `quizQuestions.${index}.${input.name}-input` as keyof z.infer<
+                                ReturnType<typeof stagedSchema>
+                              >
+                            }
+                            {...register(
+                              `quizQuestions.${index}.${input.name}` as keyof z.infer<
+                                ReturnType<typeof stagedSchema>
+                              >,
+                            )}
+                            defaultValue={handleDefaultCorrectAnswer(index)}
+                            label="Correct Answer"
+                          >
+                            {Array.from({
+                              length: numofMultipleChoiceOptions,
+                            }).map((_, innerIndex) => (
+                              <MenuItem
+                                key={
+                                  `quizQuestions.${index}.${input.name}-input-${innerIndex}` as keyof z.infer<
+                                    ReturnType<typeof stagedSchema>
+                                  >
+                                }
+                                value={`${innerIndex + 1}`}
+                              >
+                                Option {innerIndex + 1}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        ) : input.type === 'questionTypeSelection' ? (
+                          <Select
+                            id={
+                              `quizQuestions.${index}.${input.name}-input` as keyof z.infer<
+                                ReturnType<typeof stagedSchema>
+                              >
+                            }
+                            {...register(
+                              `quizQuestions.${index}.${input.name}` as keyof z.infer<
+                                ReturnType<typeof stagedSchema>
+                              >,
+                            )}
+                            defaultValue="Multiple Choice"
+                            label="Question Type"
+                          >
+                            <MenuItem value="Multiple Choice">
+                              Multiple Choice
+                            </MenuItem>
+                            <MenuItem value="Identification">
+                              Identification
+                            </MenuItem>
+                          </Select>
+                        ) : (
+                          <Input
+                            id={
+                              `quizQuestions.${index}.${input.name}-input` as keyof z.infer<
+                                ReturnType<typeof stagedSchema>
+                              >
+                            }
+                            {...register(
+                              `quizQuestions.${index}.${input.name}` as keyof z.infer<
+                                ReturnType<typeof stagedSchema>
+                              >,
+                            )}
+                            type={input.type}
+                            placeholder={input.placeholder}
+                            disabled={input.disabled}
+                          />
+                        )}
+
+                        {(
+                          errors as FieldErrors<
+                            z.infer<typeof addQuizSchemaStage2>
+                          >
+                        ).quizQuestions?.[index]?.[
+                          input.name as keyof z.infer<
+                            typeof addQuizSchemaStage2
+                          >['quizQuestions'][0]
+                        ] && (
+                          <span className="text-red-500">
+                            {
+                              (
+                                errors as FieldErrors<
+                                  z.infer<typeof addQuizSchemaStage2>
+                                >
+                              ).quizQuestions?.[index]?.[
+                                input.name as keyof z.infer<
+                                  typeof addQuizSchemaStage2
+                                >['quizQuestions'][0]
+                              ]?.message
+                            }
+                          </span>
+                        )}
+                      </FormControl>
+                    ),
+                  )}
+
+                  <Typography variant="h6" component="h2">
+                    Options:
+                  </Typography>
+
+                  {Array.from({ length: numofMultipleChoiceOptions }).map(
+                    (_, outerIndex) =>
+                      multipleChoiceOptions.map((option, innerIndex) => (
+                        <FormControl
+                          key={`optionQuestion-${index}-${innerIndex}-${outerIndex}`}
+                        >
+                          <InputLabel
+                            htmlFor={
+                              `quizQuestions.${index}.multipleChoiceOptions.${outerIndex}.${option.name}-option` as keyof z.infer<
+                                ReturnType<typeof stagedSchema>
+                              >
+                            }
+                          >
+                            Option {outerIndex + 1}
+                          </InputLabel>
+                          <Input
+                            id={
+                              `quizQuestions.${index}.multipleChoiceOptions.${outerIndex}.${option.name}-option` as keyof z.infer<
+                                ReturnType<typeof stagedSchema>
+                              >
+                            }
+                            {...register(
+                              `quizQuestions.${index}.multipleChoiceOptions.${outerIndex}.${option.name}` as keyof z.infer<
+                                ReturnType<typeof stagedSchema>
+                              >,
+                            )}
+                            type={option.type}
+                            placeholder={option.placeholder}
+                          />
+
+                          {(
+                            errors as FieldErrors<
+                              z.infer<typeof MultipleChoiceSchema>
+                            >
+                          ).quizQuestions?.[index]?.multipleChoiceOptions?.[
+                            outerIndex
+                          ]?.[
+                            option.name as keyof z.infer<
+                              typeof MultipleChoiceSchema
+                            >['quizQuestions'][0]['multipleChoiceOptions'][0]
+                          ] && (
+                            <span className="text-red-500">
+                              {
+                                (
+                                  errors as FieldErrors<
+                                    z.infer<typeof MultipleChoiceSchema>
+                                  >
+                                ).quizQuestions?.[index]
+                                  ?.multipleChoiceOptions?.[outerIndex]?.[
+                                  option.name as keyof z.infer<
+                                    typeof MultipleChoiceSchema
+                                  >['quizQuestions'][0]['multipleChoiceOptions'][0]
+                                ]?.message
+                              }
+                            </span>
+                          )}
+                        </FormControl>
+                      )),
+                  )}
+                </>
+              ) : (
+                <>
+                  {addQuizFormInputs.stage2.identificationOptions?.map(
+                    (input, innerIndex) => (
+                      <FormControl
+                        key={`question-${index}-${innerIndex}-${input.name}`}
+                      >
+                        {input.name !== 'question' && (
+                          <InputLabel
+                            htmlFor={
+                              `quizQuestions.${index}.${input.name}-input` as keyof z.infer<
+                                ReturnType<typeof stagedSchema>
+                              >
+                            }
+                          >
+                            {input.label}
+                          </InputLabel>
+                        )}
+
+                        {input.name === 'question' ? (
+                          <Tooltip title="Enter the question here">
+                            <TextareaAutosize
+                              id={
+                                `quizQuestions.${index}.${input.name}-input` as keyof z.infer<
+                                  ReturnType<typeof stagedSchema>
+                                >
+                              }
+                              {...register(
+                                `quizQuestions.${index}.${input.name}` as keyof z.infer<
+                                  ReturnType<typeof stagedSchema>
+                                >,
+                              )}
+                              placeholder={input.placeholder}
+                              className="w-full p-2"
+                              style={{ resize: 'none' }}
+                            />
+                          </Tooltip>
+                        ) : input.type === 'questionTypeSelection' ? (
+                          <Select
+                            id={
+                              `quizQuestions.${index}.${input.name}-input` as keyof z.infer<
+                                ReturnType<typeof stagedSchema>
+                              >
+                            }
+                            {...register(
+                              `quizQuestions.${index}.${input.name}` as keyof z.infer<
+                                ReturnType<typeof stagedSchema>
+                              >,
+                            )}
+                            defaultValue="Identification"
+                            label="Question Type"
+                          >
+                            <MenuItem value="Multiple Choice">
+                              Multiple Choice
+                            </MenuItem>
+                            <MenuItem value="Identification">
+                              Identification
+                            </MenuItem>
+                          </Select>
+                        ) : (
+                          <Input
+                            id={
+                              `quizQuestions.${index}.${input.name}-input` as keyof z.infer<
+                                ReturnType<typeof stagedSchema>
+                              >
+                            }
+                            {...register(
+                              `quizQuestions.${index}.${input.name}` as keyof z.infer<
+                                ReturnType<typeof stagedSchema>
+                              >,
+                            )}
+                            type={input.type}
+                            placeholder={input.placeholder}
+                            disabled={input.disabled}
+                          />
+                        )}
+
+                        {(
+                          errors as FieldErrors<
+                            z.infer<typeof IdentificationSchema>
+                          >
+                        ).quizQuestions?.[index]?.[
+                          input.name as keyof z.infer<
+                            typeof IdentificationSchema
+                          >['quizQuestions'][0]
+                        ] && (
+                          <span className="text-red-500">
+                            {
+                              (
+                                errors as FieldErrors<
+                                  z.infer<typeof IdentificationSchema>
+                                >
+                              ).quizQuestions?.[index]?.[
+                                input.name as keyof z.infer<
+                                  typeof IdentificationSchema
+                                >['quizQuestions'][0]
+                              ]?.message
+                            }
+                          </span>
+                        )}
+                      </FormControl>
+                    ),
+                  )}
+                </>
+              )}
+            </Box>
+          ))}
         </Carousel>
       );
     }
-  }, [currentStage, errors, register, stagedSchema, formValues]);
+  }, [
+    currentStage,
+    errors,
+    register,
+    stagedSchema,
+    formValues,
+    watchQuizQuestions,
+  ]);
 
   const handleFormInputs = useMemo(() => {
     return props.data.state === 'edit' ? (

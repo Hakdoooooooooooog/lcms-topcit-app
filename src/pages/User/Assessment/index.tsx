@@ -393,17 +393,19 @@ const Assessment = () => {
     [openTutorialModal, tutorialSteps, currentSliderSlide],
   );
 
-  const handleAttemptQuizCount = useCallback((quiz: QuizWithQuestions) => {
+  const handleAttemptQuizCount = (quiz: QuizWithQuestions) => {
     return quiz.user_quiz_attempts
       ?.filter((attempt) => attempt?.quiz_id === quiz.id)
-      .flatMap((attempt) => attempt?.attempt_count);
-  }, []);
+      .flatMap((attempt) => attempt?.attempt_count)
+      .slice(-1);
+  };
 
-  const handleAttemptQuizScore = useCallback((quiz: QuizWithQuestions) => {
+  const handleAttemptQuizScore = (quiz: QuizWithQuestions) => {
     return quiz.user_quiz_attempts
       ?.filter((attempt) => attempt?.quiz_id === quiz.id)
-      .flatMap((attempt) => attempt?.score);
-  }, []);
+      .flatMap((attempt) => attempt?.score)
+      .slice(-1);
+  };
 
   const memoizedAccordionTopic = useMemo(() => {
     return (
@@ -457,8 +459,7 @@ const Assessment = () => {
                       <Box className="flex flex-wrap w-full ml-2 gap-[1%]">
                         <Box className="flex-[1_1_55%]">
                           <CardHeader
-                            title={`Quiz ${quiz.topic_id}`}
-                            subheader={quiz.title}
+                            title={`Quiz ${index + 1}: ${quiz.title}`}
                           />
 
                           <CardActions className="flex gap-1 w-full ml-5">
@@ -483,9 +484,15 @@ const Assessment = () => {
                                 color="info"
                                 onClick={() => handleStartQuiz(quiz)}
                                 disabled={
-                                  handleAttemptQuizCount(quiz) &&
-                                  (handleAttemptQuizCount(quiz)[index] ?? 0) >=
-                                    quiz.max_attempts
+                                  (handleAttemptQuizCount(quiz) &&
+                                    (handleAttemptQuizCount(quiz)[index] ??
+                                      0) >= quiz.max_attempts) ||
+                                  (handleAttemptQuizScore(quiz) &&
+                                    ((handleAttemptQuizScore(quiz)[index] ??
+                                      0) /
+                                      quiz.objective_questions.length) *
+                                      100 >=
+                                      70)
                                 }
                               >
                                 Attempts:{' '}
@@ -503,7 +510,8 @@ const Assessment = () => {
                                   width: '100%',
                                   cursor: 'default',
                                   ...(handleAttemptQuizScore(quiz) &&
-                                  handleAttemptQuizScore(quiz)[index] === null
+                                  handleAttemptQuizScore(quiz)[index] ===
+                                    quiz.objective_questions.length
                                     ? {
                                         backgroundColor: '#00800030',
                                       }
