@@ -30,8 +30,16 @@ export type quiz_attempts = {
 } | null;
 
 export interface QuizWithQuestions extends quiz {
+  _count: {
+    user_quiz_attempts: number;
+    objective_questions: number;
+  };
   user_quiz_attempts: quiz_attempts[];
   objective_questions: objective_questions[];
+}
+
+export interface UserQuizAttempts {
+  user_quiz_attempts: quiz_attempts[];
 }
 
 export interface TopicWithQuizAndObjectiveQuestions extends Topics {
@@ -39,5 +47,28 @@ export interface TopicWithQuizAndObjectiveQuestions extends Topics {
 }
 
 export interface QuizzesAssessment extends Topics {
-  quiz: Omit<QuizWithQuestions, 'user_quiz_attempts'>[] | null;
+  quiz: Omit<QuizWithQuestions, '_count'>[] | null;
+}
+
+export interface QuizAssessmentScores
+  extends Pick<Topics, 'id' | 'topictitle'> {
+  quiz: QuizAssessmentDetails[];
+}
+
+export interface TopicQuizAssessments {
+  objective_questions: objective_questions[];
+}
+
+export interface TopicWithQuiz extends Topics {
+  quiz: Omit<QuizWithQuestions, 'objective_questions'>[] | null;
+}
+
+export interface QuizAssessmentDetails {
+  id: number;
+  title: string;
+  _count: {
+    objective_questions: number;
+  };
+  max_attempts: number | null;
+  user_quiz_attempts: quiz_attempts[];
 }

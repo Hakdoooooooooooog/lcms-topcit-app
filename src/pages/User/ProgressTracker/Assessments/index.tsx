@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { useTransition } from 'react';
+import { useTransition, useState, useEffect } from 'react';
 
 import {
   Box,
@@ -9,14 +9,18 @@ import {
   Pagination,
   Stack,
   Typography,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
 } from '@mui/material';
 import { getUserProgress } from '../../../../api/User/userApi';
 import { handlePaginatedItems } from '../../../../lib/helpers/utils';
 import { UserProgress } from '../../../../lib/Types/user';
-import { getQuizzesWithQuestions } from '../../../../api/User/quizApi';
+import { getQuizAssessmentScores } from '../../../../api/User/quizApi';
 import {
-  QuizWithQuestions,
-  TopicWithQuizAndObjectiveQuestions,
+  QuizAssessmentDetails,
+  QuizAssessmentScores,
 } from '../../../../lib/Types/quiz';
 import {
   LoadingContentScreen,
@@ -31,17 +35,36 @@ const Assessments = () => {
     queryFn: getUserProgress,
   });
   const { data: totalQuiz, isLoading: isLoadingTotalQuiz } = useQuery<
-    TopicWithQuizAndObjectiveQuestions[]
+    QuizAssessmentScores[]
   >({
     queryKey: ['totalChapters'],
-    queryFn: getQuizzesWithQuestions,
+    queryFn: async () => getQuizAssessmentScores({ quizID: '5' }),
   });
+
+  useEffect(() => {
+    if (totalQuiz) {
+      // Initialize selectedQuizzes with 'all' for each topic
+      const initialSelectedQuizzes = totalQuiz.reduce(
+        (acc, item) => ({
+          ...acc,
+          [item.id]: 'all',
+        }),
+        {},
+      );
+      setSelectedQuizzes(initialSelectedQuizzes);
+    }
+  }, [totalQuiz]);
 
   const [isPending, startTransition] = useTransition();
   const search = useSearchStore((state) => state.search);
+  const [selectedQuizzes, setSelectedQuizzes] = useState<
+    Record<number, number | 'all'>
+  >({});
 
-  const { isSearching, filteredItems } =
-    useSearchFilter<TopicWithQuizAndObjectiveQuestions>(totalQuiz, search);
+  const { isSearching, filteredItems } = useSearchFilter<QuizAssessmentScores>(
+    totalQuiz,
+    search,
+  );
 
   const { page, setPage, totalPages, currentItems } = handlePaginatedItems({
     items: filteredItems,
@@ -52,10 +75,15 @@ const Assessments = () => {
     return <div>Loading...</div>;
   }
 
-  const handleAttemptQuizScore = (quiz: QuizWithQuestions) => {
+  const handleAttemptQuizScore = (quiz: QuizAssessmentDetails) => {
     return quiz.user_quiz_attempts
       ?.filter((attempt) => attempt?.quiz_id === quiz.id)
       .flatMap((attempt) => attempt?.score);
+  };
+
+  const getUniqueQuizNumbers = (quizzes?: QuizAssessmentDetails[]) => {
+    if (!quizzes) return [];
+    return [...new Set(quizzes.map((quiz) => quiz.id))];
   };
 
   return (
@@ -77,13 +105,7 @@ const Assessments = () => {
           {isSearching ? (
             <LoadingDataScreen />
           ) : (
-            <Box
-              sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 1,
-              }}
-            >
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               {currentItems &&
                 currentItems.map((item) => (
                   <Card
@@ -105,62 +127,142 @@ const Assessments = () => {
                     <CardContent>
                       <Box
                         sx={{
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: 1,
+                          display: 'grid',
+                          gridTemplateColumns: '500px auto',
+                          alignItems: 'center',
                         }}
                       >
-                        <Typography variant="h6" fontWeight={600}>
-                          Status:{' '}
-                          {item.id ===
-                          userProgress.user_completed_quizzes
-                            .map((quiz) => quiz?.topic_id)
-                            .find((topicId) => topicId === item.id)
-                            ? 'Completed'
-                            : 'Not Completed'}
-                        </Typography>
-
-                        <Typography variant="body2">
-                          Total Quiz: {item.quiz?.length}
-                        </Typography>
-
-                        {item.quiz?.map((quiz) => {
-                          return (
-                            quiz.max_attempts && (
-                              <Typography key={quiz.id} variant="body2">
-                                Max Attempts: {quiz.max_attempts}
-                              </Typography>
+                        {/* Left side - Topic info */}
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                          }}
+                        >
+                          <Typography variant="h6" fontWeight={600}>
+                            Status:{' '}
+                            {item.quiz?.some((quiz) =>
+                              quiz.user_quiz_attempts?.some(
+                                (attempt) => attempt?.quiz_id === quiz.id,
+                              ),
                             )
-                          );
-                        })}
+                              ? 'Attempted'
+                              : 'Not Attempted'}
+                          </Typography>
 
-                        {item.quiz?.map((quiz) => {
-                          return (
-                            <Box
-                              key={quiz.id}
-                              sx={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: 1,
-                              }}
+                          <FormControl
+                            size="small"
+                            sx={{ maxWidth: 200, mt: 2 }}
+                          >
+                            <InputLabel>Select Quiz</InputLabel>
+                            <Select
+                              value={selectedQuizzes[item.id] ?? 'all'}
+                              label="Select Quiz"
+                              onChange={(e) =>
+                                setSelectedQuizzes((prev) => ({
+                                  ...prev,
+                                  [item.id]: e.target.value as number | 'all',
+                                }))
+                              }
                             >
-                              <Typography variant="h6"> Score:</Typography>
-                              {handleAttemptQuizScore(quiz)?.map(
-                                (score, index) => (
-                                  <>
-                                    <Typography key={index} variant="body2">
-                                      Attempt {index + 1}: {score} /{' '}
-                                      {item.quiz?.map(
-                                        (quiz) =>
-                                          quiz.objective_questions.length,
-                                      )}
-                                    </Typography>
-                                  </>
+                              <MenuItem value="all">All Quizzes</MenuItem>
+                              {getUniqueQuizNumbers(item.quiz).map(
+                                (quizId, index) => (
+                                  <MenuItem key={quizId} value={quizId}>
+                                    Quiz {index + 1}
+                                  </MenuItem>
                                 ),
                               )}
-                            </Box>
-                          );
-                        })}
+                            </Select>
+                          </FormControl>
+                        </Box>
+
+                        {/* Right side - Scores */}
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: 2,
+                            backgroundColor: '#f5f5f5',
+                            padding: 2,
+                            borderRadius: 1,
+                            minWidth: '250px',
+                          }}
+                        >
+                          <Typography variant="h6" fontWeight={600}>
+                            Scores
+                          </Typography>
+                          {item.quiz?.length === 0 ? (
+                            <Typography variant="body1" color="text.secondary">
+                              No scores available yet.
+                            </Typography>
+                          ) : (
+                            item.quiz?.map((quiz, index) => {
+                              if (
+                                selectedQuizzes[item.id] !== 'all' &&
+                                quiz.id !== selectedQuizzes[item.id]
+                              ) {
+                                return null;
+                              }
+                              return (
+                                <Box
+                                  key={`${quiz.title}-${index}`}
+                                  sx={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: 1,
+                                    padding: 1,
+                                    backgroundColor: 'white',
+                                    borderRadius: 1,
+                                  }}
+                                >
+                                  <Typography
+                                    variant="subtitle1"
+                                    fontWeight={600}
+                                  >
+                                    {quiz.title}
+                                  </Typography>
+                                  <Typography
+                                    variant="body2"
+                                    color="text.secondary"
+                                  >
+                                    Max Attempts: {quiz.max_attempts}
+                                  </Typography>
+                                  {handleAttemptQuizScore(quiz)?.length ===
+                                  0 ? (
+                                    <Typography
+                                      variant="body2"
+                                      color="text.secondary"
+                                    >
+                                      No attempts yet
+                                    </Typography>
+                                  ) : (
+                                    handleAttemptQuizScore(quiz)?.map(
+                                      (score, index) => (
+                                        <Typography
+                                          key={index}
+                                          variant="body2"
+                                          sx={{
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            fontWeight: 500,
+                                          }}
+                                        >
+                                          <span>Attempt {index + 1}:</span>
+                                          <span>
+                                            {score} /{' '}
+                                            {quiz._count.objective_questions}
+                                          </span>
+                                        </Typography>
+                                      ),
+                                    )
+                                  )}
+                                </Box>
+                              );
+                            })
+                          )}
+                        </Box>
                       </Box>
                     </CardContent>
                   </Card>

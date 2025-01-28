@@ -15,44 +15,88 @@ import {
   Typography,
 } from '@mui/material';
 import { styledModal } from '../../../../lib/constants';
-import { objective_questions } from '../../../../lib/Types/quiz';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  objective_questions,
+  TopicQuizAssessments,
+} from '../../../../lib/Types/quiz';
+import {
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { useSearchParams } from 'react-router-dom';
 import {
   useModalStore,
   useQuizStore,
   useSliderQuizStore,
 } from '../../../../lib/store';
 import useAssessmentMutation from '../../../../lib/hooks/useAssessmentMutation';
-import { LoadingButton } from '../../../../components/ui/LoadingScreen/LoadingScreen';
+import {
+  LoadingButton,
+  LoadingContentScreen,
+} from '../../../../components/ui/LoadingScreen/LoadingScreen';
 import { showToast } from '../../../../components/ui/Toasts';
 import Carousel from 'react-material-ui-carousel';
 import { shuffleArray } from '../../../../lib/helpers/utils';
+import { getQuizAssessment } from '../../../../api/User/quizApi';
+import { useQuery } from '@tanstack/react-query';
 
 type QuizProps = {
-  selectedQuiz: objective_questions[];
+  selectedQuizState: {
+    quizId: string;
+    topicId: string;
+    studentId: string;
+  };
+  setSelectedQuizState: Dispatch<
+    SetStateAction<{ quizId: string; topicId: string; studentId: string }>
+  >;
   startTransition: (callback: () => void) => void;
-  topicId: string;
 };
 
-const Quiz = ({ selectedQuiz, startTransition, topicId }: QuizProps) => {
-  const [shuffleQuiz, setShuffleQuiz] = useState<objective_questions[]>([]);
+const Quiz = ({
+  selectedQuizState,
+  startTransition,
+  setSelectedQuizState,
+}: QuizProps) => {
+  const { quizId, topicId, studentId } = selectedQuizState;
 
-  const [searchParams, setSearchParams] = useSearchParams();
-  const assessmentMutation = useAssessmentMutation();
+  // Update the query to wait for quizId and add retry option
+  const { data: selectedQuiz, isLoading } = useQuery<TopicQuizAssessments>({
+    queryKey: ['quiz', quizId],
+    queryFn: () => getQuizAssessment(quizId),
+    enabled: !!quizId,
+    retry: 3,
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+  });
 
+  // Initialize shuffleQuiz state with proper dependency tracking
+  const [shuffleQuiz, setShuffleQuiz] = useState<objective_questions[]>();
+
+  // Update useEffect to properly handle selectedQuiz updates
   useEffect(() => {
-    if (selectedQuiz.length > 0) {
-      let shuffledQuiz = shuffleArray(selectedQuiz);
+    if (
+      selectedQuiz &&
+      Array.isArray(selectedQuiz) &&
+      selectedQuiz.length > 0
+    ) {
+      const shuffledQuiz = shuffleArray<objective_questions>(
+        selectedQuiz.flatMap((quiz) => quiz.objective_questions),
+      );
       setShuffleQuiz(shuffledQuiz);
     }
   }, [selectedQuiz]);
 
   // Form Validation
   const schema = useMemo(() => {
+    if (!shuffleQuiz || shuffleQuiz.length === 0) {
+      return z.object({});
+    }
+
     return z.object(
       shuffleQuiz.reduce((values, quiz) => {
         values[quiz.id.toString()] = z
@@ -98,9 +142,8 @@ const Quiz = ({ selectedQuiz, startTransition, topicId }: QuizProps) => {
   });
 
   useEffect(() => {
-    if (shuffleQuiz.length > 0) {
-      setCurrentSlide(0);
-      setTotalSlides(shuffleQuiz.length - 1);
+    if (shuffleQuiz) {
+      setTotalSlides(shuffleQuiz.length);
     }
   }, [shuffleQuiz]);
 
@@ -113,7 +156,7 @@ const Quiz = ({ selectedQuiz, startTransition, topicId }: QuizProps) => {
         setOpenTutorialModal(false);
         setCurrentSlide(0);
         setTotalSlides(0);
-        setSearchParams({}, { replace: true });
+        setSelectedQuizState({ quizId: '', topicId: '', studentId: '' });
       });
     }
   }, [isSubmitSuccessful, startTransition, topicId]);
@@ -126,26 +169,22 @@ const Quiz = ({ selectedQuiz, startTransition, topicId }: QuizProps) => {
     [value],
   );
 
+  const assessmentMutation = useAssessmentMutation();
+
   const onSubmit = async (data: z.infer<typeof schema>) => {
-    if (
-      !searchParams.get('topicId') ||
-      !searchParams.get('studentId') ||
-      !searchParams.get('quizId')
-    ) {
+    if (topicId === '' || quizId === '' || !selectedQuiz || !studentId) {
       return;
     }
 
-    try {
-      const filteredData = Object.fromEntries(
-        Object.entries(data).map(([key, value]) => [key, value || '']),
-      );
+    const filteredData: { [key: string]: string } = Object.fromEntries(
+      Object.entries(data).map(([key, value]) => [key, String(value || '')]),
+    );
 
-      await assessmentMutation.mutateAsync({
-        assessmentData: filteredData,
-      });
-    } catch (error: any) {
-      showToast('An error occurred' + error.message, 'error');
-    }
+    await assessmentMutation.mutateAsync({
+      topicId: topicId,
+      quizId: quizId,
+      assessmentData: filteredData,
+    });
   };
 
   const confirmSubmitAnswer = useCallback(() => {
@@ -183,6 +222,11 @@ const Quiz = ({ selectedQuiz, startTransition, topicId }: QuizProps) => {
     );
   }, []);
 
+  // Add loading state handling
+  if (isLoading || !selectedQuiz) {
+    return <LoadingContentScreen />;
+  }
+
   return (
     <>
       <Button
@@ -203,7 +247,7 @@ const Quiz = ({ selectedQuiz, startTransition, topicId }: QuizProps) => {
       <form onSubmit={handleSubmit(onSubmit)}>
         <Carousel
           children={
-            shuffleQuiz.length > 0 &&
+            shuffleQuiz &&
             shuffleQuiz.map((questions, index) => (
               <Card
                 key={index}
@@ -319,7 +363,7 @@ const Quiz = ({ selectedQuiz, startTransition, topicId }: QuizProps) => {
               disableTouchRipple={true}
               disabled={
                 next
-                  ? currentSliderSlide === selectedQuiz.length - 1
+                  ? currentSliderSlide === totalSlides - 1
                   : currentSliderSlide === 0
               }
             >
@@ -337,7 +381,7 @@ const Quiz = ({ selectedQuiz, startTransition, topicId }: QuizProps) => {
         />
 
         <CardActions className="justify-center flex-[1_1_auto] mt-5">
-          {currentSliderSlide === totalSlides && (
+          {currentSliderSlide === totalSlides - 1 && (
             <Tooltip title="Submit Quiz" arrow>
               <Button
                 sx={{

@@ -57,9 +57,6 @@ userInstance.interceptors.request.use((config) => {
 });
 
 quizInstance.interceptors.request.use((config) => {
-  const urlParams = new URLSearchParams(window.location.search);
-  const topicId = urlParams.get('topicId');
-  const quizId = urlParams.get('quizId');
   const userData = JSON.parse(sessionStorage.getItem('session') || '{}');
   const studentId = userData.state.user.studentId;
   const isAuth = userData.state.user.isAuth;
@@ -67,8 +64,6 @@ quizInstance.interceptors.request.use((config) => {
   config.params = {
     isAuth: isAuth,
     studentId: studentId,
-    topicId: topicId,
-    quizId: quizId,
   };
 
   return config;
