@@ -40,7 +40,6 @@ import {
   LoadingButton,
   LoadingContentScreen,
 } from '../../../../components/ui/LoadingScreen/LoadingScreen';
-import { showToast } from '../../../../components/ui/Toasts';
 import Carousel from 'react-material-ui-carousel';
 import { shuffleArray } from '../../../../lib/helpers/utils';
 import { getQuizAssessment } from '../../../../api/User/quizApi';

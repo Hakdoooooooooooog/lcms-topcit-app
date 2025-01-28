@@ -142,14 +142,7 @@ const Assessment = () => {
     } else {
       setOpenTutorialModal(true);
     }
-  }, [
-    selectedQuizState.quizId,
-    selectedQuizState.topicId,
-    setOpenTutorialModal,
-    setIsBlocked,
-    setCurrentSlide,
-    setValue,
-  ]);
+  }, [selectedQuizState.quizId, selectedQuizState.topicId]);
 
   // Fix dependency array for useEffect with blocker
   useEffect(() => {
@@ -168,7 +161,7 @@ const Assessment = () => {
     ) {
       blocker.proceed();
     }
-  }, [blocker, isBlocked, value, setOpenCancelModal]);
+  }, [blocker, isBlocked, value]);
 
   // Memoize handler functions
   const handleCloseModal = useCallback(() => {
@@ -178,7 +171,7 @@ const Assessment = () => {
     } else {
       setOpenCancelModal(false);
     }
-  }, [isBlocked, blocker, setOpenCancelModal]);
+  }, [isBlocked, blocker]);
 
   const handleConfirmCancel = useCallback(() => {
     if (isBlocked && blocker.state === 'blocked') {
@@ -199,7 +192,7 @@ const Assessment = () => {
       });
       showToast('Quiz cancelled successfully', 'success');
     }
-  }, [isBlocked, blocker, setIsBlocked, setOpenCancelModal]);
+  }, [isBlocked, blocker]);
 
   // Memoize modal render functions
   const renderCancelModal = useMemo(
