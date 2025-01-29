@@ -34,9 +34,17 @@ import { getQuizAssessments } from '../../../../api/Admin/quiz';
 
 const AdminQuiz = () => {
   // States
-  const [buttonState, setButtonState] = useState({
+  const [buttonState, setButtonState] = useState<{
+    topicId: string;
+    quiz: {
+      chapterId?: string[];
+      quizId: string;
+    };
+    state: string;
+  }>({
     topicId: '',
     quiz: {
+      chapterId: [''],
       quizId: '',
     },
     state: '',
@@ -69,18 +77,51 @@ const AdminQuiz = () => {
   const selectedQuiz = useMemo(() => {
     if (!quizzes) return;
 
-    return quizzes
+    const filteredSelectedQuiz = quizzes
       ?.flatMap((topic) => topic.quiz)
       .filter(
         (quiz) => quiz !== null && quiz.id === Number(buttonState.quiz.quizId),
       ) as QuizWithQuestions[];
+
+    const filteredChapterByQuiz = quizzes.flatMap((topic) => {
+      return topic.chapters.filter((chapter) =>
+        filteredSelectedQuiz?.some((quiz) => quiz.chapter_id === chapter.id),
+      );
+    });
+
+    const formattedSelectedQuiz = filteredSelectedQuiz?.map((quiz, index) => {
+      return {
+        ...quiz,
+        chapterId: filteredChapterByQuiz[index].id.toString(),
+        chapterTitle: filteredChapterByQuiz[index].title,
+      };
+    });
+
+    return formattedSelectedQuiz;
   }, [buttonState.quiz.quizId, quizzes]);
+
+  const chaptersSelection = useMemo(() => {
+    if (!quizzes) return;
+
+    const filteredChapters = quizzes.flatMap((topic) => {
+      return topic.chapters.map((chapter) => {
+        return {
+          id: chapter.id.toString(),
+          topicId: chapter.topic_id.toString(),
+          title: chapter.title,
+        };
+      });
+    });
+
+    return filteredChapters;
+  }, [selectedQuiz]);
 
   useEffect(() => {
     if (!modalOpen) {
       setButtonState({
         topicId: '',
         quiz: {
+          chapterId: [''],
           quizId: '',
         },
         state: '',
@@ -140,6 +181,9 @@ const AdminQuiz = () => {
                       ...buttonState,
                       topicId: topic.id.toString(),
                       quiz: {
+                        chapterId: topic.quiz?.map((quiz) =>
+                          quiz.chapter_id.toString(),
+                        ) ?? [''],
                         quizId: ((topic.quiz?.length ?? 0) + 1).toString(),
                       },
                       state: 'add',
@@ -163,7 +207,7 @@ const AdminQuiz = () => {
                     <Card>
                       <CardHeader
                         title={quiz.title}
-                        subheader={`Quiz ID: ${quiz.id}`}
+                        subheader={`Quiz ID: ${quiz.id} | Chapter ID: ${quiz.chapter_id}`}
                       />
                       <CardActions>
                         <Button
@@ -248,7 +292,15 @@ const AdminQuiz = () => {
       {modalOpen &&
         (buttonState.state === 'add' ? (
           <AddQuizModal
-            data={buttonState}
+            data={{
+              topicId: buttonState.topicId,
+              chapterSelection: chaptersSelection,
+              quiz: {
+                chapterId: buttonState.quiz.chapterId,
+                quizId: buttonState.quiz.quizId,
+              },
+              state: buttonState.state,
+            }}
             modalOpen={modalOpen}
             handleClose={handleClose}
           />

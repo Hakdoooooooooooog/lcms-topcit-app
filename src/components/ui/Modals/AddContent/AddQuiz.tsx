@@ -52,7 +52,21 @@ type FormValues = {
 };
 
 const AddQuizModal = (props: {
-  data: { topicId: string; quiz: { quizId: string }; state: string };
+  data: {
+    topicId: string;
+    chapterSelection:
+      | {
+          id: string;
+          topicId: string;
+          title: string;
+        }[]
+      | undefined;
+    quiz: {
+      chapterId: string[] | undefined;
+      quizId: string;
+    };
+    state: string;
+  };
   modalOpen: boolean;
   handleClose: () => void;
 }) => {
@@ -154,6 +168,27 @@ const AddQuizModal = (props: {
     });
   };
 
+  const handleChapterSelection = useMemo(() => {
+    if (!props.data.chapterSelection) {
+      return undefined;
+    }
+
+    return props.data.chapterSelection
+      .filter((chapter) => chapter.topicId === props.data.topicId)
+      .flatMap((chapter) => {
+        const { id } = chapter;
+        const isChapterTitleAvailable = props.data.quiz.chapterId?.some(
+          (quizChapterId) => quizChapterId === id,
+        );
+
+        return {
+          id: id,
+          title: chapter.title,
+          canSelect: !isChapterTitleAvailable,
+        };
+      });
+  }, [props.data.chapterSelection, props.data.quiz.chapterId]);
+
   const addQuizMutation = useAddContentMutation({
     fn: async (formValues: FormValues) => manageQuiz(formValues),
     QueryKey: 'TOPCITQuizzes',
@@ -190,48 +225,86 @@ const AddQuizModal = (props: {
           <Typography variant="h6" component="h2">
             Quiz Details:
           </Typography>
-          {addQuizFormInputs.stage1.map((input) => (
-            <FormControl key={input.name}>
-              <InputLabel
-                htmlFor={
-                  `${input.name}-quiz-details` as keyof z.infer<
-                    ReturnType<typeof stagedSchema>
-                  >
-                }
-              >
-                {input.label}
-              </InputLabel>
-              <Input
-                id={
-                  `${input.name}-quiz-details` as keyof z.infer<
-                    ReturnType<typeof stagedSchema>
-                  >
-                }
-                {...register(
-                  input.name as keyof z.infer<ReturnType<typeof stagedSchema>>,
-                )}
-                type={input.type}
-                placeholder={input.placeholder}
-                disabled={input.disabled}
-              />
+          {addQuizFormInputs.stage1.map((input) =>
+            input.type === 'chapterSelection' ? (
+              <FormControl key={input.name}>
+                <InputLabel htmlFor={input.name}>{input.label}</InputLabel>
+                <Select
+                  id={input.name}
+                  {...register(input.name)}
+                  defaultValue=""
+                  label={input.label}
+                  MenuProps={{
+                    PaperProps: {
+                      style: {
+                        maxHeight: 48 * 4.5 + 8,
+                        width: 250,
+                      },
+                    },
+                  }}
+                  disabled={handleChapterSelection?.length === 0}
+                >
+                  {handleChapterSelection?.map((chapter, index) => (
+                    <MenuItem
+                      key={chapter.id}
+                      value={chapter.id}
+                      disabled={!chapter.canSelect}
+                    >
+                      <span
+                        className={`${
+                          !chapter.canSelect ? 'text-gray-400' : ''
+                        }`}
+                      >
+                        Chapter {index + 1}: {chapter.title}
+                      </span>
+                    </MenuItem>
+                  ))}
+                </Select>
 
-              {errors[
-                input.name as keyof z.infer<ReturnType<typeof stagedSchema>>
-              ] && (
-                <span className="text-red-500">
-                  {
-                    (
-                      errors[
-                        input.name as keyof z.infer<
-                          ReturnType<typeof stagedSchema>
-                        >
-                      ] as any
-                    )?.message
-                  }
-                </span>
-              )}
-            </FormControl>
-          ))}
+                {errors[
+                  input.name as keyof z.infer<ReturnType<typeof stagedSchema>>
+                ] && (
+                  <span className="text-red-500">
+                    {
+                      (
+                        errors[
+                          input.name as keyof z.infer<
+                            ReturnType<typeof stagedSchema>
+                          >
+                        ] as any
+                      )?.message
+                    }
+                  </span>
+                )}
+              </FormControl>
+            ) : (
+              <FormControl key={input.name}>
+                <InputLabel htmlFor={input.name}>{input.label}</InputLabel>
+                <Input
+                  id={input.name}
+                  {...register(input.name)}
+                  type={input.type}
+                  placeholder={input.placeholder}
+                />
+
+                {errors[
+                  input.name as keyof z.infer<ReturnType<typeof stagedSchema>>
+                ] && (
+                  <span className="text-red-500">
+                    {
+                      (
+                        errors[
+                          input.name as keyof z.infer<
+                            ReturnType<typeof stagedSchema>
+                          >
+                        ] as any
+                      )?.message
+                    }
+                  </span>
+                )}
+              </FormControl>
+            ),
+          )}
         </>
       );
     }
@@ -586,7 +659,14 @@ const AddQuizModal = (props: {
         </Carousel>
       );
     }
-  }, [currentStage, errors, register, stagedSchema, quizQuestions]);
+  }, [
+    currentStage,
+    errors,
+    register,
+    stagedSchema,
+    quizQuestions,
+    props.data.chapterSelection,
+  ]);
 
   const handleFormInputs = useMemo(() => {
     return (

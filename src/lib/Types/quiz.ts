@@ -3,6 +3,7 @@ import { Topics } from './topics';
 export type quiz = {
   id: number;
   topic_id: number;
+  chapter_id: number;
   title: string;
   quiz_type: string;
   max_attempts: number | null;
@@ -34,6 +35,11 @@ export interface QuizWithQuestions extends quiz {
     user_quiz_attempts: number;
     objective_questions: number;
   };
+  chapterId?: string;
+  chapterTitle?: string;
+  chapters?: {
+    title: string;
+  };
   user_quiz_attempts: quiz_attempts[];
   objective_questions: objective_questions[];
 }
@@ -47,6 +53,11 @@ export interface TopicWithQuizAndObjectiveQuestions extends Topics {
 }
 
 export interface QuizzesAssessment extends Topics {
+  chapters: {
+    id: number;
+    topic_id: number;
+    title: string;
+  }[];
   quiz: Omit<QuizWithQuestions, '_count'>[] | null;
 }
 
@@ -60,7 +71,12 @@ export interface TopicQuizAssessments {
 }
 
 export interface TopicWithQuiz extends Topics {
-  quiz: Omit<QuizWithQuestions, 'objective_questions'>[] | null;
+  quiz:
+    | Omit<
+        QuizWithQuestions,
+        'objective_questions' | 'chapterId' | 'chapterTitle'
+      >[]
+    | null;
 }
 
 export interface QuizAssessmentDetails {

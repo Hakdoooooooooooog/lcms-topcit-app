@@ -16,7 +16,7 @@ import {
   useSliderAssessmentStore,
 } from '../../../lib/store';
 import { TopicWithQuiz, UserQuizAttempts } from '../../../lib/Types/quiz';
-import { getQuizzesWithQuestions } from '../../../api/User/quizApi';
+import { getQuizzesWithQuestions, startQuiz } from '../../../api/User/quizApi';
 import {
   Accordion,
   AccordionDetails,
@@ -193,6 +193,27 @@ const Assessment = () => {
       showToast('Quiz cancelled successfully', 'success');
     }
   }, [isBlocked, blocker]);
+
+  const handleStartQuiz = useCallback(
+    async (selectedQuizState: { quizId: string; topicId: string }) => {
+      try {
+        await startQuiz(selectedQuizState.quizId, selectedQuizState.topicId);
+
+        startTransition(() =>
+          setSelectedQuizState({
+            quizId: selectedQuizState.quizId,
+            topicId: selectedQuizState.topicId,
+            studentId: studentId ?? '',
+          }),
+        );
+
+        showToast('Quiz started successfully.', 'success');
+      } catch (error: any) {
+        showToast('Error starting quiz: ' + error.error, 'error');
+      }
+    },
+    [selectedQuizState.quizId, selectedQuizState.topicId],
+  );
 
   // Memoize modal render functions
   const renderCancelModal = useMemo(
@@ -416,6 +437,7 @@ const Assessment = () => {
                         <Box className="flex-[1_1_55%]">
                           <CardHeader
                             title={`Quiz ${index + 1}: ${quiz.title}`}
+                            subheader={`Chapter: ${quiz.chapters?.title}`}
                           />
 
                           <CardActions className="flex gap-1 w-full ml-5">
@@ -438,16 +460,12 @@ const Assessment = () => {
                                 }}
                                 variant="contained"
                                 color="info"
-                                onClick={() => {
-                                  startTransition(() => {
-                                    setSelectedQuizState({
-                                      quizId: quiz.id.toString(),
-                                      topicId: topic.id.toString(),
-                                      studentId: studentId ?? '',
-                                    });
-                                    setIsBlocked(true);
-                                  });
-                                }}
+                                onClick={() =>
+                                  handleStartQuiz({
+                                    quizId: quiz.id.toString(),
+                                    topicId: topic.id.toString(),
+                                  })
+                                }
                                 disabled={
                                   quiz._count.user_quiz_attempts >=
                                     quiz.max_attempts ||

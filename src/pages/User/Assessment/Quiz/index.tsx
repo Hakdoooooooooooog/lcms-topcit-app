@@ -13,6 +13,7 @@ import {
   RadioGroup,
   Tooltip,
   Typography,
+  TextField,
 } from '@mui/material';
 import { styledModal } from '../../../../lib/constants';
 import {
@@ -268,7 +269,13 @@ const Quiz = ({
                       borderRadius: '5px',
                     }}
                   >
-                    <CardHeader subheader="Choose the correct answer" />
+                    <CardHeader
+                      subheader={
+                        questions.question_type === 'Multiple Choice'
+                          ? 'Choose the correct answer'
+                          : 'Type your answer'
+                      }
+                    />
                     <Box className="flex flex-col flex-wrap w-full max-h-fit">
                       <FormControl
                         component="fieldset"
@@ -279,7 +286,8 @@ const Quiz = ({
                           gap: '1rem',
                         }}
                       >
-                        {questions.multiple_choice_options &&
+                        {questions.question_type === 'Multiple Choice' ? (
+                          questions.multiple_choice_options &&
                           questions.multiple_choice_options.map(
                             (option, optionIndex) => (
                               <RadioGroup
@@ -308,7 +316,25 @@ const Quiz = ({
                                 />
                               </RadioGroup>
                             ),
-                          )}
+                          )
+                        ) : (
+                          <TextField
+                            {...register(questions.id.toString(), {
+                              onChange: (e) => {
+                                setIsBlocked(true);
+                                setValue({
+                                  ...value,
+                                  [questions.id.toString()]: e.target.value,
+                                });
+                              },
+                            })}
+                            value={value[questions.id.toString()] || ''}
+                            fullWidth
+                            variant="outlined"
+                            placeholder="Enter your answer"
+                            error={!!errors[questions.id.toString()]}
+                          />
+                        )}
                       </FormControl>
 
                       {errors && (

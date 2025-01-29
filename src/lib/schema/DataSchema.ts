@@ -101,6 +101,7 @@ export const addSubChapterSchema = z.object({
 
 export const addQuizSchemaStage1 = z.object({
   topicId: z.string().min(1, 'Please enter a topic id.'),
+  chapterSelect: z.string().min(1, 'Please select a chapter.'),
   quizTitle: z.string().min(1, 'Please enter a quiz title.'),
   maxAttempts: z
     .string()

@@ -538,6 +538,14 @@ export const addQuizFormInputs: {
       disabled: true,
     },
     {
+      label: 'Chapter Select',
+      name: 'chapterSelect',
+      type: 'chapterSelection',
+      placeholder: 'Select a chapter',
+      value: '',
+      disabled: true,
+    },
+    {
       label: 'Quiz Title',
       name: 'quizTitle',
       type: 'text',
