@@ -1,15 +1,13 @@
-# LCMS TOPCIT App
+# TOPCIT LCMS Client
 
-This project is a Learning Content Management System (LCMS) application designed for the TOPCIT program. It includes various modules such as user authentication, chapter management, quizzes, and topics.
+This is the client-side application for the TOPCIT Learning Content Management System.
 
-## Getting Started
+## Prerequisites
 
-### Prerequisites
+- Node.js (v18 or higher)
+- npm or yarn package manager
 
-- Node.js
-- npm
-
-### Installation
+## Installation
 
 1. Clone the repository:
 
@@ -27,29 +25,39 @@ This project is a Learning Content Management System (LCMS) application designed
 
    ```sh
    npm install
+   # or
+   yarn install
    ```
 
-### Running the Application
+## Environment Setup
 
-1. Start the development server:
+Create a `.env` file in the root directory with the following content:
 
-   ```sh
-   npm run dev
-   ```
-
-2. Open the application in your browser:
-
-   ```sh
-   http://127.0.0.1:5173
-   ```
-
-### Building for Production
-
-To build the application for production, run:
-
-```sh
-npm run build
 ```
+VITE_APP_BASE_API_URL = "http://localhost:3300"
+```
+
+## Available Scripts
+
+- `npm run dev` - Start development server
+- `npm run dev:host` - Start development server with host access
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build
+- `npm run preview:host` - Preview production build with host access
+- `npm run lint` - Run ESLint
+
+## Tech Stack
+
+- React 18
+- TypeScript
+- Vite
+- Material-UI
+- React Query
+- React Router DOM
+- Zustand
+- Tailwind CSS
+- React Hook Form
+- Zod
 
 ## Project Structure
 
@@ -83,6 +91,14 @@ lcms-topcit-app/
 ├── tsconfig.node.json
 └── vite.config.ts
 ```
+
+## Development Guidelines
+
+1. Follow TypeScript best practices
+2. Use Material-UI components when possible
+3. Implement responsive design
+4. Follow ESLint rules
+5. Write clean, maintainable code
 
 ## Features
 

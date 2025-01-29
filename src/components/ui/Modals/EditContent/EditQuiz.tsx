@@ -178,6 +178,7 @@ const EditQuizModal = (props: {
         return {
           ...prev,
           topicId: props.data.topicId,
+          chapterSelect: selectedQuiz.chapterTitle,
           quizTitle: selectedQuiz.title,
           maxAttempts: selectedQuiz.max_attempts?.toString() || '3',
           numofQuestions: currentNumOfQuestions.toString(),

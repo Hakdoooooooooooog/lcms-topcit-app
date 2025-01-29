@@ -7,17 +7,19 @@ const useAssessmentMutation = () => {
 
   const assessmentMutation = useMutation({
     mutationFn: (data: {
+      topicId: string;
+      quizId: string;
       assessmentData: {
         [key: string]: string;
       };
-    }) => submitQuiz(data.assessmentData),
+    }) => submitQuiz(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['AssessmentQuizzes'] });
 
       showToast('Quiz Submitted', 'success');
     },
     onError: (error) => {
-      showToast('An error occurred' + error.message, 'error');
+      showToast('An error occurred: ' + error.message, 'error');
     },
     mutationKey: ['AssessmentQuizzes'],
   });

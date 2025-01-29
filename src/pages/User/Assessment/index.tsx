@@ -5,7 +5,7 @@ import {
   useState,
   useTransition,
 } from 'react';
-import { useSearchParams, useBlocker } from 'react-router-dom';
+import { useBlocker } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
   useAccordionStore,
@@ -15,11 +15,7 @@ import {
   useSearchStore,
   useSliderAssessmentStore,
 } from '../../../lib/store';
-import {
-  objective_questions,
-  QuizWithQuestions,
-  TopicWithQuizAndObjectiveQuestions,
-} from '../../../lib/Types/quiz';
+import { TopicWithQuiz, UserQuizAttempts } from '../../../lib/Types/quiz';
 import { getQuizzesWithQuestions, startQuiz } from '../../../api/User/quizApi';
 import {
   Accordion,
@@ -47,10 +43,15 @@ import Carousel from 'react-material-ui-carousel';
 import { Add, ArrowBack, ArrowForward } from '@mui/icons-material';
 
 const Assessment = () => {
+  // State
+  const [selectedQuizState, setSelectedQuizState] = useState({
+    quizId: '',
+    topicId: '',
+    studentId: '',
+  });
+
   // Quizzes
-  const { data: quizzes, isLoading } = useQuery<
-    TopicWithQuizAndObjectiveQuestions[]
-  >({
+  const { data: quizzes, isLoading } = useQuery<TopicWithQuiz[]>({
     queryKey: ['AssessmentQuizzes'],
     queryFn: getQuizzesWithQuestions,
     refetchOnWindowFocus: false,
@@ -58,7 +59,7 @@ const Assessment = () => {
 
   // Pagination
   const { page, setPage, totalPages, currentItems } =
-    handlePaginatedItems<TopicWithQuizAndObjectiveQuestions>({
+    handlePaginatedItems<TopicWithQuiz>({
       items: quizzes,
       itemPerPage: 5,
     });
@@ -68,7 +69,7 @@ const Assessment = () => {
     search: state.search,
   }));
   const { isSearching, filteredItems: filteredQuizzes } =
-    useSearchFilter<TopicWithQuizAndObjectiveQuestions>(currentItems, search);
+    useSearchFilter<TopicWithQuiz>(currentItems, search);
 
   // User
   const { studentId } = useAuthUserStore((state) => ({
@@ -76,12 +77,12 @@ const Assessment = () => {
   }));
 
   // Slider States
-  const { currentSliderSlide, setCurrentSlide, setTotalSlides } =
-    useSliderAssessmentStore((state) => ({
+  const { currentSliderSlide, setCurrentSlide } = useSliderAssessmentStore(
+    (state) => ({
       currentSliderSlide: state.currentSliderSlide,
       setCurrentSlide: state.setCurrentSlide,
-      setTotalSlides: state.setTotalSlides,
-    }));
+    }),
+  );
 
   // User Quiz States
   const { value, setValue, isBlocked, setIsBlocked } = useQuizStore(
@@ -116,15 +117,6 @@ const Assessment = () => {
   // Transition
   const [isPending, startTransition] = useTransition();
 
-  // Selected Quiz
-  const [selectedQuiz, setSelectedQuiz] = useState<
-    objective_questions[] | null
-  >(null);
-
-  // Search Params
-  const [searchParams, setSearchParams] = useSearchParams();
-  const topicId = searchParams.get('topicId');
-
   // Blocking Navigation Guard
   let blocker = useBlocker(
     useCallback(() => {
@@ -136,37 +128,23 @@ const Assessment = () => {
     }, [isBlocked]),
   );
 
-  const quizContent = useMemo(() => {
-    if (!quizzes || isLoading) return [];
-
-    const quiz = quizzes
-      .filter((value) => {
-        return value.id === parseInt(topicId || '');
-      })
-      .flatMap((quiz) => {
-        return quiz.quiz ? quiz.quiz.flatMap((q) => q.objective_questions) : [];
-      })
-      .filter((value) => {
-        return value !== undefined;
-      });
-
-    return quiz;
-  }, [topicId, quizzes]);
-
   useEffect(() => {
-    if (!topicId) {
-      setSelectedQuiz(null);
+    if (!selectedQuizState.quizId && !selectedQuizState.topicId) {
       setOpenTutorialModal(false);
       setIsBlocked(false);
       setCurrentSlide(0);
       setValue({});
+      setSelectedQuizState({
+        quizId: '',
+        topicId: '',
+        studentId: '',
+      });
     } else {
-      setSelectedQuiz(quizContent);
-      setTotalSlides(quizContent.length - 1);
       setOpenTutorialModal(true);
     }
-  }, [quizContent, topicId]);
+  }, [selectedQuizState.quizId, selectedQuizState.topicId]);
 
+  // Fix dependency array for useEffect with blocker
   useEffect(() => {
     if (
       isBlocked &&
@@ -183,8 +161,9 @@ const Assessment = () => {
     ) {
       blocker.proceed();
     }
-  }, [blocker.state, isBlocked, value]);
+  }, [blocker, isBlocked, value]);
 
+  // Memoize handler functions
   const handleCloseModal = useCallback(() => {
     if (isBlocked && blocker.state === 'blocked') {
       setOpenCancelModal(false);
@@ -194,52 +173,51 @@ const Assessment = () => {
     }
   }, [isBlocked, blocker]);
 
-  const handleConfirmCancel = useCallback(async () => {
+  const handleConfirmCancel = useCallback(() => {
     if (isBlocked && blocker.state === 'blocked') {
       startTransition(() => {
         blocker.proceed();
         setIsBlocked(false);
         setOpenCancelModal(false);
       });
-
       showToast('Quiz cancelled successfully', 'success');
     } else {
       startTransition(() => {
-        setSearchParams({}, { replace: true });
+        setSelectedQuizState({
+          quizId: '',
+          topicId: '',
+          studentId: '',
+        });
         setOpenCancelModal(false);
       });
-
       showToast('Quiz cancelled successfully', 'success');
     }
   }, [isBlocked, blocker]);
 
   const handleStartQuiz = useCallback(
-    async (quiz: QuizWithQuestions) => {
-      if (!quiz) {
-        return;
-      }
-
+    async (selectedQuizState: { quizId: string; topicId: string }) => {
       try {
-        await startQuiz(quiz.id.toString(), quiz.topic_id.toString());
+        await startQuiz(selectedQuizState.quizId, selectedQuizState.topicId);
 
         startTransition(() =>
-          setSearchParams({
-            topicId: quiz.topic_id.toString(),
-            quizId: quiz.id.toString(),
-            studentId: studentId?.toString() || '',
+          setSelectedQuizState({
+            quizId: selectedQuizState.quizId,
+            topicId: selectedQuizState.topicId,
+            studentId: studentId ?? '',
           }),
         );
 
-        showToast('Quiz started successfully', 'success');
+        showToast('Quiz started successfully.', 'success');
       } catch (error: any) {
         showToast('Error starting quiz: ' + error.error, 'error');
       }
     },
-    [studentId, topicId],
+    [selectedQuizState.quizId, selectedQuizState.topicId],
   );
 
-  const renderCancelModal = useCallback(() => {
-    return (
+  // Memoize modal render functions
+  const renderCancelModal = useMemo(
+    () => (
       <Modal open={openCancelModal}>
         <Box
           sx={{
@@ -274,10 +252,11 @@ const Assessment = () => {
           </Box>
         </Box>
       </Modal>
-    );
-  }, [openCancelModal]);
+    ),
+    [openCancelModal, handleConfirmCancel, handleCloseModal],
+  );
 
-  const tutorialModal = useCallback(
+  const tutorialModal = useMemo(
     () => (
       <Modal open={openTutorialModal}>
         <Box
@@ -390,26 +369,24 @@ const Assessment = () => {
         </Box>
       </Modal>
     ),
-    [openTutorialModal, tutorialSteps, currentSliderSlide],
+    [
+      openTutorialModal,
+      currentSliderSlide,
+      setCurrentSlide,
+      setOpenTutorialModal,
+      tutorialSteps,
+    ],
   );
 
-  const handleAttemptQuizCount = (quiz: QuizWithQuestions) => {
-    return quiz.user_quiz_attempts
-      ?.filter((attempt) => attempt?.quiz_id === quiz.id)
-      .flatMap((attempt) => attempt?.attempt_count)
-      .slice(-1);
-  };
-
-  const handleAttemptQuizScore = (quiz: QuizWithQuestions) => {
-    return quiz.user_quiz_attempts
-      ?.filter((attempt) => attempt?.quiz_id === quiz.id)
-      .flatMap((attempt) => attempt?.score)
-      .slice(-1);
-  };
+  // Memoize handleAttemptQuizScore
+  const handleAttemptQuizScore = useCallback((quiz: UserQuizAttempts) => {
+    return quiz.user_quiz_attempts?.flatMap((attempt) => attempt?.score);
+  }, []);
 
   const memoizedAccordionTopic = useMemo(() => {
     return (
-      (!selectedQuiz || selectedQuiz.length <= 0) &&
+      !selectedQuizState.quizId &&
+      !selectedQuizState.topicId &&
       filteredQuizzes &&
       filteredQuizzes.map((topic) => {
         return (
@@ -460,6 +437,7 @@ const Assessment = () => {
                         <Box className="flex-[1_1_55%]">
                           <CardHeader
                             title={`Quiz ${index + 1}: ${quiz.title}`}
+                            subheader={`Chapter: ${quiz.chapters?.title}`}
                           />
 
                           <CardActions className="flex gap-1 w-full ml-5">
@@ -482,23 +460,22 @@ const Assessment = () => {
                                 }}
                                 variant="contained"
                                 color="info"
-                                onClick={() => handleStartQuiz(quiz)}
+                                onClick={() =>
+                                  handleStartQuiz({
+                                    quizId: quiz.id.toString(),
+                                    topicId: topic.id.toString(),
+                                  })
+                                }
                                 disabled={
-                                  (handleAttemptQuizCount(quiz) &&
-                                    (handleAttemptQuizCount(quiz)[index] ??
-                                      0) >= quiz.max_attempts) ||
-                                  (handleAttemptQuizScore(quiz) &&
-                                    ((handleAttemptQuizScore(quiz)[index] ??
-                                      0) /
-                                      quiz.objective_questions.length) *
-                                      100 >=
-                                      70)
+                                  quiz._count.user_quiz_attempts >=
+                                    quiz.max_attempts ||
+                                  ((handleAttemptQuizScore(quiz)[0] ?? 0) /
+                                    quiz._count.objective_questions) *
+                                    100 >=
+                                    70
                                 }
                               >
-                                Attempts:{' '}
-                                {handleAttemptQuizCount(quiz) &&
-                                  (handleAttemptQuizCount(quiz)[index] ??
-                                    0)}{' '}
+                                Attempts: {quiz._count.user_quiz_attempts ?? 0}{' '}
                                 / {quiz.max_attempts}
                               </Button>
                             )}
@@ -510,8 +487,8 @@ const Assessment = () => {
                                   width: '100%',
                                   cursor: 'default',
                                   ...(handleAttemptQuizScore(quiz) &&
-                                  handleAttemptQuizScore(quiz)[index] ===
-                                    quiz.objective_questions.length
+                                  handleAttemptQuizScore(quiz)[0] ===
+                                    quiz._count.objective_questions
                                     ? {
                                         backgroundColor: '#00800030',
                                       }
@@ -529,9 +506,8 @@ const Assessment = () => {
                               >
                                 Score:{' '}
                                 {handleAttemptQuizScore(quiz) &&
-                                  (handleAttemptQuizScore(quiz)[index] ??
-                                    0)}{' '}
-                                / {quiz.objective_questions.length}
+                                  (handleAttemptQuizScore(quiz)[0] ?? 0)}{' '}
+                                / {quiz._count.objective_questions}
                               </Button>
                             </Tooltip>
 
@@ -563,7 +539,7 @@ const Assessment = () => {
     page,
     expanded,
     handleChanges,
-    selectedQuiz,
+    selectedQuizState,
     filteredQuizzes,
   ]);
 
@@ -579,33 +555,35 @@ const Assessment = () => {
         </Box>
       ) : (
         <>
-          {selectedQuiz && selectedQuiz.length > 0 && (
+          {selectedQuizState.quizId && selectedQuizState.topicId && (
             <Quiz
-              selectedQuiz={selectedQuiz}
+              selectedQuizState={selectedQuizState}
+              setSelectedQuizState={setSelectedQuizState}
               startTransition={startTransition}
-              topicId={topicId || ''}
             />
           )}
 
           {isSearching ? <LoadingContentScreen /> : memoizedAccordionTopic}
 
-          {!selectedQuiz && (
-            <Stack spacing={2} sx={{ marginTop: '2rem' }}>
-              <Pagination
-                size={window.innerWidth < 600 ? 'small' : 'medium'}
-                shape="rounded"
-                count={totalPages}
-                page={page}
-                onChange={(_event, value) =>
-                  startTransition(() => {
-                    setPage(value);
-                  })
-                }
-                showFirstButton
-                showLastButton
-              />
-            </Stack>
-          )}
+          {!selectedQuizState.quizId &&
+            !selectedQuizState.topicId &&
+            !selectedQuizState.studentId && (
+              <Stack spacing={2} sx={{ marginTop: '2rem' }}>
+                <Pagination
+                  size={window.innerWidth < 600 ? 'small' : 'medium'}
+                  shape="rounded"
+                  count={totalPages}
+                  page={page}
+                  onChange={(_event, value) =>
+                    startTransition(() => {
+                      setPage(value);
+                    })
+                  }
+                  showFirstButton
+                  showLastButton
+                />
+              </Stack>
+            )}
 
           {filteredQuizzes && filteredQuizzes.length <= 0 && (
             <Typography variant="h5" className="mt-5">
@@ -613,8 +591,8 @@ const Assessment = () => {
             </Typography>
           )}
 
-          {renderCancelModal()}
-          {tutorialModal()}
+          {renderCancelModal}
+          {tutorialModal}
         </>
       )}
     </>
